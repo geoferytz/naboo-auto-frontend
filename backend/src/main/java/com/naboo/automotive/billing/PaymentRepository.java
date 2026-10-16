@@ -14,4 +14,7 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
 
     @Query("select coalesce(sum(p.amount), 0) from Payment p where p.invoice.id = :invoiceId")
     BigDecimal sumByInvoiceId(@Param("invoiceId") UUID invoiceId);
+
+    @Query("select coalesce(sum(p.amount), 0) from Payment p where p.paidAt >= :since")
+    BigDecimal sumSince(@Param("since") java.time.Instant since);
 }

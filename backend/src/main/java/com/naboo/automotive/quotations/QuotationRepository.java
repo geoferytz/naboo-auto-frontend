@@ -1,5 +1,6 @@
 package com.naboo.automotive.quotations;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,4 +17,6 @@ public interface QuotationRepository extends JpaRepository<Quotation, UUID> {
     Page<Quotation> findByStatus(QuotationStatus status, Pageable pageable);
 
     Page<Quotation> findByCustomerIdOrderByCreatedAtDesc(UUID customerId, Pageable pageable);
+
+    long countByStatusIn(List<QuotationStatus> statuses);
 }

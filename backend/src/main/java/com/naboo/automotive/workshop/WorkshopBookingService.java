@@ -22,6 +22,8 @@ import com.naboo.automotive.common.PageView;
 import com.naboo.automotive.config.AppProperties;
 import com.naboo.automotive.customers.Customer;
 import com.naboo.automotive.customers.CustomerRepository;
+import com.naboo.automotive.notifications.Notification.NotificationType;
+import com.naboo.automotive.notifications.NotificationService;
 import com.naboo.automotive.services.ServiceOffering;
 import com.naboo.automotive.services.ServiceOfferingRepository;
 import com.naboo.automotive.vehicles.VehicleViews.EnquiryReceipt;
@@ -44,17 +46,19 @@ public class WorkshopBookingService {
     private final WorkshopCapacityRepository capacity;
     private final CustomerRepository customers;
     private final AuditService audit;
+    private final NotificationService notifications;
     private final AppProperties properties;
     private final Clock clock = Clock.systemUTC();
 
     public WorkshopBookingService(ServiceBookingRepository bookings, ServiceOfferingRepository services,
             WorkshopCapacityRepository capacity, CustomerRepository customers, AuditService audit,
-            AppProperties properties) {
+            NotificationService notifications, AppProperties properties) {
         this.bookings = bookings;
         this.services = services;
         this.capacity = capacity;
         this.customers = customers;
         this.audit = audit;
+        this.notifications = notifications;
         this.properties = properties;
     }
 
@@ -172,6 +176,9 @@ public class WorkshopBookingService {
         bookings.flush();
         if (previous != status) {
             audit.record(actor, "SERVICE_BOOKING_UPDATED", "ServiceBooking", id, previous + " -> " + status);
+            notifications.notifyCustomer(b.getCustomerId(), NotificationType.BOOKING_STATUS,
+                    "Service booking " + b.getReference() + " " + status.name().replace('_', ' ').toLowerCase(),
+                    bookingBody(b, status), "/my-account", "ServiceBooking", id);
         }
         return BookingView.of(b);
     }
@@ -191,6 +198,18 @@ public class WorkshopBookingService {
         capacity.flush();
         audit.record(actor, "WORKSHOP_CAPACITY_CHANGED", "WorkshopCapacity", null, previous + " -> " + maxConcurrentJobs);
         return new CapacityView(maxConcurrentJobs);
+    }
+
+    private static String bookingBody(ServiceBooking b, BookingStatus status) {
+        String service = b.getService().getName();
+        return switch (status) {
+            case CONFIRMED -> "Your booking for " + service + " is confirmed. See you at the workshop.";
+            case IN_PROGRESS -> "Work on your vehicle (" + service + ") has started.";
+            case COMPLETED -> service + " is complete. Thank you for choosing Naboo Automotive.";
+            case CANCELLED -> "Your booking for " + service + " was cancelled. Contact us if this is unexpected.";
+            case NO_SHOW -> "Your booking for " + service + " was marked as a no-show. Contact us to re-book.";
+            case PENDING -> "Your booking is pending.";
+        };
     }
 
     private static String blankToNull(String s) {

@@ -1,5 +1,6 @@
 package com.naboo.automotive.billing;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +18,11 @@ import jakarta.persistence.LockModeType;
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 
     Page<Invoice> findByStatus(InvoiceStatus status, Pageable pageable);
+
+    long countByStatus(InvoiceStatus status);
+
+    @Query("select coalesce(sum(i.totalAmount), 0) from Invoice i where i.status = :status")
+    BigDecimal sumByStatus(@Param("status") InvoiceStatus status);
 
     Page<Invoice> findByCustomerIdOrderByCreatedAtDesc(UUID customerId, Pageable pageable);
 

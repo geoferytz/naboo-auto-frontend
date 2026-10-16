@@ -32,6 +32,8 @@ type Query {
     myQuotations(page: Int = 0, size: Int = 20): QuotationPage!
     myOrders(page: Int = 0, size: Int = 20): OrderPage!
     myInvoices(page: Int = 0, size: Int = 20): InvoicePage!
+    myNotifications(page: Int = 0, size: Int = 20): NotificationPage!
+    unreadNotificationCount: Int!
 
     # ---- Staff (role-checked on the server)
     adminVehicles(filter: AdminVehicleFilter, page: Int = 0, size: Int = 20): VehiclePage!
@@ -72,6 +74,8 @@ type Mutation {
     decideQuotation(id: ID!, accept: Boolean!): Quotation!
     placeOrder(input: OrderInput!): EnquiryReceipt!
     cancelMyOrder(id: ID!): Order!
+    markNotificationRead(id: ID!): Notification!
+    markAllNotificationsRead: Int!
 
     # ---- Staff (role-checked on the server)
     createVehicle(input: VehicleInput!): Vehicle!
@@ -209,6 +213,37 @@ type DashboardSummary {
     vehiclesReserved: Int!
     vehiclesSold: Int!
     vehiclesUnpublished: Int!
+    pendingReservations: Int!
+    pendingBookings: Int!
+    openQuotations: Int!
+    activeJobs: Int!
+    openOrders: Int!
+    unpaidInvoices: Int!
+    lowStockItems: Int!
+    revenueThisMonth: Money!
+    outstandingReceivables: Money!
+}
+
+# ---------------------------------------------------------------- notifications
+
+type Notification {
+    id: ID!
+    type: String!
+    title: String!
+    body: String!
+    link: String
+    entityType: String
+    entityId: ID
+    read: Boolean!
+    createdAt: DateTime!
+}
+
+type NotificationPage {
+    items: [Notification!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
 }
 
 type AuthPayload {

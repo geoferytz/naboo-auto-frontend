@@ -6,14 +6,14 @@ import { Api } from '../core/api';
 import { ADMIN_DASHBOARD } from '../core/admin-queries';
 import { can } from '../core/capabilities';
 import { AuthService } from '../core/auth.service';
-import { DashboardSummary } from '../core/models';
-import { formatNumber } from '../core/format';
+import { DashboardSummary, Money } from '../core/models';
+import { formatMoney, formatNumber } from '../core/format';
 import { SeoService } from '../core/seo.service';
 import { LoadState } from '../shared/load-state';
 
 interface Stat {
   label: string;
-  value: number;
+  value: number | Money;
   link: string | null;
 }
 
@@ -38,12 +38,12 @@ interface Stat {
             @for (s of group.stats; track s.label) {
               @if (s.link) {
                 <a class="stat" [routerLink]="s.link">
-                  <span class="value">{{ format(s.value) }}</span>
+                  <span class="value">{{ typeof s.value === 'object' ? money(s.value) : format(s.value) }}</span>
                   <span class="label">{{ s.label }}</span>
                 </a>
               } @else {
                 <div class="stat">
-                  <span class="value">{{ format(s.value) }}</span>
+                  <span class="value">{{ typeof s.value === 'object' ? money(s.value) : format(s.value) }}</span>
                   <span class="label">{{ s.label }}</span>
                 </div>
               }
@@ -71,6 +71,7 @@ export class AdminDashboard {
   protected readonly state = signal<'loading' | 'error' | 'ready'>('loading');
   protected readonly summary = signal<DashboardSummary | null>(null);
   protected readonly format = formatNumber;
+  protected readonly money = formatMoney;
 
   constructor() {
     inject(SeoService).set({ title: 'Staff dashboard', description: 'Naboo Automotive staff dashboard.', path: '/admin', noIndex: true });
@@ -97,6 +98,25 @@ export class AdminDashboard {
           { label: 'Reserved', value: s.vehiclesReserved, link: can.vehicleManage(roles) ? '/admin/vehicles' : null },
           { label: 'Sold', value: s.vehiclesSold, link: can.vehicleManage(roles) ? '/admin/vehicles' : null },
           { label: 'Unpublished', value: s.vehiclesUnpublished, link: can.vehicleManage(roles) ? '/admin/vehicles' : null },
+        ],
+      },
+      {
+        title: 'Operations',
+        stats: [
+          { label: 'Pending reservations', value: s.pendingReservations, link: can.rentalManage(roles) ? '/admin/reservations' : null },
+          { label: 'Pending bookings', value: s.pendingBookings, link: can.bookingManage(roles) ? '/admin/bookings' : null },
+          { label: 'Open quotations', value: s.openQuotations, link: can.quotationManage(roles) ? '/admin/quotations' : null },
+          { label: 'Active jobs', value: s.activeJobs, link: can.workshopManage(roles) ? '/admin/jobs' : null },
+          { label: 'Open orders', value: s.openOrders, link: can.orderManage(roles) ? '/admin/orders' : null },
+          { label: 'Low-stock items', value: s.lowStockItems, link: can.inventoryManage(roles) ? '/admin/accessories' : null },
+        ],
+      },
+      {
+        title: 'Finance',
+        stats: [
+          { label: 'Revenue this month', value: s.revenueThisMonth, link: can.billingManage(roles) ? '/admin/invoices' : null },
+          { label: 'Unpaid invoices', value: s.unpaidInvoices, link: can.billingManage(roles) ? '/admin/invoices' : null },
+          { label: 'Outstanding receivables', value: s.outstandingReceivables, link: can.billingManage(roles) ? '/admin/invoices' : null },
         ],
       },
     ];

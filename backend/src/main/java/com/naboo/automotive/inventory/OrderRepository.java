@@ -1,5 +1,6 @@
 package com.naboo.automotive.inventory;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,6 +16,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
     Optional<Order> findByRequestToken(UUID requestToken);
 
     Page<Order> findByStatus(OrderStatus status, Pageable pageable);
+
+    long countByStatusIn(List<OrderStatus> statuses);
 
     Page<Order> findByCustomerIdOrderByCreatedAtDesc(UUID customerId, Pageable pageable);
 }

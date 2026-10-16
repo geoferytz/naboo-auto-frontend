@@ -72,7 +72,7 @@ frontend/src/app
 | 3 Public site & catalogues + staff admin | Done: public site, vehicle/service catalogues, staff dashboard, vehicle CRUD with photo uploads, enquiries, users, audit UI |
 | 4 Rentals, service booking, quotations | Done: `V2` migration, rental fleet + reservations (Postgres exclusion constraint against double-booking, idempotent `requestToken`s, server-computed totals, 180-day lead / 60-day max limits), workshop bookings (capacity serialized by row lock, 08:00–17:00 business window, 2h–90d window), quotation lifecycle (REQUESTED → QUOTED → ACCEPTED/DECLINED with lazy expiry). Public `/rentals` pages, booking/quotation forms on service pages, `my-account` self-service, admin fleet/reservations/bookings/quotations screens |
 | 5 Workshop, accessories, orders, invoices, payments | Done: `V3` migration, workshop job cards (booking-linked, mechanic-capable), accessories catalogue + stock ledger, accessory orders with locked stock movement, draft→issued→paid invoices with partial payments and overpayment guards. Admin screens for jobs/accessories/orders/invoices; public shop with cart; orders+invoices in `my-account` |
-| 6 Admin dashboard, customer portal, notifications, reporting | Partially: dashboard and `my-account` exist; notifications and reporting not started |
+| 6 Admin dashboard, customer portal, notifications, reporting | Done: in-app notifications (`V4`) wired into reservation/booking/order/invoice/job/quotation transitions; bell badge in header; notifications, orders, invoices in `my-account`; dashboard reports queues, low stock, revenue this month, outstanding receivables |
 | 7 Docker production deployment, Nginx, HTTPS, backups | Not started (dev compose only) |
 | 8 Hardening, e2e tests, full documentation | Not started |
 
@@ -104,6 +104,18 @@ frontend/src/app
   card, bank transfer and the common Tanzanian mobile-money rails (M-Pesa, Tigo Pesa, Airtel Money) — recording only;
   real payment-provider integration is a later decision.
 - Orders and invoices are tied to customer accounts; `placeOrder` requires sign-in and is idempotent via `requestToken`.
+
+## Notifications & reporting (Milestone 6 notes)
+
+- Notifications are written in the same transaction as the business event, so a notification can never describe a
+  change that rolled back. Recipients are resolved customer → user account; guest bookings/orders produce no
+  notification (there is no user account to attach it to — email/SMS delivery is a later milestone).
+- The header polls `unreadNotificationCount` every 60s for signed-in users and shows a badge linking to
+  `/my-account`, where notifications can be marked read individually or in bulk. A stranger cannot mark another
+  user's notification (verified by test).
+- The staff dashboard (`adminDashboard`, `Permissions.STAFF`) reports enquiry queues, fleet status, operational
+  queues (pending reservations/bookings/quotations/orders, active jobs), low stock (<5 units), revenue this month
+  (sum of payments), and outstanding receivables (sum of issued invoices).
 
 ## Known gaps / next steps
 

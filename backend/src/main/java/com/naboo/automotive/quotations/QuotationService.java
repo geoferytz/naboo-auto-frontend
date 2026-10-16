@@ -19,6 +19,8 @@ import com.naboo.automotive.common.PageView;
 import com.naboo.automotive.config.AppProperties;
 import com.naboo.automotive.customers.Customer;
 import com.naboo.automotive.customers.CustomerRepository;
+import com.naboo.automotive.notifications.Notification.NotificationType;
+import com.naboo.automotive.notifications.NotificationService;
 import com.naboo.automotive.quotations.Quotation.QuotationStatus;
 import com.naboo.automotive.quotations.QuotationTypes.QuotationRequestInput;
 import com.naboo.automotive.quotations.QuotationTypes.QuotationView;
@@ -34,15 +36,18 @@ public class QuotationService {
     private final ServiceOfferingRepository services;
     private final CustomerRepository customers;
     private final AuditService audit;
+    private final NotificationService notifications;
     private final AppProperties properties;
     private final Clock clock = Clock.systemUTC();
 
     public QuotationService(QuotationRepository quotations, ServiceOfferingRepository services,
-            CustomerRepository customers, AuditService audit, AppProperties properties) {
+            CustomerRepository customers, AuditService audit, NotificationService notifications,
+            AppProperties properties) {
         this.quotations = quotations;
         this.services = services;
         this.customers = customers;
         this.audit = audit;
+        this.notifications = notifications;
         this.properties = properties;
     }
 
@@ -132,6 +137,11 @@ public class QuotationService {
         q.quote(Money.parseAmount(input.quotedAmount(), "quotedAmount"), input.validUntil(),
                 blankToNull(input.staffNotes()), actor, today());
         audit.record(actor, "QUOTATION_PRICED", "Quotation", id, q.getReference() + " " + q.getQuotedAmount());
+        notifications.notifyCustomer(q.getCustomerId(), NotificationType.QUOTATION_READY,
+                "Your quotation " + q.getReference() + " is ready",
+                "Quoted " + q.getQuotedAmount() + " " + q.getCurrency() + " — valid until " + q.getValidUntil()
+                        + ". Review it in your account.",
+                "/my-account", "Quotation", id);
         quotations.flush();
         return QuotationView.of(q);
     }
@@ -141,6 +151,10 @@ public class QuotationService {
         Quotation q = quotations.findById(id).orElseThrow(() -> new NotFoundException("Quotation not found."));
         q.cancel();
         audit.record(actor, "QUOTATION_CANCELLED", "Quotation", id, q.getReference());
+        notifications.notifyCustomer(q.getCustomerId(), NotificationType.QUOTATION_READY,
+                "Quotation " + q.getReference() + " withdrawn",
+                "Your quotation request was withdrawn by our team. Contact us if this is unexpected.",
+                "/my-account", "Quotation", id);
         quotations.flush();
         return QuotationView.of(q);
     }

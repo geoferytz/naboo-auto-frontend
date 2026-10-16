@@ -15,6 +15,8 @@ public interface AccessoryRepository extends JpaRepository<Accessory, UUID>, Jpa
 
     boolean existsBySku(String sku);
 
+    long countByStockQuantityLessThanAndActiveTrue(int threshold);
+
     /** Locks accessory rows (in id order to avoid deadlocks) while stock is checked and moved. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select a from Accessory a where a.id in :ids order by a.id")

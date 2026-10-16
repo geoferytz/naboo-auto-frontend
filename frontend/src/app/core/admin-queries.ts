@@ -16,6 +16,10 @@ export const ADMIN_DASHBOARD = gql`
     adminDashboard {
       newSalesEnquiries openSalesEnquiries newContactEnquiries
       vehiclesAvailable vehiclesReserved vehiclesSold vehiclesUnpublished
+      pendingReservations pendingBookings openQuotations activeJobs
+      openOrders unpaidInvoices lowStockItems
+      revenueThisMonth { amount currency }
+      outstandingReceivables { amount currency }
     }
   }
 `;

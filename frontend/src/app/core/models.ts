@@ -194,6 +194,27 @@ export interface DashboardSummary {
   vehiclesReserved: number;
   vehiclesSold: number;
   vehiclesUnpublished: number;
+  pendingReservations: number;
+  pendingBookings: number;
+  openQuotations: number;
+  activeJobs: number;
+  openOrders: number;
+  unpaidInvoices: number;
+  lowStockItems: number;
+  revenueThisMonth: Money;
+  outstandingReceivables: Money;
+}
+
+export interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  link: string | null;
+  entityType: string | null;
+  entityId: string | null;
+  read: boolean;
+  createdAt: string;
 }
 
 export interface AuditLogEntry {

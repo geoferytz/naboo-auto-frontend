@@ -1,10 +1,12 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { filter } from 'rxjs';
+import { filter, interval, switchMap } from 'rxjs';
 
+import { Api } from '../core/api';
 import { AuthService } from '../core/auth.service';
+import { UNREAD_NOTIFICATION_COUNT } from '../core/queries';
 import { Logo } from './logo';
 
 @Component({
@@ -29,6 +31,13 @@ import { Logo } from './logo';
             </a>
           }
           @if (auth.isAuthenticated()) {
+            <a mat-button routerLink="/my-account" class="account bell"
+               [attr.aria-label]="unread() > 0 ? 'My account — ' + unread() + ' unread notifications' : 'My account'">
+              <mat-icon fontSet="material-symbols-outlined">notifications</mat-icon>
+              @if (unread() > 0) {
+                <span class="dot" aria-hidden="true">{{ unread() > 9 ? '9+' : unread() }}</span>
+              }
+            </a>
             <a mat-button routerLink="/my-account" class="account">
               <mat-icon fontSet="material-symbols-outlined">account_circle</mat-icon>
               <span class="label">{{ auth.user()?.fullName ?? 'My account' }}</span>
@@ -77,6 +86,10 @@ import { Logo } from './logo';
     .account .label { display: none; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cta { display: none !important; }
     .menu-toggle { color: var(--naboo-white); }
+    .bell { position: relative; }
+    .dot { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; border-radius: 9px;
+      background: var(--naboo-red); color: var(--naboo-white); font-size: .68rem; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; line-height: 1; }
     .mobile { display: flex; flex-direction: column; padding: var(--space-2) var(--space-4) var(--space-4);
       border-top: 1px solid #23262c; }
     .mobile a { padding: var(--space-3) 0; border-bottom: 1px solid #23262c; font-size: 1.05rem; }
@@ -87,7 +100,9 @@ import { Logo } from './logo';
 })
 export class Header {
   protected readonly auth = inject(AuthService);
+  private readonly api = inject(Api);
   protected readonly open = signal(false);
+  protected readonly unread = signal(0);
   protected readonly links = [
     { path: '/cars-for-sale', label: 'Cars for sale' },
     { path: '/rentals', label: 'Rentals' },
@@ -98,8 +113,32 @@ export class Header {
   ];
 
   constructor() {
-    inject(Router)
-      .events.pipe(filter((e) => e instanceof NavigationEnd))
-      .subscribe(() => this.open.set(false));
+    const router = inject(Router);
+    router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
+      this.open.set(false);
+      this.refreshUnread();
+    });
+    // Poll while the app is open; only fires for signed-in users.
+    interval(60_000)
+      .pipe(
+        filter(() => this.auth.isAuthenticated()),
+        switchMap(() => this.countUnread()),
+      )
+      .subscribe((n) => this.unread.set(n));
+    effect(() => {
+      if (this.auth.isAuthenticated()) this.refreshUnread();
+      else this.unread.set(0);
+    });
+  }
+
+  private refreshUnread(): void {
+    if (!this.auth.isAuthenticated()) return;
+    this.countUnread().subscribe((n) => this.unread.set(n));
+  }
+
+  private countUnread() {
+    return this.api
+      .query<{ unreadNotificationCount: number }>(UNREAD_NOTIFICATION_COUNT)
+      .pipe(switchMap((d) => [d.unreadNotificationCount]));
   }
 }

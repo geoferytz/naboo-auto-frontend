@@ -220,6 +220,33 @@ export const CANCEL_MY_ORDER = gql`
   }
 `;
 
+export const MY_NOTIFICATIONS = gql`
+  query MyNotifications($page: Int, $size: Int) {
+    myNotifications(page: $page, size: $size) {
+      totalCount
+      items { id type title body link read createdAt }
+    }
+  }
+`;
+
+export const UNREAD_NOTIFICATION_COUNT = gql`
+  query UnreadNotificationCount {
+    unreadNotificationCount
+  }
+`;
+
+export const MARK_NOTIFICATION_READ = gql`
+  mutation MarkNotificationRead($id: ID!) {
+    markNotificationRead(id: $id) { id read }
+  }
+`;
+
+export const MARK_ALL_NOTIFICATIONS_READ = gql`
+  mutation MarkAllNotificationsRead {
+    markAllNotificationsRead
+  }
+`;
+
 export const MY_INVOICES = gql`
   query MyInvoices($page: Int, $size: Int) {
     myInvoices(page: $page, size: $size) {

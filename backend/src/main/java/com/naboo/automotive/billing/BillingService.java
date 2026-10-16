@@ -25,6 +25,8 @@ import com.naboo.automotive.common.PageView;
 import com.naboo.automotive.config.AppProperties;
 import com.naboo.automotive.customers.Customer;
 import com.naboo.automotive.customers.CustomerRepository;
+import com.naboo.automotive.notifications.Notification.NotificationType;
+import com.naboo.automotive.notifications.NotificationService;
 
 @Service
 public class BillingService {
@@ -33,15 +35,17 @@ public class BillingService {
     private final PaymentRepository payments;
     private final CustomerRepository customers;
     private final AuditService audit;
+    private final NotificationService notifications;
     private final AppProperties properties;
     private final Clock clock = Clock.systemUTC();
 
     public BillingService(InvoiceRepository invoices, PaymentRepository payments, CustomerRepository customers,
-            AuditService audit, AppProperties properties) {
+            AuditService audit, NotificationService notifications, AppProperties properties) {
         this.invoices = invoices;
         this.payments = payments;
         this.customers = customers;
         this.audit = audit;
+        this.notifications = notifications;
         this.properties = properties;
     }
 
@@ -114,6 +118,11 @@ public class BillingService {
         Invoice invoice = load(id);
         invoice.issue(clock.instant());
         audit.record(actor, "INVOICE_ISSUED", "Invoice", id, invoice.getReference());
+        notifications.notifyCustomer(invoice.getCustomerId(), NotificationType.INVOICE_ISSUED,
+                "Invoice " + invoice.getReference() + " issued",
+                "An invoice for " + invoice.getTotalAmount() + " " + invoice.getCurrency() + " is due"
+                        + (invoice.getDueDate() != null ? " by " + invoice.getDueDate() : "") + ".",
+                "/my-account", "Invoice", id);
         invoices.flush();
         return view(invoice);
     }
@@ -152,6 +161,10 @@ public class BillingService {
         BigDecimal newPaid = paid.add(amount);
         if (newPaid.compareTo(invoice.getTotalAmount()) >= 0) {
             invoice.markPaid(clock.instant());
+            notifications.notifyCustomer(invoice.getCustomerId(), NotificationType.PAYMENT_CONFIRMED,
+                    "Invoice " + invoice.getReference() + " paid in full",
+                    "We received your payment(s) totalling " + newPaid + " " + invoice.getCurrency() + ". Thank you!",
+                    "/my-account", "Invoice", invoiceId);
         }
         audit.record(actor, "PAYMENT_RECORDED", "Invoice", invoiceId, invoice.getReference() + " " + amount + " "
                 + input.method());

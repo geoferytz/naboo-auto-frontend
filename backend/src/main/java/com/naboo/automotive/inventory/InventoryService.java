@@ -34,6 +34,8 @@ import com.naboo.automotive.inventory.InventoryTypes.OrderView;
 import com.naboo.automotive.inventory.InventoryTypes.StockAdjustInput;
 import com.naboo.automotive.inventory.InventoryTypes.StockMovementView;
 import com.naboo.automotive.inventory.InventoryTypes.StockReason;
+import com.naboo.automotive.notifications.Notification.NotificationType;
+import com.naboo.automotive.notifications.NotificationService;
 import com.naboo.automotive.vehicles.VehicleViews.EnquiryReceipt;
 
 import jakarta.persistence.criteria.Predicate;
@@ -46,15 +48,18 @@ public class InventoryService {
     private final OrderRepository orders;
     private final CustomerRepository customers;
     private final AuditService audit;
+    private final NotificationService notifications;
     private final AppProperties properties;
 
     public InventoryService(AccessoryRepository accessories, StockMovementRepository movements,
-            OrderRepository orders, CustomerRepository customers, AuditService audit, AppProperties properties) {
+            OrderRepository orders, CustomerRepository customers, AuditService audit, NotificationService notifications,
+            AppProperties properties) {
         this.accessories = accessories;
         this.movements = movements;
         this.orders = orders;
         this.customers = customers;
         this.audit = audit;
+        this.notifications = notifications;
         this.properties = properties;
     }
 
@@ -248,8 +253,21 @@ public class InventoryService {
         orders.flush();
         if (previous != status) {
             audit.record(actor, "ORDER_STATUS_CHANGED", "Order", id, previous + " -> " + status);
+            notifications.notifyCustomer(order.getCustomerId(), NotificationType.ORDER_STATUS,
+                    "Order " + order.getReference() + " " + status.name().replace('_', ' ').toLowerCase(),
+                    orderBody(status), "/my-account", "Order", id);
         }
         return OrderView.of(order);
+    }
+
+    private static String orderBody(OrderStatus status) {
+        return switch (status) {
+            case CONFIRMED -> "Your order is confirmed and being prepared.";
+            case READY -> "Your order is ready for collection.";
+            case COMPLETED -> "Your order is complete. Thank you!";
+            case CANCELLED -> "Your order was cancelled and the items have been returned to stock.";
+            case PENDING -> "Your order is pending.";
+        };
     }
 
     private void restock(Order order, UUID actor) {

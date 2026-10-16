@@ -20,6 +20,8 @@ public interface ServiceBookingRepository
 
     Page<ServiceBooking> findByStatus(BookingStatus status, Pageable pageable);
 
+    long countByStatus(BookingStatus status);
+
     Page<ServiceBooking> findByCustomerIdOrderByCreatedAtDesc(UUID customerId, Pageable pageable);
 
     /** Bookings that occupy the workshop during [start, end). Only call while holding the capacity row lock. */

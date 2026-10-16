@@ -25,6 +25,8 @@ import com.naboo.automotive.common.PageView;
 import com.naboo.automotive.config.AppProperties;
 import com.naboo.automotive.customers.Customer;
 import com.naboo.automotive.customers.CustomerRepository;
+import com.naboo.automotive.notifications.Notification.NotificationType;
+import com.naboo.automotive.notifications.NotificationService;
 import com.naboo.automotive.rentals.RentalInputs.AdminRentalFilter;
 import com.naboo.automotive.rentals.RentalInputs.RentalVehicleInput;
 import com.naboo.automotive.rentals.RentalInputs.ReservationInput;
@@ -50,16 +52,19 @@ public class RentalService {
     private final RentalReservationRepository reservations;
     private final CustomerRepository customers;
     private final AuditService audit;
+    private final NotificationService notifications;
     private final AppProperties properties;
     private final FileStorage storage;
     private final Clock clock = Clock.systemUTC();
 
     public RentalService(RentalVehicleRepository vehicles, RentalReservationRepository reservations,
-            CustomerRepository customers, AuditService audit, AppProperties properties, FileStorage storage) {
+            CustomerRepository customers, AuditService audit, NotificationService notifications,
+            AppProperties properties, FileStorage storage) {
         this.vehicles = vehicles;
         this.reservations = reservations;
         this.customers = customers;
         this.audit = audit;
+        this.notifications = notifications;
         this.properties = properties;
         this.storage = storage;
     }
@@ -188,6 +193,9 @@ public class RentalService {
         }
         if (previous != status) {
             audit.record(actor, "RENTAL_RESERVATION_UPDATED", "RentalReservation", id, previous + " -> " + status);
+            notifications.notifyCustomer(r.getCustomerId(), NotificationType.RESERVATION_STATUS,
+                    "Reservation " + r.getReference() + " " + status.name().replace('_', ' ').toLowerCase(),
+                    notificationBody(r, status), "/my-account", "RentalReservation", id);
         }
         return ReservationView.of(r);
     }
@@ -360,6 +368,18 @@ public class RentalService {
 
     private static boolean notBlank(String s) {
         return s != null && !s.isBlank();
+    }
+
+    private static String notificationBody(RentalReservation r, ReservationStatus status) {
+        String vehicle = r.getVehicle().getMake() + " " + r.getVehicle().getModel();
+        return switch (status) {
+            case CONFIRMED -> "Your rental reservation for the " + vehicle + " (" + r.getStartDate() + " to "
+                    + r.getEndDate() + ") is confirmed.";
+            case ACTIVE -> "Your rental of the " + vehicle + " has started. Have a safe trip!";
+            case COMPLETED -> "Thank you — your rental of the " + vehicle + " is complete.";
+            case CANCELLED -> "Your reservation for the " + vehicle + " was cancelled. Contact us if this is unexpected.";
+            case PENDING -> "Your reservation is pending.";
+        };
     }
 
     private static String blankToNull(String s) {

@@ -20,6 +20,8 @@ public interface RentalReservationRepository
 
     Page<RentalReservation> findByStatus(ReservationStatus status, Pageable pageable);
 
+    long countByStatus(ReservationStatus status);
+
     Page<RentalReservation> findByCustomerIdOrderByCreatedAtDesc(UUID customerId, Pageable pageable);
 
     /** Counts reservations that block [start, end) — mirrors the exclusion constraint for pre-checks. */

@@ -11,6 +11,8 @@ import com.naboo.automotive.common.BusinessRuleException;
 import com.naboo.automotive.common.Identifiers;
 import com.naboo.automotive.common.NotFoundException;
 import com.naboo.automotive.common.PageView;
+import com.naboo.automotive.notifications.Notification.NotificationType;
+import com.naboo.automotive.notifications.NotificationService;
 import com.naboo.automotive.workshop.ServiceBooking.BookingStatus;
 import com.naboo.automotive.workshop.WorkshopJob.JobStatus;
 import com.naboo.automotive.workshop.JobTypes.CreateJobInput;
@@ -23,11 +25,14 @@ public class WorkshopJobService {
     private final WorkshopJobRepository jobs;
     private final ServiceBookingRepository bookings;
     private final AuditService audit;
+    private final NotificationService notifications;
 
-    public WorkshopJobService(WorkshopJobRepository jobs, ServiceBookingRepository bookings, AuditService audit) {
+    public WorkshopJobService(WorkshopJobRepository jobs, ServiceBookingRepository bookings, AuditService audit,
+            NotificationService notifications) {
         this.jobs = jobs;
         this.bookings = bookings;
         this.audit = audit;
+        this.notifications = notifications;
     }
 
     @Transactional(readOnly = true)
@@ -50,6 +55,7 @@ public class WorkshopJobService {
         job.setAssignedToUserId(input.assignedToUserId());
         jobs.saveAndFlush(job);
         audit.record(actor, "WORKSHOP_JOB_CREATED", "WorkshopJob", job.getId(), job.getReference());
+        notifyAssignee(job);
         return JobView.of(job);
     }
 
@@ -65,8 +71,9 @@ public class WorkshopJobService {
         if (input.scheduledFor() != null) {
             job.setScheduledFor(input.scheduledFor());
         }
-        if (input.assignedToUserId() != null) {
+        if (input.assignedToUserId() != null && !input.assignedToUserId().equals(job.getAssignedToUserId())) {
             job.setAssignedToUserId(input.assignedToUserId());
+            notifyAssignee(job);
         }
         if (input.laborNotes() != null) {
             job.setLaborNotes(input.laborNotes().isBlank() ? null : input.laborNotes().trim());
@@ -86,6 +93,15 @@ public class WorkshopJobService {
             audit.record(actor, "WORKSHOP_JOB_STATUS_CHANGED", "WorkshopJob", id, previous + " -> " + status);
         }
         return JobView.of(job);
+    }
+
+    private void notifyAssignee(WorkshopJob job) {
+        if (job.getAssignedToUserId() != null) {
+            notifications.notify(job.getAssignedToUserId(), NotificationType.JOB_ASSIGNED,
+                    "Job " + job.getReference() + " assigned to you",
+                    job.getVehicleDescription() + " — " + job.getDescription(), "/admin/jobs", "WorkshopJob",
+                    job.getId());
+        }
     }
 
     private WorkshopJob load(UUID id) {

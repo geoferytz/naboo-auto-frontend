@@ -10,6 +10,7 @@ import {
   BookingStatus,
   Invoice,
   InvoiceStatus,
+  Notification as AppNotification,
   Order,
   OrderStatus,
   Page,
@@ -24,8 +25,11 @@ import {
   CANCEL_MY_ORDER,
   CANCEL_MY_RESERVATION,
   DECIDE_QUOTATION,
+  MARK_ALL_NOTIFICATIONS_READ,
+  MARK_NOTIFICATION_READ,
   MY_BOOKINGS,
   MY_INVOICES,
+  MY_NOTIFICATIONS,
   MY_ORDERS,
   MY_QUOTATIONS,
   MY_RESERVATIONS,
@@ -106,6 +110,36 @@ const WORK_LABELS: Record<string, string> = {
               <dt>Phone</dt><dd>{{ u.phone ?? 'Not provided' }}</dd>
             </dl>
             <button mat-stroked-button type="button" (click)="auth.logout()">Sign out</button>
+          </section>
+
+          <section class="card panel" aria-labelledby="notifications">
+            <div class="panel-head">
+              <h2 id="notifications">Notifications</h2>
+              @if (unreadCount() > 0) {
+                <button mat-button type="button" [disabled]="busy()" (click)="markAllRead()">Mark all read</button>
+              }
+            </div>
+            @if (notifications(); as page) {
+              @if (!page.totalCount) {
+                <p class="empty">No notifications yet.</p>
+              }
+              <ul class="rows">
+                @for (n of page.items; track n.id) {
+                  <li [class.unread]="!n.read">
+                    <div class="row-main">
+                      <strong>{{ n.title }}</strong>
+                      <span class="meta">{{ n.body }}</span>
+                      <span class="meta">{{ n.createdAt | date: 'medium' }}</span>
+                    </div>
+                    @if (!n.read) {
+                      <button mat-button type="button" [disabled]="busy()" (click)="markRead(n)">Mark read</button>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <app-load-state state="loading" loadingText="Loading…" />
+            }
           </section>
 
           <section class="card panel" aria-labelledby="quotes">
@@ -257,6 +291,10 @@ const WORK_LABELS: Record<string, string> = {
   styles: `
     .grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
     .panel { padding: var(--space-5); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+    .panel-head h2 { margin: 0; }
+    .rows li.unread { background: #fff8e6; margin-inline: calc(var(--space-3) * -1); padding-inline: var(--space-3);
+      border-radius: var(--radius-sm); }
     dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-5); }
     dt { color: var(--naboo-text-muted); }
     dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
@@ -289,6 +327,8 @@ export class MyAccount {
   protected readonly quotations = signal<Page<Quotation> | null>(null);
   protected readonly orders = signal<Page<Order> | null>(null);
   protected readonly invoices = signal<Page<Invoice> | null>(null);
+  protected readonly notifications = signal<Page<AppNotification> | null>(null);
+  protected readonly unreadCount = signal(0);
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -321,6 +361,50 @@ export class MyAccount {
     this.api.query<{ myInvoices: Page<Invoice> }>(MY_INVOICES, { size: 20 }).subscribe({
       next: (d) => this.invoices.set(d.myInvoices),
       error: () => this.invoices.set(null),
+    });
+    this.loadNotifications();
+  }
+
+  private loadNotifications(): void {
+    this.api
+      .query<{ myNotifications: Page<AppNotification> }>(MY_NOTIFICATIONS, { size: 30 })
+      .subscribe({
+        next: (d) => {
+          this.notifications.set(d.myNotifications);
+          this.unreadCount.set(d.myNotifications.items.filter((n) => !n.read).length);
+        },
+        error: () => this.notifications.set(null),
+      });
+  }
+
+  protected markRead(n: AppNotification): void {
+    this.busy.set(true);
+    this.api.mutate(MARK_NOTIFICATION_READ, { id: n.id }).subscribe({
+      next: () => {
+        this.busy.set(false);
+        this.notifications.update((p) =>
+          p ? { ...p, items: p.items.map((i) => (i.id === n.id ? { ...i, read: true } : i)) } : p,
+        );
+        this.unreadCount.update((c) => Math.max(0, c - 1));
+      },
+      error: (e) => {
+        this.busy.set(false);
+        this.error.set(toApiError(e).message);
+      },
+    });
+  }
+
+  protected markAllRead(): void {
+    this.busy.set(true);
+    this.api.mutate(MARK_ALL_NOTIFICATIONS_READ).subscribe({
+      next: () => {
+        this.busy.set(false);
+        this.loadNotifications();
+      },
+      error: (e) => {
+        this.busy.set(false);
+        this.error.set(toApiError(e).message);
+      },
     });
   }
 
