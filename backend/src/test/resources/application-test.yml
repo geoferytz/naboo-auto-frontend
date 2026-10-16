@@ -1,0 +1,6 @@
+app:
+  jwt:
+    # Test-only key (base64 of 48 bytes). Never used outside automated tests.
+    secret: dGVzdC1vbmx5LWp3dC1zZWNyZXQtZm9yLW5hYm9vLWF1dG9tb3RpdmUtdGVzdHMhIQ==
+  rate-limit:
+    sensitive-per-minute: 1000

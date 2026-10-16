@@ -1,0 +1,12 @@
+# Local development profile. Reads secrets from the repository-root .env (never committed).
+spring:
+  config:
+    import: optional:file:../.env[.properties]
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed-dev
+  graphql:
+    graphiql:
+      enabled: true
+    schema:
+      introspection:
+        enabled: true

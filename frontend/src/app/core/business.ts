@@ -1,0 +1,16 @@
+/**
+ * Public business contact details.
+ *
+ * IMPORTANT: Values must be confirmed by Naboo Automotive before launch. Anything left as null is
+ * simply not rendered, so the site never shows invented contact information. These will move to
+ * backend-managed site settings in the administration milestone.
+ */
+export const BUSINESS = {
+  name: 'Naboo Automotive',
+  phone: null as string | null, // e.g. '+255 7XX XXX XXX'
+  whatsapp: null as string | null, // international format digits only, e.g. '2557XXXXXXXX'
+  email: null as string | null,
+  address: null as string | null,
+  openingHours: null as string[] | null, // e.g. ['Mon–Fri 08:00–18:00', 'Sat 09:00–14:00']
+  mapUrl: null as string | null,
+};

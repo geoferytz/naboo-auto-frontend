@@ -1,0 +1,340 @@
+@use '@angular/material' as mat;
+
+/* ------------------------------------------------------------------
+ * Naboo Automotive design tokens
+ * ------------------------------------------------------------------ */
+:root {
+  --naboo-black: #101114;
+  --naboo-charcoal: #30343b;
+  --naboo-red: #e52b36;
+  --naboo-red-dark: #b81d27;
+  --naboo-white: #ffffff;
+  --naboo-grey: #f0f2f4;
+  --naboo-grey-dark: #d5d9de;
+  --naboo-text: #1b1d22;
+  --naboo-text-muted: #5b616b;
+  --naboo-success: #1e7d45;
+  --naboo-warning: #9a6200;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-card: 0 1px 2px rgb(16 17 20 / 6%), 0 4px 16px rgb(16 17 20 / 6%);
+  --shadow-raised: 0 8px 28px rgb(16 17 20 / 14%);
+  --container: 1200px;
+  --header-height: 68px;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+html {
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$red-palette,
+        tertiary: mat.$red-palette,
+        theme-type: light,
+      ),
+      typography: (
+        plain-family: 'Inter',
+        brand-family: 'Inter',
+      ),
+      density: 0,
+    )
+  );
+  @include mat.button-overrides(
+    (
+      filled-container-color: var(--naboo-red),
+      filled-label-text-color: var(--naboo-white),
+      filled-container-shape: var(--radius-sm),
+      outlined-container-shape: var(--radius-sm),
+      text-container-shape: var(--radius-sm),
+    )
+  );
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--naboo-text);
+  background: var(--naboo-white);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--naboo-red-dark);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.2;
+  margin: 0 0 var(--space-3);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: clamp(1.9rem, 4.5vw, 3.25rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+}
+
+h3 {
+  font-size: 1.15rem;
+}
+
+p {
+  margin: 0 0 var(--space-4);
+}
+
+:focus-visible {
+  outline: 3px solid var(--naboo-red);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -100px;
+  z-index: 1000;
+  padding: var(--space-2) var(--space-4);
+  background: var(--naboo-white);
+  color: var(--naboo-black);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+
+  &:focus {
+    top: var(--space-2);
+  }
+}
+
+/* ------------------------------------------------------------------
+ * Layout primitives
+ * ------------------------------------------------------------------ */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+
+  @media (min-width: 768px) {
+    padding-inline: var(--space-6);
+  }
+}
+
+.section {
+  padding-block: var(--space-7);
+
+  @media (min-width: 768px) {
+    padding-block: var(--space-8);
+  }
+}
+
+.section--grey {
+  background: var(--naboo-grey);
+}
+
+.section--dark {
+  background: var(--naboo-black);
+  color: var(--naboo-white);
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--naboo-red);
+  margin-bottom: var(--space-2);
+}
+
+.lead {
+  font-size: 1.1rem;
+  color: var(--naboo-text-muted);
+  max-width: 62ch;
+}
+
+.section--dark .lead {
+  color: #c4c8ce;
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.card {
+  background: var(--naboo-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  border: 1px solid #e6e9ed;
+}
+
+.page-header {
+  background: var(--naboo-black);
+  color: var(--naboo-white);
+  padding-block: var(--space-7) var(--space-6);
+
+  .lead {
+    color: #c4c8ce;
+  }
+}
+
+.breadcrumb {
+  font-size: 0.875rem;
+  margin-bottom: var(--space-3);
+  color: #aab0b8;
+
+  a {
+    color: #e6e8eb;
+  }
+}
+
+/* Status chips: text label + colour, never colour alone. */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.6;
+  background: var(--naboo-grey);
+  color: var(--naboo-charcoal);
+
+  &::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+
+.status--available {
+  background: #e3f4ea;
+  color: var(--naboo-success);
+}
+
+.status--reserved {
+  background: #fdf1dc;
+  color: var(--naboo-warning);
+}
+
+.status--sold {
+  background: #fbe3e4;
+  color: var(--naboo-red-dark);
+}
+
+.alert {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--naboo-charcoal);
+  background: var(--naboo-grey);
+
+  &--error {
+    border-color: var(--naboo-red);
+    background: #fdeced;
+  }
+
+  &--success {
+    border-color: var(--naboo-success);
+    background: #e7f5ec;
+  }
+}
+
+.form-grid {
+  display: grid;
+  gap: 0 var(--space-4);
+  grid-template-columns: 1fr;
+
+  @media (min-width: 640px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .full {
+    grid-column: 1 / -1;
+  }
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.btn-lg.mat-mdc-button-base {
+  height: 48px;
+  padding-inline: var(--space-5);
+  font-weight: 600;
+}
+
+.section--dark .mat-mdc-outlined-button:not(:disabled),
+.page-header .mat-mdc-outlined-button:not(:disabled) {
+  color: var(--naboo-white);
+  border-color: rgb(255 255 255 / 55%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

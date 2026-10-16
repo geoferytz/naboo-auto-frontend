@@ -1,0 +1,338 @@
+"ISO-8601 timestamp, serialised in UTC"
+scalar DateTime
+
+type Query {
+    "The authenticated user, or null when anonymous."
+    me: User
+
+    # ---- Public vehicle catalogue
+    vehicles(filter: VehicleFilter, page: Int = 0, size: Int = 12, sort: VehicleSort = NEWEST): VehiclePage!
+    vehicleBySlug(slug: String!): Vehicle
+    vehicleMakes: [String!]!
+
+    # ---- Public service catalogue
+    serviceCategories: [ServiceCategory!]!
+    services(categorySlug: String): [Service!]!
+    serviceBySlug(slug: String!): Service
+
+    # ---- Staff (role-checked on the server)
+    adminVehicles(filter: AdminVehicleFilter, page: Int = 0, size: Int = 20): VehiclePage!
+    adminVehicle(id: ID!): Vehicle
+    salesEnquiries(status: EnquiryStatus, page: Int = 0, size: Int = 20): SalesEnquiryPage!
+    adminServices: [Service!]!
+    contactEnquiries(status: ContactEnquiryStatus, page: Int = 0, size: Int = 20): ContactEnquiryPage!
+}
+
+type Mutation {
+    register(input: RegisterInput!): AuthPayload!
+    login(input: LoginInput!): AuthPayload!
+
+    submitVehicleEnquiry(input: VehicleEnquiryInput!): EnquiryReceipt!
+    submitContactEnquiry(input: ContactEnquiryInput!): EnquiryReceipt!
+
+    # ---- Staff (role-checked on the server)
+    createVehicle(input: VehicleInput!): Vehicle!
+    updateVehicle(id: ID!, input: VehicleInput!): Vehicle!
+    setVehicleStatus(id: ID!, status: VehicleStatus!): Vehicle!
+    setVehiclePublished(id: ID!, published: Boolean!): Vehicle!
+    addVehicleImage(vehicleId: ID!, input: VehicleImageInput!): Vehicle!
+    removeVehicleImage(vehicleId: ID!, imageId: ID!): Vehicle!
+    updateSalesEnquiry(id: ID!, input: UpdateEnquiryInput!): SalesEnquiry!
+
+    createServiceCategory(input: ServiceCategoryInput!): ServiceCategory!
+    updateServiceCategory(id: ID!, input: ServiceCategoryInput!): ServiceCategory!
+    createService(input: ServiceInput!): Service!
+    updateService(id: ID!, input: ServiceInput!): Service!
+
+    updateContactEnquiryStatus(id: ID!, status: ContactEnquiryStatus!): ContactEnquiry!
+}
+
+# ---------------------------------------------------------------- common
+
+"Monetary amount as a decimal string (never a float) with ISO-4217 currency."
+type Money {
+    amount: String!
+    currency: String!
+}
+
+type EnquiryReceipt {
+    reference: String!
+    message: String!
+}
+
+# ---------------------------------------------------------------- auth
+
+enum Role {
+    SUPER_ADMIN
+    MANAGER
+    SALES_AGENT
+    RENTAL_AGENT
+    SERVICE_ADVISOR
+    MECHANIC
+    INVENTORY_MANAGER
+    FINANCE_OFFICER
+    CUSTOMER
+}
+
+type User {
+    id: ID!
+    email: String!
+    fullName: String!
+    phone: String
+    roles: [Role!]!
+    staff: Boolean!
+}
+
+type AuthPayload {
+    token: String!
+    expiresAt: DateTime!
+    user: User!
+}
+
+input RegisterInput {
+    email: String!
+    password: String!
+    fullName: String!
+    phone: String
+}
+
+input LoginInput {
+    email: String!
+    password: String!
+}
+
+# ---------------------------------------------------------------- vehicles
+
+enum FuelType { PETROL DIESEL HYBRID ELECTRIC LPG }
+enum Transmission { MANUAL AUTOMATIC }
+enum BodyType { SEDAN HATCHBACK SUV PICKUP VAN COUPE WAGON OTHER }
+enum VehicleCondition { NEW FOREIGN_USED LOCALLY_USED }
+enum VehicleStatus { AVAILABLE RESERVED SOLD UNAVAILABLE }
+enum VehicleSort { NEWEST PRICE_ASC PRICE_DESC YEAR_DESC MILEAGE_ASC }
+enum EnquiryType { GENERAL VIEWING }
+enum EnquiryStatus { NEW CONTACTED VIEWING_SCHEDULED CLOSED_WON CLOSED_LOST }
+
+type Vehicle {
+    id: ID!
+    slug: String!
+    title: String!
+    make: String!
+    model: String!
+    variant: String
+    year: Int!
+    mileageKm: Int
+    fuelType: FuelType!
+    transmission: Transmission!
+    bodyType: BodyType!
+    color: String
+    condition: VehicleCondition!
+    engineCapacityCc: Int
+    description: String
+    price: Money!
+    status: VehicleStatus!
+    published: Boolean!
+    "Whether a general enquiry can currently be submitted."
+    enquiriesOpen: Boolean!
+    "Whether a viewing can currently be requested."
+    viewingsOpen: Boolean!
+    features: [String!]!
+    images: [VehicleImage!]!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    "Staff only; always null on public queries."
+    registrationNumber: String
+    "Staff only; null on public queries."
+    statusHistory: [VehicleStatusChange!]
+}
+
+type VehicleImage {
+    id: ID!
+    url: String!
+    altText: String!
+    sortOrder: Int!
+}
+
+type VehicleStatusChange {
+    fromStatus: VehicleStatus
+    toStatus: VehicleStatus!
+    changedAt: DateTime!
+}
+
+type VehiclePage {
+    items: [Vehicle!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+input VehicleFilter {
+    search: String
+    make: String
+    model: String
+    minYear: Int
+    maxYear: Int
+    "Decimal string, e.g. \"25000000\""
+    minPrice: String
+    maxPrice: String
+    maxMileageKm: Int
+    fuelType: FuelType
+    transmission: Transmission
+    bodyType: BodyType
+    condition: VehicleCondition
+    includeSold: Boolean
+}
+
+input AdminVehicleFilter {
+    search: String
+    status: VehicleStatus
+    published: Boolean
+}
+
+input VehicleInput {
+    make: String!
+    model: String!
+    variant: String
+    year: Int!
+    mileageKm: Int
+    fuelType: FuelType!
+    transmission: Transmission!
+    bodyType: BodyType!
+    color: String
+    condition: VehicleCondition!
+    engineCapacityCc: Int
+    description: String
+    registrationNumber: String
+    "Decimal string in the business currency (TZS)."
+    priceAmount: String!
+    features: [String!]
+}
+
+input VehicleImageInput {
+    url: String!
+    altText: String!
+    sortOrder: Int
+}
+
+type VehicleSummary {
+    id: ID!
+    slug: String!
+    title: String!
+    status: VehicleStatus!
+}
+
+type SalesEnquiry {
+    id: ID!
+    reference: String!
+    vehicle: VehicleSummary!
+    type: EnquiryType!
+    fullName: String!
+    email: String!
+    phone: String!
+    message: String
+    preferredViewingAt: DateTime
+    status: EnquiryStatus!
+    assignedToUserId: ID
+    createdAt: DateTime!
+}
+
+type SalesEnquiryPage {
+    items: [SalesEnquiry!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+input VehicleEnquiryInput {
+    vehicleId: ID!
+    type: EnquiryType!
+    fullName: String!
+    email: String!
+    phone: String!
+    message: String
+    preferredViewingAt: DateTime
+}
+
+input UpdateEnquiryInput {
+    status: EnquiryStatus!
+    assignedToUserId: ID
+}
+
+# ---------------------------------------------------------------- services
+
+enum PriceType { FIXED STARTING_FROM HOURLY INSPECTION_REQUIRED QUOTE_REQUIRED }
+
+type ServiceCategory {
+    id: ID!
+    slug: String!
+    name: String!
+    description: String
+    sortOrder: Int!
+}
+
+type Service {
+    id: ID!
+    slug: String!
+    name: String!
+    summary: String!
+    description: String
+    category: ServiceCategory!
+    priceType: PriceType!
+    "Null for INSPECTION_REQUIRED and QUOTE_REQUIRED services."
+    price: Money
+    durationMinutes: Int
+    active: Boolean!
+    sortOrder: Int!
+}
+
+input ServiceCategoryInput {
+    name: String!
+    description: String
+    sortOrder: Int
+}
+
+input ServiceInput {
+    categoryId: ID!
+    name: String!
+    summary: String!
+    description: String
+    priceType: PriceType!
+    priceAmount: String
+    durationMinutes: Int
+    active: Boolean
+    sortOrder: Int
+}
+
+# ---------------------------------------------------------------- contact
+
+enum ContactEnquiryStatus { NEW IN_PROGRESS RESOLVED }
+
+type ContactEnquiry {
+    id: ID!
+    reference: String!
+    fullName: String!
+    email: String!
+    phone: String
+    subject: String!
+    message: String!
+    status: ContactEnquiryStatus!
+    createdAt: DateTime!
+}
+
+type ContactEnquiryPage {
+    items: [ContactEnquiry!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+input ContactEnquiryInput {
+    fullName: String!
+    email: String!
+    phone: String
+    subject: String!
+    message: String!
+}

@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin
+Disallow: /my-account
+Disallow: /login
+Disallow: /register
+Disallow: /booking/track
+
+Sitemap: https://naboo.co.tz/sitemap.xml

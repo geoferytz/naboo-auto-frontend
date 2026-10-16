@@ -1,0 +1,15 @@
+# Production profile. All secrets come from environment variables.
+spring:
+  graphql:
+    graphiql:
+      enabled: false
+    schema:
+      introspection:
+        enabled: false
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    root: WARN
+    com.naboo: INFO

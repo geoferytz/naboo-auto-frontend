@@ -1,0 +1,1078 @@
+NABOO AUTOMOTIVE
+COMPLETE WEBSITE BUILDING ROADMAP
+=================================
+
+Project: Naboo Automotive
+Target market: Tanzania
+Currency: Tanzanian Shillings (TZS)
+Brand style: Premium black, white, and automotive red
+Frontend: Angular Standalone + TypeScript
+Backend: Java + Spring Boot + GraphQL
+Database: PostgreSQL
+Deployment: Docker + Docker Compose + Nginx + HTTPS
+Primary domain: https://naboo.co.tz
+Secondary domain: https://www.naboo.co.tz
+
+DOCUMENT PURPOSE
+----------------
+This roadmap defines the planned phases, deliverables, dependencies, acceptance
+criteria, and production-readiness requirements for building the Naboo Automotive
+website and business management platform. It is intended for a developer or
+coding AI and should be used as a project execution checklist.
+
+============================================================
+1. PROJECT VISION AND OBJECTIVES
+============================================================
+
+Build a professional, mobile-first automotive platform that lets customers:
+- Browse vehicles for sale and submit purchase enquiries.
+- Browse rental vehicles, view rates, check availability, and make reservations.
+- Book vehicle repairs and routine maintenance.
+- Request vehicle painting, color changes, detailing, and restoration.
+- Browse automotive accessories, view prices, and request purchases or installation.
+- Request quotations, receive booking references, and track booking progress.
+- Pay online through an approved payment provider or choose to pay in person.
+- Use the website from mobile phones, tablets, and desktop computers.
+
+The business must be able to manage the full operation through a secure admin
+dashboard without editing source code.
+
+Core principles:
+- Mobile-first, responsive user experience.
+- Premium and consistent visual design.
+- Clear pricing and booking policies.
+- Secure customer information and payment processing.
+- Reliable availability and inventory controls.
+- Maintainable architecture and documented deployment.
+- No fake availability, testimonials, reviews, or prices.
+- No production features represented by hardcoded demo data.
+
+============================================================
+2. BRAND AND USER EXPERIENCE
+============================================================
+
+Brand name: Naboo Automotive
+
+Suggested palette:
+- Black: #101114
+- Automotive red: #E52B36
+- White: #FFFFFF
+- Light grey: #F0F2F4
+- Charcoal: #30343B
+
+Design requirements:
+- Modern sans-serif typography, such as Inter.
+- High-quality automotive images with appropriate usage rights.
+- Consistent buttons, forms, cards, dialogs, tables, and status indicators.
+- Responsive layouts beginning at 320px screen width.
+- Mobile navigation and easily accessible booking actions.
+- Accessible labels, keyboard navigation, visible focus, and sufficient contrast.
+- Loading indicators, empty states, validation messages, and recoverable errors.
+- Optimized images, lazy loading, and responsive image sizes.
+- Restrained animations and support for reduced-motion preferences.
+- Functional controls only; no buttons that do nothing.
+
+Language:
+- English initially.
+- Structure text and content so Swahili can be added later.
+
+============================================================
+3. WEBSITE SITEMAP
+============================================================
+
+Public pages:
+- /                         Home
+- /about                    About Naboo Automotive
+- /cars-for-sale            Car sales catalogue
+- /cars-for-sale/:slug      Vehicle details
+- /car-rental               Rental catalogue and availability search
+- /car-rental/:slug         Rental vehicle details and booking
+- /services                 Service catalogue
+- /services/:slug           Service details and pricing
+- /book-service             Service booking form
+- /accessories              Accessories catalogue
+- /accessories/:slug        Product details
+- /restoration-gallery      Restoration and before/after gallery
+- /contact                  Contact details and enquiry form
+- /booking/track             Secure booking tracking
+- /login                    Customer login
+- /register                 Customer registration
+- /my-account               Customer dashboard
+- /privacy-policy           Privacy policy
+- /terms                    Terms and conditions
+
+Admin routes, protected by permissions:
+- /admin                    Dashboard overview
+- /admin/vehicles            Vehicle inventory and listings
+- /admin/sales-enquiries     Sales enquiries and viewing requests
+- /admin/rentals             Rental reservations and handovers
+- /admin/services            Service catalogue and pricing
+- /admin/appointments        Workshop calendar and appointments
+- /admin/workshop            Workshop jobs and job cards
+- /admin/quotations          Quotations and customer approvals
+- /admin/products            Accessories and products
+- /admin/inventory           Stock movements and low-stock alerts
+- /admin/orders              Accessory orders
+- /admin/payments            Payments and reconciliation
+- /admin/invoices            Invoices and balances
+- /admin/customers            Customer records
+- /admin/users                Staff users and roles
+- /admin/reports              Business reports
+- /admin/settings             Business settings and policies
+- /admin/audit-logs           Audit records
+
+============================================================
+4. FUNCTIONAL MODULES
+============================================================
+
+4.1 Vehicle sales
+- Create, edit, publish, unpublish, reserve, and mark vehicles sold.
+- Store make, model, variant, year, mileage, fuel type, transmission, color,
+  condition, engine capacity, features, description, and optional registration data.
+- Upload and order multiple images with alt text.
+- Search and filter by make, model, year, price, mileage, fuel, and transmission.
+- Show sale price, status, and vehicle specifications.
+- Accept enquiries and viewing requests.
+- Keep enquiry history and assign enquiries to sales staff.
+- Ensure sold or unavailable vehicles cannot be incorrectly advertised as available.
+
+4.2 Car rental
+- Maintain rental-eligible vehicles and rental rates.
+- Configure daily, weekly, and monthly rates where applicable.
+- Collect pickup/return date and time and location.
+- Configure extras, delivery fees, deposits, mileage policy, fuel policy,
+  driver requirements, cancellation rules, and late-return rules.
+- Calculate an estimated total on the backend.
+- Check date-range availability before accepting a reservation.
+- Prevent overlapping reservations for the same vehicle.
+- Support temporary holds with configurable expiry.
+- Track pending, awaiting payment, confirmed, active, returned, cancelled,
+  expired, and other required states.
+- Record pickup and return inspections, mileage, fuel, damage, and condition.
+- Handle extensions and approved changes safely.
+- Send booking references and notifications.
+
+4.3 Repairs and maintenance
+- Offer services such as general servicing, oil changes, diagnostics, brakes,
+  suspension, electrical work, and other configured workshop services.
+- Let customers provide vehicle details, notes, preferred date, and photos.
+- Configure workshop hours, holidays, technician schedules, bays, capacity,
+  and service durations.
+- Show fixed prices where scope is fixed; otherwise show estimates or quote requests.
+- Prevent overbooking through backend checks and database-safe concurrency controls.
+- Create a workshop job card after the booking reaches the configured stage.
+- Track assigned technician, labour, parts, status, and expected completion.
+- Require customer approval for additional work outside the approved quotation.
+- Track completed work and vehicle collection.
+
+4.4 Painting, color change, detailing, and restoration
+- Describe available services and scope.
+- Let customers select an optional preferred color and upload vehicle photos.
+- Request an inspection when required.
+- Create itemized quotations for labour, parts, materials, and other charges.
+- Record quotation validity, approval/rejection, and revisions.
+- Track scheduled, in-progress, awaiting approval, completed, and collected states.
+- Publish before-and-after gallery images only with appropriate authorization.
+
+4.5 Accessories
+- Manage product categories, SKU, brand, compatibility, images, selling price,
+  installation price, stock quantity, and publication status.
+- Provide search, filtering, and product detail pages.
+- Support enquiries or a cart/order workflow.
+- Check and update inventory safely.
+- Track order, payment, fulfilment, cancellation, and return states as required.
+- Allow installation appointments subject to workshop capacity.
+
+4.6 Customer portal
+- Show upcoming and previous bookings.
+- Show rental terms and reservation details.
+- Show service appointments and job status.
+- Show quotations awaiting approval.
+- Show invoices, payment history, and order status.
+- Maintain customer profile and notification preferences.
+- Support secure booking tracking and policy-based cancellation/rescheduling.
+
+4.7 Admin dashboard
+- Overview cards for sales enquiries, rental reservations, workshop jobs,
+  quotations, low-stock products, payments, and outstanding invoices.
+- Search, filter, sort, paginate, and export records where authorized.
+- Manage catalogues, prices, users, roles, bookings, jobs, orders, and settings.
+- Use clear status histories and audit records.
+- Distinguish gross sales, collected payments, outstanding balances, refunds,
+  and booking value according to a documented reporting policy.
+
+============================================================
+5. ROADMAP PHASES AND DELIVERABLES
+============================================================
+
+PHASE 1 — DISCOVERY AND PROJECT SETUP
+-------------------------------------
+Tasks:
+1. Inspect any existing repository and record the current framework versions.
+2. Confirm business rules, service catalogue, rental policies, opening hours,
+   locations, staff roles, cancellation policies, and pricing.
+3. Define functional requirements and acceptance criteria.
+4. Create Git repository and branch strategy.
+5. Define frontend, backend, database, and infrastructure folders.
+6. Select compatible dependency versions.
+7. Set up linting, formatting, build commands, and test framework.
+8. Create README and architecture decision records.
+
+Deliverables:
+- Requirements document.
+- Architecture diagram.
+- Initial project repository.
+- Dependency/version record.
+- Development setup instructions.
+
+Acceptance criteria:
+- A developer can clone the project and run the documented development setup.
+- Existing working code is preserved unless a justified change is approved.
+
+PHASE 2 — BRAND DESIGN AND RESPONSIVE DESIGN SYSTEM
+--------------------------------------------------
+Tasks:
+1. Define brand colors, typography, spacing, icons, and breakpoints.
+2. Create reusable header, footer, navigation, cards, buttons, forms, dialogs,
+   status labels, tables, pagination, alerts, and loading states.
+3. Create mobile, tablet, and desktop layouts.
+4. Define accessibility standards.
+5. Prepare approved image assets and image optimization rules.
+6. Build design mockups or working page prototypes.
+
+Deliverables:
+- Reusable UI component library.
+- Responsive layout system.
+- Design tokens and component usage documentation.
+
+Acceptance criteria:
+- Core components work at mobile, tablet, and desktop sizes.
+- Keyboard focus and form labels are visible and usable.
+- No core page requires horizontal scrolling at supported screen widths.
+
+PHASE 3 — DATABASE AND BACKEND FOUNDATION
+-----------------------------------------
+Tasks:
+1. Set up Spring Boot and GraphQL.
+2. Configure PostgreSQL and Flyway.
+3. Create users, roles, customers, audit logs, and common entities.
+4. Implement authentication and authorization.
+5. Add global error handling and input validation.
+6. Add configuration profiles for development, testing, and production.
+7. Add structured logging and protected health checks.
+8. Establish integration tests and test database setup.
+
+Deliverables:
+- Running backend.
+- Versioned database migrations.
+- Authentication and role model.
+- GraphQL foundation.
+- Backend tests.
+
+Acceptance criteria:
+- Database schema can be created from migrations.
+- Protected operations reject unauthenticated or unauthorized users.
+- Secrets are not committed to source control.
+
+PHASE 4 — VEHICLE SALES CATALOGUE
+-------------------------------
+Tasks:
+1. Implement vehicle entities and image metadata.
+2. Implement vehicle CRUD and publication workflow.
+3. Implement public search, filters, sorting, and pagination.
+4. Build vehicle detail pages and galleries.
+5. Implement sales enquiries and viewing requests.
+6. Build admin vehicle management and enquiry handling.
+7. Add status history and audit logging.
+
+Deliverables:
+- Working car sales catalogue.
+- Vehicle administration.
+- Enquiry workflow.
+
+Acceptance criteria:
+- Public users see only published and appropriately available listings.
+- Sales staff can manage listings and enquiries according to permissions.
+- Sold/unavailable vehicles are clearly marked and cannot be incorrectly offered.
+
+PHASE 5 — SERVICES AND APPOINTMENT SCHEDULING
+---------------------------------------------
+Tasks:
+1. Create service categories and service catalogue.
+2. Implement configurable price types: fixed, starting-from, hourly,
+   inspection-required, and quote-required.
+3. Configure business hours, holidays, technicians, bays, and capacity.
+4. Build the service booking form and attachment workflow.
+5. Implement available-slot search and booking creation.
+6. Prevent workshop overbooking on the backend.
+7. Build appointment calendar and service administration.
+8. Implement customer confirmation and rescheduling/cancellation rules.
+
+Deliverables:
+- Public service catalogue.
+- Service booking engine.
+- Workshop appointment calendar.
+
+Acceptance criteria:
+- Customers can request supported services.
+- Availability and capacity are checked by the backend.
+- Invalid dates and unavailable slots are rejected safely.
+
+PHASE 6 — RENTAL PRICING AND RESERVATIONS
+-----------------------------------------
+Tasks:
+1. Configure rental-eligible vehicles, rates, extras, and rental terms.
+2. Implement date-range availability.
+3. Implement rental price quotes and persisted price breakdowns.
+4. Implement temporary reservation holds and expiry.
+5. Prevent overlapping confirmed or active reservations.
+6. Build rental search, detail, quote, and booking pages.
+7. Build admin reservation calendar and vehicle allocation.
+8. Implement pickup/return inspections, mileage, fuel, and damage records.
+9. Add cancellation, extension, and late-return workflows.
+
+Deliverables:
+- Rental catalogue and pricing engine.
+- Collision-safe reservation system.
+- Rental operations dashboard.
+
+Acceptance criteria:
+- Backend calculates all rental totals.
+- Concurrent attempts cannot book the same vehicle for overlapping periods.
+- Rental terms and all applicable charges are displayed before confirmation.
+
+PHASE 7 — QUOTATIONS AND WORKSHOP JOB MANAGEMENT
+------------------------------------------------
+Tasks:
+1. Implement quotation headers and itemized quotation lines.
+2. Support labour, parts, materials, fees, discounts, and validity dates.
+3. Implement customer approval, rejection, expiry, and revision history.
+4. Create job cards from eligible confirmed bookings or approved quotations.
+5. Track job status, technician assignment, labour, parts, and progress notes.
+6. Require approval for additional work.
+7. Implement completion and vehicle collection workflows.
+8. Provide customer progress updates.
+
+Deliverables:
+- Quotation management.
+- Workshop job cards.
+- Job status tracking.
+
+Acceptance criteria:
+- Customers can securely view and approve their own quotations.
+- Approved work is traceable to its booking and quotation.
+- Additional charges cannot be silently added to an approved quote.
+
+PHASE 8 — ACCESSORIES, INVENTORY, AND ORDERS
+--------------------------------------------
+Tasks:
+1. Create product categories, products, SKUs, images, and vehicle compatibility.
+2. Implement stock movements and inventory adjustment permissions.
+3. Build public catalogue and product detail pages.
+4. Implement enquiry or cart/checkout workflow.
+5. Reserve or decrement stock safely during order processing.
+6. Add optional installation booking.
+7. Build product, stock, order, and low-stock administration.
+
+Deliverables:
+- Accessories catalogue.
+- Inventory management.
+- Order management.
+
+Acceptance criteria:
+- Stock values are updated through traceable transactions.
+- Concurrent orders cannot oversell stock.
+- Installation bookings respect workshop capacity.
+
+PHASE 9 — CUSTOMER PORTAL AND NOTIFICATIONS
+-------------------------------------------
+Tasks:
+1. Build customer profile and account pages.
+2. Show customer bookings, orders, quotations, invoices, and payment status.
+3. Implement secure booking reference lookup.
+4. Integrate email notifications.
+5. Add an SMS provider adapter where selected.
+6. Add optional WhatsApp contact or approved API integration.
+7. Implement retry handling and notification attempt logs.
+8. Configure notification templates and customer preferences.
+
+Deliverables:
+- Customer dashboard.
+- Notification service.
+- Booking tracking.
+
+Acceptance criteria:
+- Customers can only access their own protected records.
+- Notification failures do not undo successful bookings.
+- Duplicate events do not generate uncontrolled duplicate notifications.
+
+PHASE 10 — PAYMENTS AND FINANCE
+-------------------------------
+Tasks:
+1. Evaluate Tanzanian payment providers and onboarding requirements.
+2. Define provider adapter and payment lifecycle.
+3. Implement payment initiation and transaction references.
+4. Verify callbacks/webhooks and transaction amounts server-side.
+5. Implement idempotent payment processing.
+6. Support offline payment recording by authorized staff.
+7. Implement invoices, receipts, refunds, and reconciliation.
+8. Define partial payment and deposit rules.
+9. Add finance reporting and audit records.
+
+Deliverables:
+- Payment integration abstraction.
+- Configured payment provider, if credentials and onboarding are available.
+- Invoicing and reconciliation workflows.
+
+Acceptance criteria:
+- Browser redirects alone cannot confirm payment.
+- Duplicate callbacks do not duplicate payments or bookings.
+- Currency, amount, provider transaction, and status are verified.
+- Offline payments require authorized staff and an audit trail.
+
+PHASE 11 — ADMINISTRATION AND REPORTING
+---------------------------------------
+Tasks:
+1. Complete dashboard summary cards and filters.
+2. Implement role-based menus and backend permission checks.
+3. Implement staff management and role assignment.
+4. Add pricing, policies, opening hours, and business settings.
+5. Implement audit logs and operational reports.
+6. Add exports where authorized.
+7. Add pagination, sorting, and search across administration tables.
+
+Deliverables:
+- Complete admin dashboard.
+- Staff role management.
+- Operational and financial reports.
+
+Acceptance criteria:
+- Every privileged operation is checked on the backend.
+- Reports distinguish booking value, collected money, refunds, and outstanding balances.
+- Sensitive changes are auditable.
+
+PHASE 12 — SEO, ACCESSIBILITY, AND PERFORMANCE
+----------------------------------------------
+Tasks:
+1. Add titles, meta descriptions, canonical URLs, sitemap, and robots.txt.
+2. Add suitable structured data only where accurate.
+3. Optimize images and lazy loading.
+4. Optimize Angular bundle sizes and lazy-loaded routes.
+5. Add pagination and database indexes for catalogue searches.
+6. Verify accessibility and keyboard navigation.
+7. Test mobile network performance and define performance budgets.
+8. Protect private pages and data from public caching/indexing.
+
+Deliverables:
+- SEO-ready public pages.
+- Accessible responsive interface.
+- Performance test report.
+
+Acceptance criteria:
+- Public pages have meaningful metadata.
+- Private data is not exposed through public caching or indexing.
+- No critical accessibility or performance defects remain unresolved.
+
+PHASE 13 — AUTOMATED TESTING AND SECURITY
+-----------------------------------------
+Tasks:
+1. Write Angular unit tests.
+2. Write Spring Boot service and business-rule tests.
+3. Test GraphQL queries, mutations, validation, and permissions.
+4. Test database migrations and constraints.
+5. Write end-to-end tests for customer and admin workflows.
+6. Test booking concurrency and inventory concurrency.
+7. Test payment idempotency and webhook verification.
+8. Test authorization, IDOR, injection, upload restrictions, and rate limits.
+9. Test mobile layouts and browser compatibility.
+10. Fix defects and record remaining risks.
+
+Required critical tests:
+- Two customers attempt overlapping rental reservations.
+- Two customers attempt to reserve the final workshop slot.
+- A user changes a price in the browser.
+- A payment callback is delivered repeatedly.
+- A customer requests another customer's booking.
+- A vehicle is marked sold or under maintenance.
+- A quotation expires or is rejected.
+- A notification provider fails.
+- An unauthorized employee attempts a refund.
+- A migration or deployment fails and recovery is required.
+
+Deliverables:
+- Automated test suite.
+- Test report.
+- Security review and defect list.
+
+Acceptance criteria:
+- No critical booking/payment integrity defects remain.
+- Unauthorized access tests fail safely.
+- Builds and tests run using documented commands.
+
+PHASE 14 — DOCKER, DOMAIN, AND PRODUCTION DEPLOYMENT
+---------------------------------------------------
+Tasks:
+1. Create production Dockerfiles for Angular and Spring Boot.
+2. Create Docker Compose services and internal networks.
+3. Configure persistent PostgreSQL storage.
+4. Configure secure file storage.
+5. Integrate with the existing Nginx reverse proxy.
+6. Configure HTTPS and certificate renewal.
+7. Configure naboo.co.tz and www.naboo.co.tz routing.
+8. Configure firewall rules and protect database/backend ports.
+9. Create production environment configuration with secrets outside Git.
+10. Build and publish versioned images.
+11. Test deployment, health checks, logs, and recovery.
+12. Configure scheduled backups and retention.
+13. Test restoring a backup.
+14. Document deployment and rollback procedures.
+
+Important:
+- Inspect the current VPS and port usage before making changes.
+- Do not start a second public reverse proxy that conflicts on ports 80 or 443.
+- Do not disrupt existing services.
+- Do not use placeholder secrets in production.
+- Do not expose PostgreSQL publicly without a specifically approved secure design.
+- Use versioned Docker image tags, not only "latest".
+
+Deliverables:
+- Dockerfiles and Compose configuration.
+- Nginx routing configuration.
+- Environment variable template.
+- Deployment, backup, restore, and rollback documentation.
+
+Acceptance criteria:
+- Public domain works over HTTPS.
+- Frontend and GraphQL routes resolve correctly.
+- Database and uploaded files persist across container restarts.
+- Backups can be restored.
+- Previous application release can be recovered if deployment fails.
+
+PHASE 15 — USER ACCEPTANCE AND LAUNCH
+-------------------------------------
+Tasks:
+1. Demonstrate every customer journey to business stakeholders.
+2. Confirm real service prices, rental terms, opening hours, and contact details.
+3. Verify vehicle and accessory data.
+4. Test payment-provider production configuration if approved.
+5. Train administrators and staff.
+6. Verify email/SMS delivery and support procedures.
+7. Confirm privacy policy and terms have been reviewed.
+8. Run final smoke tests and backup verification.
+9. Approve launch and monitor the initial release.
+
+Deliverables:
+- User acceptance sign-off.
+- Staff instructions.
+- Production release notes.
+- Launch checklist and support plan.
+
+Acceptance criteria:
+- All agreed critical workflows pass.
+- Staff can operate the system.
+- No critical security or booking/payment integrity issue remains.
+- Recovery and support responsibilities are documented.
+
+============================================================
+6. TECHNICAL ARCHITECTURE
+============================================================
+
+Frontend:
+- Angular standalone components and lazy-loaded routes.
+- TypeScript strict mode.
+- Apollo Angular for GraphQL.
+- Reactive Forms for complex forms.
+- Reusable responsive UI components.
+- PWA support where appropriate.
+
+Backend:
+- Java and a supported Spring Boot version.
+- Spring for GraphQL.
+- Spring Security.
+- Spring Data JPA and Hibernate.
+- Flyway database migrations.
+- Bean Validation.
+- Actuator health checks with protected sensitive endpoints.
+- Scheduled tasks for hold expiry and retry processing.
+
+Database:
+- PostgreSQL.
+- UUID primary keys where appropriate.
+- Foreign keys, unique constraints, indexes, and transactions.
+- UTC timestamps; display using Africa/Dar_es_Salaam timezone.
+- Explicit currency fields and safe monetary precision.
+- Versioned schema migrations.
+
+Suggested backend package structure:
+com.naboo.automotive
+  auth
+  users
+  customers
+  vehicles
+  bookings
+  availability
+  services
+  workshop
+  quotations
+  accessories
+  inventory
+  orders
+  payments
+  invoicing
+  notifications
+  content
+  reports
+  audit
+  common
+
+============================================================
+7. DATABASE TABLES
+============================================================
+
+Authentication:
+- users
+- roles
+- user_roles
+- refresh_tokens, if required by the chosen authentication design
+
+Customers:
+- customers
+- customer_addresses
+- customer_vehicles
+
+Vehicle sales:
+- vehicles
+- vehicle_images
+- vehicle_features
+- vehicle_enquiries
+- viewing_requests
+
+Rental:
+- rental_reservations
+- rental_rate_rules
+- rental_extras
+- rental_reservation_extras
+- rental_inspections
+- rental_terms_versions
+- reservation_holds
+
+Availability:
+- business_hours
+- holidays
+- workshop_bays
+- technician_availability
+
+Services and workshop:
+- services
+- service_categories
+- service_price_versions
+- service_bookings
+- workshop_jobs
+- job_status_history
+- job_parts
+- job_labour
+- job_attachments
+
+Quotations:
+- quotations
+- quotation_items
+- quotation_status_history
+
+Accessories and inventory:
+- products
+- product_categories
+- product_images
+- stock_movements
+
+Orders:
+- orders
+- order_items
+- order_status_history
+
+Finance:
+- payments
+- payment_transactions
+- invoices
+- invoice_items
+- refunds
+- idempotency_keys
+
+Communications and platform:
+- notifications
+- notification_attempts
+- contact_enquiries
+- site_settings
+- promotions
+- audit_logs
+
+Use migrations and constraints; do not rely on manually edited production schemas.
+
+============================================================
+8. GRAPHQL API REQUIREMENTS
+============================================================
+
+Queries:
+- vehicles, vehicleBySlug
+- services, serviceBySlug
+- rentalAvailability
+- rentalQuote details where authorized
+- public products and product details
+- myBookings, myOrders, myQuotations, myInvoices
+- admin reporting queries protected by roles
+
+Mutations:
+- create/update/publish vehicle
+- create sales enquiry and viewing request
+- request rental quote and create/cancel reservation
+- create/cancel/reschedule service booking
+- create and approve/reject quotation
+- update workshop job status
+- create/update product and inventory movement
+- create order and update fulfilment
+- initiate payment and request refund
+- update customer profile
+- admin user and settings management
+
+API rules:
+- Enforce authorization for every protected operation.
+- Use cursor pagination for large catalogues.
+- Limit query depth, complexity, and result sizes.
+- Avoid N+1 queries.
+- Use typed validation errors.
+- Do not expose internal costs or private customer information publicly.
+- Recalculate all financial totals on the backend.
+- Use idempotency for critical mutations.
+- Restrict interactive GraphQL tools in production.
+
+============================================================
+9. PRICING AND MONEY RULES
+============================================================
+
+Rental formula:
+Total = (Billable Days x Applicable Rate)
+        + Extras
+        + Fees
+        - Discounts
+        + Applicable Taxes, according to the configured tax policy
+
+Business decisions required:
+- How partial rental days are charged.
+- Daily versus weekly/monthly rate selection.
+- Deposit rules.
+- Included mileage and excess mileage.
+- Fuel policy.
+- Delivery/collection fees.
+- Late-return rules.
+- Cancellation and refund policies.
+- Tax display and inclusion rules.
+- Service price validity and quotation expiry.
+
+Pricing types:
+- FIXED
+- STARTING_FROM
+- HOURLY
+- INSPECTION_REQUIRED
+- QUOTE_REQUIRED
+
+Money rules:
+- Never use floating-point arithmetic for financial calculations.
+- Use integer minor units or PostgreSQL NUMERIC with a defined scale.
+- Store currency explicitly, defaulting to TZS.
+- Persist a price breakdown when an order, booking, or invoice is created.
+- A catalogue price change must not silently change an existing confirmed booking.
+- Restrict discounts and manual adjustments to authorized roles.
+- Audit manual financial adjustments.
+
+============================================================
+10. ROLES AND PERMISSIONS
+============================================================
+
+Suggested roles:
+- SUPER_ADMIN: full configuration and access.
+- MANAGER: operations, approvals, reports, and oversight.
+- SALES_AGENT: listings, enquiries, and viewing requests.
+- RENTAL_AGENT: rental reservations, handovers, and returns.
+- SERVICE_ADVISOR: appointments, inspections, and quotations.
+- MECHANIC: assigned workshop jobs and progress updates.
+- INVENTORY_MANAGER: products, stock, and parts.
+- FINANCE_OFFICER: invoices, reconciliation, and authorized refunds.
+- CUSTOMER: own profile, bookings, quotations, orders, and invoices.
+
+Permissions must be enforced on the backend, not just by hiding UI controls.
+
+============================================================
+11. SECURITY AND PRIVACY
+============================================================
+
+- Use secure authentication and modern password hashing.
+- Apply least-privilege authorization.
+- Protect privileged accounts with multi-factor authentication where practical.
+- Use HTTPS and secure session/token handling.
+- Validate and sanitize inputs.
+- Restrict uploads by type, size, and content; use safe generated storage names.
+- Keep private files private and use authenticated downloads or expiring signed URLs.
+- Protect against SQL injection, XSS, CSRF where applicable, IDOR, and abuse.
+- Rate-limit login, booking, and public enquiry operations.
+- Keep credentials outside source control.
+- Never store raw card data.
+- Avoid logging tokens, passwords, or unnecessary personal information.
+- Apply retention and deletion rules consistent with applicable Tanzanian requirements.
+- Audit price changes, refunds, permissions, booking changes, and inventory adjustments.
+
+============================================================
+12. PAYMENTS AND NOTIFICATIONS
+============================================================
+
+Evaluate payment providers based on:
+- Availability to a Tanzania-registered business.
+- Mobile-money and card support.
+- Settlement arrangements and fees.
+- API documentation and webhook security.
+- Refund and reconciliation support.
+- Onboarding and production credentials.
+
+Payment lifecycle:
+- Pending
+- Awaiting confirmation
+- Successful
+- Failed
+- Expired
+- Refunded
+- Partially refunded, where supported
+
+Rules:
+- Never trust a browser redirect as proof of payment.
+- Verify provider callbacks and transaction amounts server-side.
+- Match currency, merchant account, reference, amount, and status.
+- Process callbacks idempotently.
+- Reconcile internal transactions against provider records.
+- Support authorized in-person payment recording with audit history.
+- Keep booking status separate from payment status.
+
+Notifications:
+- Email for confirmations, quotations, invoices, and important status updates.
+- SMS provider adapter for critical notifications.
+- Optional WhatsApp contact or approved API integration.
+- Log attempts and retry transient failures.
+- Notification failure must not undo a valid booking.
+
+============================================================
+13. TESTING PLAN
+============================================================
+
+Frontend:
+- Component tests.
+- Form validation tests.
+- Loading, empty, error, and success states.
+- Responsive and accessibility checks.
+
+Backend:
+- Business logic and pricing tests.
+- Authorization tests.
+- GraphQL integration tests.
+- Database migration and constraint tests.
+- Transaction and concurrency tests.
+
+End-to-end:
+- Search and enquiry for a vehicle.
+- Rental quote and reservation.
+- Service booking and quotation approval.
+- Accessory order and stock handling.
+- Payment success, failure, duplicate callback, and reconciliation.
+- Customer and admin permissions.
+- Deployment smoke tests.
+
+Critical scenarios:
+1. Two customers reserve the same vehicle for overlapping dates.
+2. Two customers try to claim the final workshop slot.
+3. A customer tampers with a price submitted by the browser.
+4. A payment callback is received multiple times.
+5. A customer attempts to access another customer's booking.
+6. A vehicle is sold or placed under maintenance.
+7. A quotation expires or is rejected.
+8. An email/SMS provider fails.
+9. An unauthorized employee attempts a refund.
+10. A deployment or migration fails and recovery is needed.
+
+============================================================
+14. PERFORMANCE, SEO, AND ACCESSIBILITY
+============================================================
+
+Performance:
+- Use responsive WebP/AVIF images where suitable.
+- Lazy-load below-the-fold images.
+- Lazy-load Angular routes.
+- Paginate catalogues and administrative lists.
+- Add indexes for frequent filters and status queries.
+- Cache public data carefully; do not publicly cache private responses.
+- Establish performance budgets and test on mobile networks.
+
+SEO:
+- Page titles and meta descriptions.
+- Canonical URLs.
+- XML sitemap and robots.txt.
+- Descriptive vehicle and service slugs.
+- Accurate structured data where appropriate.
+- Social sharing metadata.
+- Useful alt text.
+- Protect private account and admin pages from indexing.
+
+Accessibility:
+- Target WCAG 2.2 AA where practical.
+- Keyboard navigation and visible focus.
+- Form labels and clear error messages.
+- Adequate contrast and touch target sizes.
+- Status must not be communicated by color alone.
+- Respect reduced-motion preferences.
+
+============================================================
+15. DOCKER AND DEPLOYMENT
+============================================================
+
+Suggested repository:
+naboo-automotive/
+  frontend/
+  backend/
+  infrastructure/
+    nginx/
+    postgres/
+    scripts/
+  docker-compose.yml
+  .env.example
+  .dockerignore
+  README.md
+  docs/
+    requirements.md
+    architecture.md
+    database.md
+    graphql-api.md
+    deployment.md
+    operations.md
+
+Suggested services:
+- naboo-frontend
+- naboo-backend
+- naboo-postgres
+- existing/shared Nginx reverse proxy
+- configured file/object storage
+- optional scheduled backup job
+
+Deployment requirements:
+- Integrate with the existing server's reverse proxy.
+- Inspect port usage before changes.
+- Avoid conflicting public listeners on ports 80 and 443.
+- Keep database and backend ports internal where possible.
+- Configure HTTPS for naboo.co.tz and www.naboo.co.tz.
+- Store database data and required uploads persistently.
+- Use versioned image tags.
+- Keep secrets out of Git and logs.
+- Run migrations deliberately.
+- Back up before risky releases.
+- Test restoration and rollback.
+- Monitor health, disk space, logs, and backup status.
+
+Suggested environment configuration:
+SPRING_PROFILES_ACTIVE=prod
+POSTGRES_DB=naboo_automotive
+POSTGRES_USER=naboo_app
+POSTGRES_PASSWORD=REPLACE_WITH_STRONG_SECRET
+DB_HOST=naboo-postgres
+DB_PORT=5432
+APP_PUBLIC_URL=https://naboo.co.tz
+APP_TIMEZONE=Africa/Dar_es_Salaam
+APP_CURRENCY=TZS
+PAYMENT_PROVIDER=disabled
+PAYMENT_API_KEY=
+PAYMENT_WEBHOOK_SECRET=
+SMTP_HOST=
+SMTP_PORT=
+SMTP_USERNAME=
+SMTP_PASSWORD=
+STORAGE_PROVIDER=local
+
+These are placeholders. Map them to the application's actual configuration and never deploy with placeholder secrets.
+
+============================================================
+16. DOCUMENTATION REQUIRED
+============================================================
+
+Provide:
+- README with setup, build, test, and run commands.
+- Architecture and module documentation.
+- Database ERD and migration instructions.
+- GraphQL schema and API usage documentation.
+- Environment variable reference.
+- Local development instructions.
+- Docker deployment instructions.
+- Nginx and HTTPS setup instructions.
+- Payment-provider configuration instructions.
+- Backup, restore, and rollback instructions.
+- User and administrator guide.
+- Testing and acceptance report.
+- Known limitations and outstanding integrations.
+
+============================================================
+17. DEFINITION OF DONE
+============================================================
+
+- All agreed public pages are responsive.
+- Vehicle sales catalogue and enquiries work.
+- Rental pricing and availability work.
+- Overlapping rental reservations are prevented.
+- Service booking and workshop capacity checks work.
+- Painting, restoration, and quotation workflows work.
+- Accessories, inventory, and orders work.
+- Admin dashboard and roles work.
+- Customer portal and booking tracking work.
+- Online payments are verified when configured.
+- Offline payments are auditable.
+- Notifications and retry handling work.
+- Database migrations, backup, and restoration are tested.
+- HTTPS and domain routing work.
+- Automated tests pass.
+- No critical security or booking/payment integrity defects remain.
+- Setup and operational documentation is complete.
+
+============================================================
+18. SUGGESTED TIMELINE
+============================================================
+
+For a small, experienced team, an initial production release may take
+approximately 8-14 weeks, depending on scope, integrations, content readiness,
+testing, and payment-provider onboarding. This is an estimate, not a guarantee.
+
+Suggested sequence:
+Weeks 1-2: Discovery, setup, design system, database, authentication.
+Weeks 2-4: Public website, vehicle sales catalogue, services and products.
+Weeks 4-7: Rental availability, rental bookings, service appointments, quotations.
+Weeks 6-9: Workshop, inventory, orders, customer portal, admin dashboard.
+Weeks 8-11: Payments, invoices, notifications, reporting.
+Weeks 10-13: Testing, security, performance, SEO, deployment.
+Weeks 13-14: User acceptance, training, production launch and monitoring.
+
+Adjust the schedule based on team capacity and actual implementation progress.
+
+============================================================
+19. DEVELOPER / CODING AI EXECUTION RULES
+============================================================
+
+1. Inspect the existing repository before changing files.
+2. Do not overwrite working code without a reason.
+3. Work in small milestones and keep the application buildable.
+4. Use real backend functionality for production features.
+5. Keep demo/seed data clearly separate from production data.
+6. Run tests after each meaningful change.
+7. Never claim a feature is complete unless it has been tested.
+8. Report blockers, missing credentials, and external dependencies.
+9. Document configuration and database migration changes.
+10. Protect production services and data during deployment.
+11. Do not enable live payments until credentials and verification are configured.
+12. End each milestone with a summary of completed work, test results,
+    remaining work, and exact commands needed to continue.
+
+FINAL OBJECTIVE
+---------------
+Deliver a professional, secure, responsive, production-ready Naboo Automotive
+platform that unifies vehicle sales, rentals, repairs, painting, accessories,
+restoration, bookings, quotations, payments, inventory, and business management
+in one maintainable system.

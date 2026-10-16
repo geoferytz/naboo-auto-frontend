@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: naboo-backend
+  profiles:
+    default: dev
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:naboo_automotive}
+    username: ${POSTGRES_USER:naboo_app}
+    password: ${POSTGRES_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        default_batch_fetch_size: 50
+  flyway:
+    locations: classpath:db/migration
+  graphql:
+    http:
+      path: /graphql
+    graphiql:
+      enabled: false
+    schema:
+      introspection:
+        enabled: false
+
+server:
+  forward-headers-strategy: native
+  error:
+    include-stacktrace: never
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+app:
+  public-url: ${APP_PUBLIC_URL:http://localhost:4200}
+  cors-origins: ${APP_CORS_ORIGINS:http://localhost:4200}
+  currency: ${APP_CURRENCY:TZS}
+  timezone: ${APP_TIMEZONE:Africa/Dar_es_Salaam}
+  jwt:
+    secret: ${JWT_SECRET:}
+    ttl-minutes: ${JWT_TTL_MINUTES:120}
+    issuer: naboo-automotive
+  bootstrap-admin:
+    email: ${APP_BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${APP_BOOTSTRAP_ADMIN_PASSWORD:}
+    full-name: ${APP_BOOTSTRAP_ADMIN_NAME:Naboo Administrator}
+  rate-limit:
+    sensitive-per-minute: 10
+
+logging:
+  level:
+    root: INFO
