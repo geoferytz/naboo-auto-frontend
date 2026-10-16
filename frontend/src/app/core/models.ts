@@ -301,3 +301,69 @@ export interface Quotation {
   decidedAt: string | null;
   createdAt: string;
 }
+
+// ------------------------------------------------------------------ workshop jobs, inventory, billing
+
+export type JobStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'CANCELLED';
+
+export interface WorkshopJob {
+  id: string;
+  reference: string;
+  booking: { id: string; reference: string; serviceName: string } | null;
+  vehicleDescription: string;
+  description: string;
+  status: JobStatus;
+  assignedToUserId: string | null;
+  scheduledFor: string | null;
+  laborNotes: string | null;
+  createdAt: string;
+}
+
+export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'READY' | 'COMPLETED' | 'CANCELLED';
+export type StockReason = 'ORDER_PLACED' | 'ORDER_CANCELLED' | 'ADJUSTMENT' | 'RESTOCK';
+
+export interface Accessory {
+  id: string;
+  sku: string;
+  name: string;
+  category: string | null;
+  description: string | null;
+  price: Money;
+  stockQuantity: number;
+  active: boolean;
+  inStock: boolean;
+}
+
+export interface Order {
+  id: string;
+  reference: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  status: OrderStatus;
+  total: Money;
+  notes: string | null;
+  items: { id: string; description: string; unitPrice: Money; quantity: number; lineTotal: Money }[];
+  createdAt: string;
+}
+
+export type InvoiceStatus = 'DRAFT' | 'ISSUED' | 'PAID' | 'VOID';
+export type PaymentMethod = 'CASH' | 'CARD' | 'BANK_TRANSFER' | 'MPESA' | 'TIGOPESA' | 'AIRTEL_MONEY';
+
+export interface Invoice {
+  id: string;
+  reference: string;
+  recipientName: string;
+  recipientEmail: string;
+  status: InvoiceStatus;
+  total: Money;
+  paid: Money;
+  balance: Money;
+  dueDate: string | null;
+  issuedAt: string | null;
+  paidAt: string | null;
+  notes: string | null;
+  items: { id: string; description: string; quantity: number; unitPrice: Money; lineTotal: Money }[];
+  payments: { id: string; amount: Money; method: PaymentMethod; reference: string | null; paidAt: string; note: string | null }[];
+  createdAt: string;
+}

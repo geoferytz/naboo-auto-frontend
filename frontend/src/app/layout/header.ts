@@ -92,6 +92,7 @@ export class Header {
     { path: '/cars-for-sale', label: 'Cars for sale' },
     { path: '/rentals', label: 'Rentals' },
     { path: '/services', label: 'Services' },
+    { path: '/accessories', label: 'Shop' },
     { path: '/about', label: 'About' },
     { path: '/contact', label: 'Contact' },
   ];

@@ -310,6 +310,130 @@ export const CANCEL_QUOTATION = gql`
   }
 `;
 
+export const WORKSHOP_JOBS = gql`
+  query WorkshopJobs($status: JobStatus, $assignedToUserId: ID, $page: Int, $size: Int) {
+    workshopJobs(status: $status, assignedToUserId: $assignedToUserId, page: $page, size: $size) {
+      totalCount page size totalPages
+      items {
+        id reference vehicleDescription description status assignedToUserId scheduledFor laborNotes createdAt
+        booking { id reference serviceName }
+      }
+    }
+  }
+`;
+
+export const CREATE_JOB = gql`
+  mutation CreateJob($input: CreateJobInput!) {
+    createWorkshopJob(input: $input) { id }
+  }
+`;
+
+export const UPDATE_JOB = gql`
+  mutation UpdateJob($id: ID!, $input: UpdateJobInput!) {
+    updateWorkshopJob(id: $id, input: $input) { id }
+  }
+`;
+
+export const SET_JOB_STATUS = gql`
+  mutation SetJobStatus($id: ID!, $status: JobStatus!) {
+    setWorkshopJobStatus(id: $id, status: $status) { id status }
+  }
+`;
+
+export const ADMIN_ACCESSORIES = gql`
+  query AdminAccessories($search: String, $active: Boolean, $page: Int, $size: Int) {
+    adminAccessories(search: $search, active: $active, page: $page, size: $size) {
+      totalCount page size totalPages
+      items { id sku name category description price { amount currency } stockQuantity active inStock }
+    }
+  }
+`;
+
+export const CREATE_ACCESSORY = gql`
+  mutation CreateAccessory($input: AccessoryInput!) {
+    createAccessory(input: $input) { id }
+  }
+`;
+
+export const UPDATE_ACCESSORY = gql`
+  mutation UpdateAccessory($id: ID!, $input: AccessoryInput!) {
+    updateAccessory(id: $id, input: $input) { id }
+  }
+`;
+
+export const ADJUST_STOCK = gql`
+  mutation AdjustStock($id: ID!, $input: StockAdjustInput!) {
+    adjustStock(id: $id, input: $input) { id stockQuantity }
+  }
+`;
+
+export const STOCK_MOVEMENTS = gql`
+  query StockMovements($accessoryId: ID!) {
+    stockMovements(accessoryId: $accessoryId) { id delta reason note createdAt }
+  }
+`;
+
+export const ORDERS = gql`
+  query Orders($status: OrderStatus, $page: Int, $size: Int) {
+    orders(status: $status, page: $page, size: $size) {
+      totalCount page size totalPages
+      items {
+        id reference fullName email phone status notes createdAt
+        total { amount currency }
+        items { id description quantity unitPrice { amount currency } lineTotal { amount currency } }
+      }
+    }
+  }
+`;
+
+export const UPDATE_ORDER = gql`
+  mutation UpdateOrder($id: ID!, $status: OrderStatus!) {
+    updateOrder(id: $id, status: $status) { id status }
+  }
+`;
+
+const INVOICE_FIELDS = `
+  id reference recipientName recipientEmail status dueDate issuedAt paidAt notes createdAt
+  total { amount currency }
+  paid { amount currency }
+  balance { amount currency }
+  items { id description quantity unitPrice { amount currency } lineTotal { amount currency } }
+  payments { id amount { amount currency } method reference paidAt note }
+`;
+
+export const INVOICES = gql`
+  query Invoices($status: InvoiceStatus, $page: Int, $size: Int) {
+    invoices(status: $status, page: $page, size: $size) {
+      totalCount page size totalPages
+      items { ${INVOICE_FIELDS} }
+    }
+  }
+`;
+
+export const CREATE_INVOICE = gql`
+  mutation CreateInvoice($input: InvoiceInput!) {
+    createInvoice(input: $input) { id }
+  }
+`;
+
+export const ISSUE_INVOICE = gql`
+  mutation IssueInvoice($id: ID!) {
+    issueInvoice(id: $id) { id status }
+  }
+`;
+
+export const VOID_INVOICE = gql`
+  mutation VoidInvoice($id: ID!) {
+    voidInvoice(id: $id) { id status }
+  }
+`;
+
+export const RECORD_PAYMENT = gql`
+  mutation RecordPayment($invoiceId: ID!, $input: PaymentInput!) {
+    recordPayment(invoiceId: $invoiceId, input: $input) { id status balance { amount } }
+  }
+`;
+
 export const AUDIT_LOGS = gql`
   query AuditLogs($entityType: String, $entityId: String, $page: Int, $size: Int) {
     auditLogs(entityType: $entityType, entityId: $entityId, page: $page, size: $size) {

@@ -8,6 +8,10 @@ public final class Permissions {
     public static final String VEHICLE_MANAGE = "hasAnyRole('SUPER_ADMIN','MANAGER','SALES_AGENT')";
     public static final String RENTAL_MANAGE = "hasAnyRole('SUPER_ADMIN','MANAGER','RENTAL_AGENT')";
     public static final String BOOKING_MANAGE = "hasAnyRole('SUPER_ADMIN','MANAGER','SERVICE_ADVISOR')";
+    public static final String WORKSHOP_MANAGE = "hasAnyRole('SUPER_ADMIN','MANAGER','SERVICE_ADVISOR','MECHANIC')";
+    public static final String INVENTORY_MANAGE = "hasAnyRole('SUPER_ADMIN','MANAGER','INVENTORY_MANAGER')";
+    public static final String ORDER_MANAGE = "hasAnyRole('SUPER_ADMIN','MANAGER','INVENTORY_MANAGER','SALES_AGENT')";
+    public static final String BILLING_MANAGE = "hasAnyRole('SUPER_ADMIN','MANAGER','FINANCE_OFFICER')";
     public static final String QUOTATION_MANAGE = "hasAnyRole('SUPER_ADMIN','MANAGER','SERVICE_ADVISOR','SALES_AGENT')";
     public static final String SERVICE_CATALOGUE_MANAGE = "hasAnyRole('SUPER_ADMIN','MANAGER')";
     public static final String CONTACT_ENQUIRY_VIEW = "hasAnyRole('SUPER_ADMIN','MANAGER','SALES_AGENT','SERVICE_ADVISOR')";

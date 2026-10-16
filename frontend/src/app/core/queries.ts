@@ -185,3 +185,53 @@ export const DECIDE_QUOTATION = gql`
     decideQuotation(id: $id, accept: $accept) { id status }
   }
 `;
+
+export const ACCESSORIES = gql`
+  query Accessories($category: String, $page: Int, $size: Int) {
+    accessories(category: $category, page: $page, size: $size) {
+      totalCount page size totalPages
+      items { id sku name category description price { amount currency } stockQuantity inStock }
+    }
+  }
+`;
+
+export const PLACE_ORDER = gql`
+  mutation PlaceOrder($input: OrderInput!) {
+    placeOrder(input: $input) { reference message }
+  }
+`;
+
+export const MY_ORDERS = gql`
+  query MyOrders($page: Int, $size: Int) {
+    myOrders(page: $page, size: $size) {
+      totalCount
+      items {
+        id reference status notes createdAt
+        total { amount currency }
+        items { id description quantity unitPrice { amount currency } lineTotal { amount currency } }
+      }
+    }
+  }
+`;
+
+export const CANCEL_MY_ORDER = gql`
+  mutation CancelMyOrder($id: ID!) {
+    cancelMyOrder(id: $id) { id status }
+  }
+`;
+
+export const MY_INVOICES = gql`
+  query MyInvoices($page: Int, $size: Int) {
+    myInvoices(page: $page, size: $size) {
+      totalCount
+      items {
+        id reference status dueDate issuedAt paidAt createdAt
+        total { amount currency }
+        paid { amount currency }
+        balance { amount currency }
+        items { id description quantity unitPrice { amount currency } lineTotal { amount currency } }
+        payments { id amount { amount currency } method reference paidAt }
+      }
+    }
+  }
+`;

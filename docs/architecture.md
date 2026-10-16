@@ -71,7 +71,7 @@ frontend/src/app
 | 2 Foundation | Done: schema V1, auth, roles, audit, design tokens |
 | 3 Public site & catalogues + staff admin | Done: public site, vehicle/service catalogues, staff dashboard, vehicle CRUD with photo uploads, enquiries, users, audit UI |
 | 4 Rentals, service booking, quotations | Done: `V2` migration, rental fleet + reservations (Postgres exclusion constraint against double-booking, idempotent `requestToken`s, server-computed totals, 180-day lead / 60-day max limits), workshop bookings (capacity serialized by row lock, 08:00–17:00 business window, 2h–90d window), quotation lifecycle (REQUESTED → QUOTED → ACCEPTED/DECLINED with lazy expiry). Public `/rentals` pages, booking/quotation forms on service pages, `my-account` self-service, admin fleet/reservations/bookings/quotations screens |
-| 5 Workshop, accessories, orders, invoices, payments | Not started |
+| 5 Workshop, accessories, orders, invoices, payments | Done: `V3` migration, workshop job cards (booking-linked, mechanic-capable), accessories catalogue + stock ledger, accessory orders with locked stock movement, draft→issued→paid invoices with partial payments and overpayment guards. Admin screens for jobs/accessories/orders/invoices; public shop with cart; orders+invoices in `my-account` |
 | 6 Admin dashboard, customer portal, notifications, reporting | Partially: dashboard and `my-account` exist; notifications and reporting not started |
 | 7 Docker production deployment, Nginx, HTTPS, backups | Not started (dev compose only) |
 | 8 Hardening, e2e tests, full documentation | Not started |
@@ -92,6 +92,18 @@ frontend/src/app
   `myRentalReservations`; all staff operations require `RENTAL_MANAGE`, `BOOKING_MANAGE` or `QUOTATION_MANAGE` roles.
 - A `Date` scalar (ISO `YYYY-MM-DD`) was added next to `DateTime` in `GraphQlConfig` for rental windows and quotation
   validity.
+
+## Workshop, inventory, billing (Milestone 5 notes)
+
+- Workshop jobs carry a `SCHEDULED → IN_PROGRESS ⇄ ON_HOLD → COMPLETED` lifecycle (any open state → CANCELLED) and may
+  be raised from a confirmed booking or standalone. `WORKSHOP_MANAGE` includes mechanics.
+- Orders decrement stock at placement inside `PESSIMISTIC_WRITE` row locks (accessories locked in id order); staff or
+  customer cancellation restores stock. Every change is logged to `stock_movements` for a full audit trail.
+- Invoices are DRAFT → ISSUED → PAID / VOID. Items are editable only in DRAFT; payments only on ISSUED, capped at the
+  outstanding balance (row-locked during recording); `paidAt` is set when fully covered. Payment methods cover cash,
+  card, bank transfer and the common Tanzanian mobile-money rails (M-Pesa, Tigo Pesa, Airtel Money) — recording only;
+  real payment-provider integration is a later decision.
+- Orders and invoices are tied to customer accounts; `placeOrder` requires sign-in and is idempotent via `requestToken`.
 
 ## Known gaps / next steps
 

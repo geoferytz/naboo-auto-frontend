@@ -23,10 +23,15 @@ type Query {
     rentalVehicleBySlug(slug: String!): RentalVehicle
     rentalAvailability(rentalVehicleId: ID!, startDate: Date!, endDate: Date!): RentalAvailability!
 
+    # ---- Public accessories catalogue
+    accessories(category: String, page: Int = 0, size: Int = 24): AccessoryPage!
+
     # ---- Customer account (authenticated)
     myRentalReservations(page: Int = 0, size: Int = 20): ReservationPage!
     myServiceBookings(page: Int = 0, size: Int = 20): ServiceBookingPage!
     myQuotations(page: Int = 0, size: Int = 20): QuotationPage!
+    myOrders(page: Int = 0, size: Int = 20): OrderPage!
+    myInvoices(page: Int = 0, size: Int = 20): InvoicePage!
 
     # ---- Staff (role-checked on the server)
     adminVehicles(filter: AdminVehicleFilter, page: Int = 0, size: Int = 20): VehiclePage!
@@ -44,6 +49,12 @@ type Query {
     serviceBookings(status: BookingStatus, page: Int = 0, size: Int = 20): ServiceBookingPage!
     workshopCapacity: WorkshopCapacity!
     quotations(status: QuotationStatus, page: Int = 0, size: Int = 20): QuotationPage!
+    workshopJobs(status: JobStatus, assignedToUserId: ID, page: Int = 0, size: Int = 20): WorkshopJobPage!
+    adminAccessories(search: String, active: Boolean, page: Int = 0, size: Int = 20): AccessoryPage!
+    stockMovements(accessoryId: ID!): [StockMovement!]!
+    orders(status: OrderStatus, page: Int = 0, size: Int = 20): OrderPage!
+    invoices(status: InvoiceStatus, page: Int = 0, size: Int = 20): InvoicePage!
+    invoice(id: ID!): Invoice
 }
 
 type Mutation {
@@ -59,6 +70,8 @@ type Mutation {
     cancelMyReservation(id: ID!): Reservation!
     cancelMyBooking(id: ID!): ServiceBooking!
     decideQuotation(id: ID!, accept: Boolean!): Quotation!
+    placeOrder(input: OrderInput!): EnquiryReceipt!
+    cancelMyOrder(id: ID!): Order!
 
     # ---- Staff (role-checked on the server)
     createVehicle(input: VehicleInput!): Vehicle!
@@ -96,6 +109,22 @@ type Mutation {
 
     priceQuotation(id: ID!, input: QuoteInput!): Quotation!
     cancelQuotation(id: ID!): Quotation!
+
+    createWorkshopJob(input: CreateJobInput!): WorkshopJob!
+    updateWorkshopJob(id: ID!, input: UpdateJobInput!): WorkshopJob!
+    setWorkshopJobStatus(id: ID!, status: JobStatus!): WorkshopJob!
+
+    createAccessory(input: AccessoryInput!): Accessory!
+    updateAccessory(id: ID!, input: AccessoryInput!): Accessory!
+    adjustStock(id: ID!, input: StockAdjustInput!): Accessory!
+    updateOrder(id: ID!, status: OrderStatus!): Order!
+
+    createInvoice(input: InvoiceInput!): Invoice!
+    addInvoiceItem(invoiceId: ID!, input: InvoiceItemInput!): Invoice!
+    removeInvoiceItem(invoiceId: ID!, itemId: ID!): Invoice!
+    issueInvoice(id: ID!): Invoice!
+    voidInvoice(id: ID!): Invoice!
+    recordPayment(invoiceId: ID!, input: PaymentInput!): Invoice!
 }
 
 # ---------------------------------------------------------------- common
@@ -657,4 +686,222 @@ input QuoteInput {
     quotedAmount: String!
     validUntil: Date!
     staffNotes: String
+}
+
+# ---------------------------------------------------------------- workshop jobs
+
+enum JobStatus { SCHEDULED IN_PROGRESS ON_HOLD COMPLETED CANCELLED }
+
+type WorkshopJob {
+    id: ID!
+    reference: String!
+    booking: JobBookingSummary
+    vehicleDescription: String!
+    description: String!
+    status: JobStatus!
+    assignedToUserId: ID
+    scheduledFor: DateTime
+    laborNotes: String
+    createdAt: DateTime!
+}
+
+type JobBookingSummary {
+    id: ID!
+    reference: String!
+    serviceName: String!
+}
+
+type WorkshopJobPage {
+    items: [WorkshopJob!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+input CreateJobInput {
+    bookingId: ID
+    vehicleDescription: String!
+    description: String!
+    scheduledFor: DateTime
+    assignedToUserId: ID
+}
+
+input UpdateJobInput {
+    description: String
+    scheduledFor: DateTime
+    assignedToUserId: ID
+    laborNotes: String
+}
+
+# ---------------------------------------------------------------- accessories, stock, orders
+
+enum StockReason { ORDER_PLACED ORDER_CANCELLED ADJUSTMENT RESTOCK }
+enum OrderStatus { PENDING CONFIRMED READY COMPLETED CANCELLED }
+
+type Accessory {
+    id: ID!
+    sku: String!
+    name: String!
+    category: String
+    description: String
+    price: Money!
+    stockQuantity: Int!
+    active: Boolean!
+    inStock: Boolean!
+    createdAt: DateTime!
+}
+
+type AccessoryPage {
+    items: [Accessory!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+type StockMovement {
+    id: ID!
+    delta: Int!
+    reason: StockReason!
+    orderId: ID
+    actorUserId: ID
+    note: String
+    createdAt: DateTime!
+}
+
+type Order {
+    id: ID!
+    reference: String!
+    fullName: String!
+    email: String!
+    phone: String!
+    status: OrderStatus!
+    total: Money!
+    notes: String
+    items: [OrderItem!]!
+    createdAt: DateTime!
+}
+
+type OrderItem {
+    id: ID!
+    description: String!
+    unitPrice: Money!
+    quantity: Int!
+    lineTotal: Money!
+}
+
+type OrderPage {
+    items: [Order!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+input AccessoryInput {
+    sku: String
+    name: String!
+    category: String
+    description: String
+    priceAmount: String!
+    stockQuantity: Int!
+    active: Boolean!
+}
+
+input StockAdjustInput {
+    delta: Int!
+    reason: StockReason!
+    note: String
+}
+
+input OrderItemInput {
+    accessoryId: ID!
+    quantity: Int!
+}
+
+input OrderInput {
+    items: [OrderItemInput!]!
+    fullName: String!
+    email: String!
+    phone: String!
+    notes: String
+    requestToken: ID
+}
+
+# ---------------------------------------------------------------- invoices & payments
+
+enum InvoiceStatus { DRAFT ISSUED PAID VOID }
+enum PaymentMethod { CASH CARD BANK_TRANSFER MPESA TIGOPESA AIRTEL_MONEY }
+
+type Invoice {
+    id: ID!
+    reference: String!
+    recipientName: String!
+    recipientEmail: String!
+    status: InvoiceStatus!
+    total: Money!
+    paid: Money!
+    balance: Money!
+    dueDate: Date
+    issuedAt: DateTime
+    paidAt: DateTime
+    notes: String
+    bookingId: ID
+    orderId: ID
+    quotationId: ID
+    items: [InvoiceItem!]!
+    payments: [Payment!]!
+    createdAt: DateTime!
+}
+
+type InvoiceItem {
+    id: ID!
+    description: String!
+    quantity: Int!
+    unitPrice: Money!
+    lineTotal: Money!
+}
+
+type Payment {
+    id: ID!
+    amount: Money!
+    method: PaymentMethod!
+    reference: String
+    paidAt: DateTime!
+    note: String
+}
+
+type InvoicePage {
+    items: [Invoice!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+input InvoiceItemInput {
+    description: String!
+    quantity: Int!
+    unitPrice: String!
+}
+
+input InvoiceInput {
+    customerUserId: ID
+    recipientName: String!
+    recipientEmail: String!
+    items: [InvoiceItemInput!]!
+    bookingId: ID
+    orderId: ID
+    quotationId: ID
+    dueDate: Date
+    notes: String
+}
+
+input PaymentInput {
+    amount: String!
+    method: PaymentMethod!
+    reference: String
+    paidAt: DateTime
+    note: String
 }
