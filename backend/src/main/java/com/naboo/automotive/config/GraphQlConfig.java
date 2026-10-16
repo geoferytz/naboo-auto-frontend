@@ -1,6 +1,7 @@
 package com.naboo.automotive.config;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
@@ -26,7 +27,7 @@ public class GraphQlConfig {
 
     @Bean
     RuntimeWiringConfigurer scalarWiring() {
-        return builder -> builder.scalar(dateTimeScalar());
+        return builder -> builder.scalar(dateTimeScalar()).scalar(dateScalar());
     }
 
     @Bean
@@ -70,6 +71,44 @@ public class GraphQlConfig {
                                 return OffsetDateTime.parse(s.getValue()).toInstant();
                             } catch (DateTimeParseException e) {
                                 throw new CoercingParseLiteralException("Invalid ISO-8601 timestamp with offset");
+                            }
+                        }
+                        throw new CoercingParseLiteralException("Expected a string");
+                    }
+                })
+                .build();
+    }
+
+    /** ISO-8601 calendar date (e.g. 2026-03-15), used for rental windows and quotation validity. */
+    static GraphQLScalarType dateScalar() {
+        return GraphQLScalarType.newScalar()
+                .name("Date")
+                .description("ISO-8601 calendar date (YYYY-MM-DD)")
+                .coercing(new Coercing<LocalDate, String>() {
+                    @Override
+                    public String serialize(Object value, GraphQLContext ctx, Locale locale) {
+                        if (value instanceof LocalDate d) {
+                            return d.toString();
+                        }
+                        throw new CoercingSerializeException("Expected a LocalDate");
+                    }
+
+                    @Override
+                    public LocalDate parseValue(Object input, GraphQLContext ctx, Locale locale) {
+                        try {
+                            return LocalDate.parse(input.toString());
+                        } catch (DateTimeParseException e) {
+                            throw new CoercingParseValueException("Invalid ISO-8601 date");
+                        }
+                    }
+
+                    @Override
+                    public LocalDate parseLiteral(Value<?> input, CoercedVariables vars, GraphQLContext ctx, Locale locale) {
+                        if (input instanceof StringValue s) {
+                            try {
+                                return LocalDate.parse(s.getValue());
+                            } catch (DateTimeParseException e) {
+                                throw new CoercingParseLiteralException("Invalid ISO-8601 date");
                             }
                         }
                         throw new CoercingParseLiteralException("Expected a string");

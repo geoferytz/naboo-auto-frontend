@@ -1,14 +1,63 @@
-import { Component, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
 
+import { Api, toApiError } from '../core/api';
 import { AuthService } from '../core/auth.service';
+import { formatMoney } from '../core/format';
+import { BookingStatus, Page, Quotation, QuotationStatus, Reservation, ReservationStatus, ServiceBooking } from '../core/models';
+import {
+  CANCEL_MY_BOOKING,
+  CANCEL_MY_RESERVATION,
+  DECIDE_QUOTATION,
+  MY_BOOKINGS,
+  MY_QUOTATIONS,
+  MY_RESERVATIONS,
+} from '../core/queries';
 import { SeoService } from '../core/seo.service';
 import { LoadState } from '../shared/load-state';
 
+const RES_LABELS: Record<ReservationStatus, string> = {
+  PENDING: 'Awaiting confirmation',
+  CONFIRMED: 'Confirmed',
+  ACTIVE: 'In progress',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+};
+
+const BOOKING_LABELS: Record<BookingStatus, string> = {
+  PENDING: 'Awaiting confirmation',
+  CONFIRMED: 'Confirmed',
+  IN_PROGRESS: 'In progress',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+  NO_SHOW: 'Missed',
+};
+
+const QUOTE_LABELS: Record<QuotationStatus, string> = {
+  REQUESTED: 'Awaiting our price',
+  QUOTED: 'Price ready — please decide',
+  ACCEPTED: 'Accepted',
+  DECLINED: 'Declined',
+  EXPIRED: 'Expired',
+  CANCELLED: 'Cancelled',
+};
+
+const WORK_LABELS: Record<string, string> = {
+  PAINTING: 'Painting',
+  COLOUR_CHANGE: 'Colour change',
+  DETAILING: 'Detailing',
+  RESTORATION: 'Restoration',
+  REPAIR: 'Repair',
+  MAINTENANCE: 'Maintenance',
+  ACCESSORIES: 'Accessories',
+  OTHER: 'Other work',
+};
+
 @Component({
   selector: 'app-my-account',
-  imports: [RouterLink, MatButtonModule, LoadState],
+  imports: [RouterLink, DatePipe, MatButtonModule, LoadState],
   template: `
     <header class="page-header">
       <div class="container">
@@ -28,34 +77,204 @@ import { LoadState } from '../shared/load-state';
             </dl>
             <button mat-stroked-button type="button" (click)="auth.logout()">Sign out</button>
           </section>
-          <section class="card panel" aria-labelledby="next">
-            <h2 id="next">Bookings, quotations &amp; invoices</h2>
-            <p>
-              Your service bookings, rental reservations, quotations awaiting approval and invoices will appear here as these
-              features launch. Enquiry references are sent to you when you submit an enquiry.
-            </p>
-            <div class="actions">
-              <a mat-flat-button routerLink="/cars-for-sale">Browse vehicles</a>
-              <a mat-stroked-button routerLink="/contact">Contact us</a>
-            </div>
+
+          <section class="card panel" aria-labelledby="quotes">
+            <h2 id="quotes">Quotations</h2>
+            @if (quotations(); as page) {
+              @if (!page.totalCount) {
+                <p class="empty">No quotations yet. <a routerLink="/services">Browse services</a> to request one.</p>
+              }
+              <ul class="rows">
+                @for (q of page.items; track q.id) {
+                  <li>
+                    <div class="row-main">
+                      <strong>{{ workLabel(q.workType) }}{{ q.serviceName ? ' · ' + q.serviceName : '' }}</strong>
+                      <span class="meta">{{ q.reference }} · {{ q.createdAt | date: 'mediumDate' }}</span>
+                      @if (q.status === 'QUOTED' && q.quotedAmount) {
+                        <span class="price">{{ formatMoney(q.quotedAmount) }}
+                          <span class="meta"> — valid until {{ q.validUntil | date: 'mediumDate' }}</span></span>
+                      }
+                    </div>
+                    <span class="badge" [attr.data-status]="q.status">{{ quoteLabel(q.status) }}</span>
+                    @if (q.status === 'QUOTED') {
+                      <div class="row-actions">
+                        <button mat-flat-button type="button" [disabled]="busy()" (click)="decide(q, true)">Accept</button>
+                        <button mat-stroked-button type="button" [disabled]="busy()" (click)="decide(q, false)">Decline</button>
+                      </div>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <app-load-state state="loading" loadingText="Loading…" />
+            }
+          </section>
+
+          <section class="card panel" aria-labelledby="bookings">
+            <h2 id="bookings">Service bookings</h2>
+            @if (bookings(); as page) {
+              @if (!page.totalCount) {
+                <p class="empty">No bookings yet. <a routerLink="/services">Book a service</a>.</p>
+              }
+              <ul class="rows">
+                @for (b of page.items; track b.id) {
+                  <li>
+                    <div class="row-main">
+                      <strong>{{ b.service.name }}</strong>
+                      <span class="meta">{{ b.reference }} · {{ b.scheduledStart | date: 'medium' }}</span>
+                      <span class="meta">{{ b.vehicleDescription }}</span>
+                    </div>
+                    <span class="badge" [attr.data-status]="b.status">{{ bookingLabel(b.status) }}</span>
+                    @if (b.status === 'PENDING' || b.status === 'CONFIRMED') {
+                      <button mat-stroked-button type="button" [disabled]="busy()" (click)="cancelBooking(b)">Cancel</button>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <app-load-state state="loading" loadingText="Loading…" />
+            }
+          </section>
+
+          <section class="card panel" aria-labelledby="rentals">
+            <h2 id="rentals">Rental reservations</h2>
+            @if (reservations(); as page) {
+              @if (!page.totalCount) {
+                <p class="empty">No reservations yet. <a routerLink="/rentals">Browse rental vehicles</a>.</p>
+              }
+              <ul class="rows">
+                @for (r of page.items; track r.id) {
+                  <li>
+                    <div class="row-main">
+                      <strong>{{ r.vehicle.title }}</strong>
+                      <span class="meta">{{ r.reference }} · {{ r.startDate | date: 'mediumDate' }} →
+                        {{ r.endDate | date: 'mediumDate' }} ({{ r.days }} days)</span>
+                      <span class="price">{{ formatMoney(r.total) }}</span>
+                    </div>
+                    <span class="badge" [attr.data-status]="r.status">{{ resLabel(r.status) }}</span>
+                    @if (r.status === 'PENDING' || r.status === 'CONFIRMED') {
+                      <button mat-stroked-button type="button" [disabled]="busy()" (click)="cancelReservation(r)">Cancel</button>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <app-load-state state="loading" loadingText="Loading…" />
+            }
           </section>
         </div>
+        @if (error()) {
+          <p class="alert alert--error" role="alert">{{ error() }}</p>
+        }
       } @else {
         <app-load-state state="loading" loadingText="Loading your account…" />
       }
     </div>
   `,
   styles: `
+    .grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
     .panel { padding: var(--space-5); }
     dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-5); }
     dt { color: var(--naboo-text-muted); }
     dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+    .rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+    .rows li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding: var(--space-3) 0;
+      border-top: 1px solid var(--naboo-border); }
+    .row-main { flex: 1; min-width: 180px; }
+    .meta { display: block; font-size: .82rem; color: var(--naboo-text-muted); }
+    .price { font-weight: 700; display: block; }
+    .badge { padding: 2px 10px; border-radius: 999px; font-size: .8rem; font-weight: 600; background: var(--naboo-grey);
+      white-space: nowrap; }
+    .badge[data-status='PENDING'], .badge[data-status='REQUESTED'] { background: #fff3d6; color: #8a5a00; }
+    .badge[data-status='QUOTED'] { background: #fde8e9; color: #a3121c; }
+    .badge[data-status='CONFIRMED'], .badge[data-status='ACCEPTED'], .badge[data-status='COMPLETED'] { background: #e4f5e8; color: #146c2e; }
+    .badge[data-status='ACTIVE'], .badge[data-status='IN_PROGRESS'] { background: #e3e8f5; color: #1e3f8a; }
+    .badge[data-status='CANCELLED'], .badge[data-status='DECLINED'], .badge[data-status='EXPIRED'], .badge[data-status='NO_SHOW'] {
+      background: #eceef1; color: #5a616b; }
+    .row-actions { display: flex; gap: var(--space-2); }
+    .empty { color: var(--naboo-text-muted); }
   `,
 })
 export class MyAccount {
   protected readonly auth = inject(AuthService);
+  private readonly api = inject(Api);
+
+  protected readonly reservations = signal<Page<Reservation> | null>(null);
+  protected readonly bookings = signal<Page<ServiceBooking> | null>(null);
+  protected readonly quotations = signal<Page<Quotation> | null>(null);
+  protected readonly busy = signal(false);
+  protected readonly error = signal<string | null>(null);
+
+  protected readonly formatMoney = formatMoney;
+  protected readonly resLabel = (s: ReservationStatus) => RES_LABELS[s];
+  protected readonly bookingLabel = (s: BookingStatus) => BOOKING_LABELS[s];
+  protected readonly quoteLabel = (s: QuotationStatus) => QUOTE_LABELS[s];
+  protected readonly workLabel = (w: string) => WORK_LABELS[w] ?? w;
 
   constructor() {
     inject(SeoService).set({ title: 'My account', description: 'Your Naboo Automotive account.', path: '/my-account', noIndex: true });
+    this.api.query<{ myRentalReservations: Page<Reservation> }>(MY_RESERVATIONS, { size: 20 }).subscribe({
+      next: (d) => this.reservations.set(d.myRentalReservations),
+      error: () => this.reservations.set(null),
+    });
+    this.api.query<{ myServiceBookings: Page<ServiceBooking> }>(MY_BOOKINGS, { size: 20 }).subscribe({
+      next: (d) => this.bookings.set(d.myServiceBookings),
+      error: () => this.bookings.set(null),
+    });
+    this.api.query<{ myQuotations: Page<Quotation> }>(MY_QUOTATIONS, { size: 20 }).subscribe({
+      next: (d) => this.quotations.set(d.myQuotations),
+      error: () => this.quotations.set(null),
+    });
+  }
+
+  protected decide(q: Quotation, accept: boolean): void {
+    this.busy.set(true);
+    this.error.set(null);
+    this.api.mutate(DECIDE_QUOTATION, { id: q.id, accept }).subscribe({
+      next: () => {
+        this.busy.set(false);
+        this.quotations.update((p) =>
+          p ? { ...p, items: p.items.map((i) => (i.id === q.id ? { ...i, status: accept ? 'ACCEPTED' : 'DECLINED' } : i)) } : p,
+        );
+      },
+      error: (e) => {
+        this.busy.set(false);
+        this.error.set(toApiError(e).message);
+      },
+    });
+  }
+
+  protected cancelBooking(b: ServiceBooking): void {
+    this.busy.set(true);
+    this.error.set(null);
+    this.api.mutate(CANCEL_MY_BOOKING, { id: b.id }).subscribe({
+      next: () => {
+        this.busy.set(false);
+        this.bookings.update((p) =>
+          p ? { ...p, items: p.items.map((i) => (i.id === b.id ? { ...i, status: 'CANCELLED' } : i)) } : p,
+        );
+      },
+      error: (e) => {
+        this.busy.set(false);
+        this.error.set(toApiError(e).message);
+      },
+    });
+  }
+
+  protected cancelReservation(r: Reservation): void {
+    this.busy.set(true);
+    this.error.set(null);
+    this.api.mutate(CANCEL_MY_RESERVATION, { id: r.id }).subscribe({
+      next: () => {
+        this.busy.set(false);
+        this.reservations.update((p) =>
+          p ? { ...p, items: p.items.map((i) => (i.id === r.id ? { ...i, status: 'CANCELLED' } : i)) } : p,
+        );
+      },
+      error: (e) => {
+        this.busy.set(false);
+        this.error.set(toApiError(e).message);
+      },
+    });
   }
 }

@@ -14,3 +14,7 @@ Thumbs.db
 data/
 /uploads/
 /backups/
+*-dev.log
+backend/target/
+frontend/node_modules/
+frontend/dist/

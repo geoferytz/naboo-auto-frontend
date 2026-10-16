@@ -90,6 +90,7 @@ export class Header {
   protected readonly open = signal(false);
   protected readonly links = [
     { path: '/cars-for-sale', label: 'Cars for sale' },
+    { path: '/rentals', label: 'Rentals' },
     { path: '/services', label: 'Services' },
     { path: '/about', label: 'About' },
     { path: '/contact', label: 'Contact' },

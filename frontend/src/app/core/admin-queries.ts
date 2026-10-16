@@ -176,6 +176,140 @@ export const SET_USER_ENABLED = gql`
   }
 `;
 
+const ADMIN_RENTAL_FIELDS = `
+  id slug title make model variant year seats fuelType transmission bodyType color description status published
+  dailyRate { amount currency }
+  deposit { amount currency }
+  images { id url altText sortOrder }
+  registrationNumber publishedAt createdAt updatedAt
+`;
+
+export const ADMIN_RENTALS = gql`
+  query AdminRentals($filter: AdminRentalFilter, $page: Int, $size: Int) {
+    adminRentalVehicles(filter: $filter, page: $page, size: $size) {
+      totalCount page size totalPages
+      items { ${ADMIN_RENTAL_FIELDS} }
+    }
+  }
+`;
+
+export const ADMIN_RENTAL = gql`
+  query AdminRental($id: ID!) {
+    adminRentalVehicle(id: $id) { ${ADMIN_RENTAL_FIELDS} }
+  }
+`;
+
+export const CREATE_RENTAL = gql`
+  mutation CreateRental($input: RentalVehicleInput!) {
+    createRentalVehicle(input: $input) { id }
+  }
+`;
+
+export const UPDATE_RENTAL = gql`
+  mutation UpdateRental($id: ID!, $input: RentalVehicleInput!) {
+    updateRentalVehicle(id: $id, input: $input) { id }
+  }
+`;
+
+export const SET_RENTAL_STATUS = gql`
+  mutation SetRentalStatus($id: ID!, $status: RentalVehicleStatus!) {
+    setRentalVehicleStatus(id: $id, status: $status) { id status }
+  }
+`;
+
+export const SET_RENTAL_PUBLISHED = gql`
+  mutation SetRentalPublished($id: ID!, $published: Boolean!) {
+    setRentalVehiclePublished(id: $id, published: $published) { id published }
+  }
+`;
+
+export const REMOVE_RENTAL_IMAGE = gql`
+  mutation RemoveRentalImage($rentalVehicleId: ID!, $imageId: ID!) {
+    removeRentalVehicleImage(rentalVehicleId: $rentalVehicleId, imageId: $imageId) { id }
+  }
+`;
+
+export const REORDER_RENTAL_IMAGES = gql`
+  mutation ReorderRentalImages($rentalVehicleId: ID!, $imageIds: [ID!]!) {
+    reorderRentalVehicleImages(rentalVehicleId: $rentalVehicleId, imageIds: $imageIds) { id }
+  }
+`;
+
+export const RESERVATIONS = gql`
+  query Reservations($status: ReservationStatus, $page: Int, $size: Int) {
+    rentalReservations(status: $status, page: $page, size: $size) {
+      totalCount page size totalPages
+      items {
+        id reference fullName email phone startDate endDate days status notes createdAt
+        vehicle { id slug title }
+        dailyRate { amount currency }
+        total { amount currency }
+      }
+    }
+  }
+`;
+
+export const UPDATE_RESERVATION = gql`
+  mutation UpdateReservation($id: ID!, $input: UpdateReservationInput!) {
+    updateRentalReservation(id: $id, input: $input) { id status }
+  }
+`;
+
+export const SERVICE_BOOKINGS = gql`
+  query ServiceBookings($status: BookingStatus, $page: Int, $size: Int) {
+    serviceBookings(status: $status, page: $page, size: $size) {
+      totalCount page size totalPages
+      items {
+        id reference fullName email phone vehicleDescription scheduledStart scheduledEnd status notes createdAt
+        service { id slug name category }
+      }
+    }
+  }
+`;
+
+export const UPDATE_BOOKING = gql`
+  mutation UpdateBooking($id: ID!, $input: UpdateBookingInput!) {
+    updateServiceBooking(id: $id, input: $input) { id status }
+  }
+`;
+
+export const WORKSHOP_CAPACITY = gql`
+  query WorkshopCapacity {
+    workshopCapacity { maxConcurrentJobs }
+  }
+`;
+
+export const SET_WORKSHOP_CAPACITY = gql`
+  mutation SetWorkshopCapacity($input: CapacityInput!) {
+    setWorkshopCapacity(input: $input) { maxConcurrentJobs }
+  }
+`;
+
+export const QUOTATIONS = gql`
+  query Quotations($status: QuotationStatus, $page: Int, $size: Int) {
+    quotations(status: $status, page: $page, size: $size) {
+      totalCount page size totalPages
+      items {
+        id reference serviceName fullName email phone workType vehicleDescription description status
+        validUntil staffNotes decidedAt createdAt
+        quotedAmount { amount currency }
+      }
+    }
+  }
+`;
+
+export const PRICE_QUOTATION = gql`
+  mutation PriceQuotation($id: ID!, $input: QuoteInput!) {
+    priceQuotation(id: $id, input: $input) { id status }
+  }
+`;
+
+export const CANCEL_QUOTATION = gql`
+  mutation CancelQuotation($id: ID!) {
+    cancelQuotation(id: $id) { id status }
+  }
+`;
+
 export const AUDIT_LOGS = gql`
   query AuditLogs($entityType: String, $entityId: String, $page: Int, $size: Int) {
     auditLogs(entityType: $entityType, entityId: $entityId, page: $page, size: $size) {

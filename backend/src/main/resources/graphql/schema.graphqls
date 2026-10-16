@@ -1,6 +1,9 @@
 "ISO-8601 timestamp, serialised in UTC"
 scalar DateTime
 
+"ISO-8601 calendar date (YYYY-MM-DD)"
+scalar Date
+
 type Query {
     "The authenticated user, or null when anonymous."
     me: User
@@ -15,6 +18,16 @@ type Query {
     services(categorySlug: String): [Service!]!
     serviceBySlug(slug: String!): Service
 
+    # ---- Public rental catalogue
+    rentalVehicles(page: Int = 0, size: Int = 12): RentalVehiclePage!
+    rentalVehicleBySlug(slug: String!): RentalVehicle
+    rentalAvailability(rentalVehicleId: ID!, startDate: Date!, endDate: Date!): RentalAvailability!
+
+    # ---- Customer account (authenticated)
+    myRentalReservations(page: Int = 0, size: Int = 20): ReservationPage!
+    myServiceBookings(page: Int = 0, size: Int = 20): ServiceBookingPage!
+    myQuotations(page: Int = 0, size: Int = 20): QuotationPage!
+
     # ---- Staff (role-checked on the server)
     adminVehicles(filter: AdminVehicleFilter, page: Int = 0, size: Int = 20): VehiclePage!
     adminVehicle(id: ID!): Vehicle
@@ -25,6 +38,12 @@ type Query {
     staffUsers(includeDisabled: Boolean = false): [User!]!
     users(search: String, page: Int = 0, size: Int = 20): UserPage!
     auditLogs(entityType: String, entityId: String, page: Int = 0, size: Int = 50): AuditLogPage!
+    adminRentalVehicles(filter: AdminRentalFilter, page: Int = 0, size: Int = 20): RentalVehiclePage!
+    adminRentalVehicle(id: ID!): RentalVehicle
+    rentalReservations(status: ReservationStatus, page: Int = 0, size: Int = 20): ReservationPage!
+    serviceBookings(status: BookingStatus, page: Int = 0, size: Int = 20): ServiceBookingPage!
+    workshopCapacity: WorkshopCapacity!
+    quotations(status: QuotationStatus, page: Int = 0, size: Int = 20): QuotationPage!
 }
 
 type Mutation {
@@ -33,6 +52,13 @@ type Mutation {
 
     submitVehicleEnquiry(input: VehicleEnquiryInput!): EnquiryReceipt!
     submitContactEnquiry(input: ContactEnquiryInput!): EnquiryReceipt!
+    requestRental(input: ReservationInput!): EnquiryReceipt!
+    bookService(input: BookingInput!): EnquiryReceipt!
+    requestQuotation(input: QuotationRequestInput!): EnquiryReceipt!
+
+    cancelMyReservation(id: ID!): Reservation!
+    cancelMyBooking(id: ID!): ServiceBooking!
+    decideQuotation(id: ID!, accept: Boolean!): Quotation!
 
     # ---- Staff (role-checked on the server)
     createVehicle(input: VehicleInput!): Vehicle!
@@ -55,6 +81,21 @@ type Mutation {
     createStaffUser(input: CreateStaffUserInput!): User!
     setUserRoles(id: ID!, roles: [Role!]!): User!
     setUserEnabled(id: ID!, enabled: Boolean!): User!
+
+    createRentalVehicle(input: RentalVehicleInput!): RentalVehicle!
+    updateRentalVehicle(id: ID!, input: RentalVehicleInput!): RentalVehicle!
+    setRentalVehicleStatus(id: ID!, status: RentalVehicleStatus!): RentalVehicle!
+    setRentalVehiclePublished(id: ID!, published: Boolean!): RentalVehicle!
+    addRentalVehicleImage(rentalVehicleId: ID!, input: VehicleImageInput!): RentalVehicle!
+    removeRentalVehicleImage(rentalVehicleId: ID!, imageId: ID!): RentalVehicle!
+    reorderRentalVehicleImages(rentalVehicleId: ID!, imageIds: [ID!]!): RentalVehicle!
+    updateRentalReservation(id: ID!, input: UpdateReservationInput!): Reservation!
+
+    updateServiceBooking(id: ID!, input: UpdateBookingInput!): ServiceBooking!
+    setWorkshopCapacity(input: CapacityInput!): WorkshopCapacity!
+
+    priceQuotation(id: ID!, input: QuoteInput!): Quotation!
+    cancelQuotation(id: ID!): Quotation!
 }
 
 # ---------------------------------------------------------------- common
@@ -393,4 +434,227 @@ input ContactEnquiryInput {
     phone: String
     subject: String!
     message: String!
+}
+
+# ---------------------------------------------------------------- rentals
+
+enum RentalVehicleStatus { AVAILABLE UNAVAILABLE }
+enum ReservationStatus { PENDING CONFIRMED ACTIVE COMPLETED CANCELLED }
+
+type RentalVehicle {
+    id: ID!
+    slug: String!
+    title: String!
+    make: String!
+    model: String!
+    variant: String
+    year: Int!
+    seats: Int
+    fuelType: FuelType!
+    transmission: Transmission!
+    bodyType: BodyType!
+    color: String
+    description: String
+    dailyRate: Money!
+    deposit: Money
+    status: RentalVehicleStatus!
+    published: Boolean!
+    images: [VehicleImage!]!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    "Staff only; null on public queries."
+    registrationNumber: String
+}
+
+type RentalVehiclePage {
+    items: [RentalVehicle!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+type RentalVehicleSummary {
+    id: ID!
+    slug: String!
+    title: String!
+}
+
+type RentalAvailability {
+    available: Boolean!
+    days: Int!
+    dailyRate: Money!
+    total: Money!
+}
+
+type Reservation {
+    id: ID!
+    reference: String!
+    vehicle: RentalVehicleSummary!
+    fullName: String!
+    email: String!
+    phone: String!
+    startDate: Date!
+    endDate: Date!
+    days: Int!
+    status: ReservationStatus!
+    dailyRate: Money!
+    total: Money!
+    notes: String
+    createdAt: DateTime!
+}
+
+type ReservationPage {
+    items: [Reservation!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+input RentalVehicleInput {
+    make: String!
+    model: String!
+    variant: String
+    year: Int!
+    seats: Int
+    fuelType: FuelType!
+    transmission: Transmission!
+    bodyType: BodyType!
+    color: String
+    description: String
+    registrationNumber: String
+    "Decimal string in the business currency (TZS)."
+    dailyRateAmount: String!
+    depositAmount: String
+}
+
+input AdminRentalFilter {
+    search: String
+    status: RentalVehicleStatus
+    published: Boolean
+}
+
+input ReservationInput {
+    rentalVehicleId: ID!
+    fullName: String!
+    email: String!
+    phone: String!
+    startDate: Date!
+    endDate: Date!
+    notes: String
+    "Client-generated idempotency key: resubmitting returns the original reservation."
+    requestToken: ID
+}
+
+input UpdateReservationInput {
+    status: ReservationStatus!
+}
+
+# ---------------------------------------------------------------- workshop bookings
+
+enum BookingStatus { PENDING CONFIRMED IN_PROGRESS COMPLETED CANCELLED NO_SHOW }
+
+type ServiceBooking {
+    id: ID!
+    reference: String!
+    service: BookedServiceSummary!
+    fullName: String!
+    email: String!
+    phone: String!
+    vehicleDescription: String!
+    scheduledStart: DateTime!
+    scheduledEnd: DateTime!
+    status: BookingStatus!
+    notes: String
+    createdAt: DateTime!
+}
+
+type BookedServiceSummary {
+    id: ID!
+    slug: String!
+    name: String!
+    category: String!
+}
+
+type ServiceBookingPage {
+    items: [ServiceBooking!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+type WorkshopCapacity {
+    maxConcurrentJobs: Int!
+}
+
+input BookingInput {
+    serviceId: ID!
+    fullName: String!
+    email: String!
+    phone: String!
+    "e.g. \"2018 Toyota Corolla, T 123 ABC\""
+    vehicleDescription: String!
+    scheduledStart: DateTime!
+    notes: String
+    requestToken: ID
+}
+
+input UpdateBookingInput {
+    status: BookingStatus!
+}
+
+input CapacityInput {
+    maxConcurrentJobs: Int!
+}
+
+# ---------------------------------------------------------------- quotations
+
+enum WorkType { PAINTING COLOUR_CHANGE DETAILING RESTORATION REPAIR MAINTENANCE ACCESSORIES OTHER }
+enum QuotationStatus { REQUESTED QUOTED ACCEPTED DECLINED EXPIRED CANCELLED }
+
+type Quotation {
+    id: ID!
+    reference: String!
+    serviceName: String
+    fullName: String!
+    email: String!
+    phone: String!
+    workType: WorkType!
+    vehicleDescription: String!
+    description: String!
+    status: QuotationStatus!
+    quotedAmount: Money
+    validUntil: Date
+    staffNotes: String
+    decidedAt: DateTime
+    createdAt: DateTime!
+}
+
+type QuotationPage {
+    items: [Quotation!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+input QuotationRequestInput {
+    serviceId: ID
+    fullName: String!
+    email: String!
+    phone: String!
+    workType: WorkType!
+    vehicleDescription: String!
+    "Describe the work you need done."
+    description: String!
+    requestToken: ID
+}
+
+input QuoteInput {
+    quotedAmount: String!
+    validUntil: Date!
+    staffNotes: String
 }

@@ -80,3 +80,108 @@ export const SUBMIT_CONTACT_ENQUIRY = gql`
     submitContactEnquiry(input: $input) { reference message }
   }
 `;
+
+const RENTAL_CARD = `
+  id slug title make model variant year seats fuelType transmission bodyType color
+  dailyRate { amount currency }
+  deposit { amount currency }
+  images { id url altText sortOrder }
+`;
+
+export const RENTAL_VEHICLES = gql`
+  query RentalVehicles($page: Int, $size: Int) {
+    rentalVehicles(page: $page, size: $size) {
+      totalCount page size totalPages
+      items { ${RENTAL_CARD} }
+    }
+  }
+`;
+
+export const RENTAL_VEHICLE_BY_SLUG = gql`
+  query RentalVehicleBySlug($slug: String!) {
+    rentalVehicleBySlug(slug: $slug) { ${RENTAL_CARD} description status }
+  }
+`;
+
+export const RENTAL_AVAILABILITY = gql`
+  query RentalAvailability($rentalVehicleId: ID!, $startDate: Date!, $endDate: Date!) {
+    rentalAvailability(rentalVehicleId: $rentalVehicleId, startDate: $startDate, endDate: $endDate) {
+      available days
+      dailyRate { amount currency }
+      total { amount currency }
+    }
+  }
+`;
+
+export const REQUEST_RENTAL = gql`
+  mutation RequestRental($input: ReservationInput!) {
+    requestRental(input: $input) { reference message }
+  }
+`;
+
+export const MY_RESERVATIONS = gql`
+  query MyReservations($page: Int, $size: Int) {
+    myRentalReservations(page: $page, size: $size) {
+      totalCount
+      items {
+        id reference startDate endDate days status notes createdAt
+        vehicle { id slug title }
+        total { amount currency }
+      }
+    }
+  }
+`;
+
+export const CANCEL_MY_RESERVATION = gql`
+  mutation CancelMyReservation($id: ID!) {
+    cancelMyReservation(id: $id) { id status }
+  }
+`;
+
+export const BOOK_SERVICE = gql`
+  mutation BookService($input: BookingInput!) {
+    bookService(input: $input) { reference message }
+  }
+`;
+
+export const MY_BOOKINGS = gql`
+  query MyBookings($page: Int, $size: Int) {
+    myServiceBookings(page: $page, size: $size) {
+      totalCount
+      items {
+        id reference vehicleDescription scheduledStart scheduledEnd status notes createdAt
+        service { id slug name category }
+      }
+    }
+  }
+`;
+
+export const CANCEL_MY_BOOKING = gql`
+  mutation CancelMyBooking($id: ID!) {
+    cancelMyBooking(id: $id) { id status }
+  }
+`;
+
+export const REQUEST_QUOTATION = gql`
+  mutation RequestQuotation($input: QuotationRequestInput!) {
+    requestQuotation(input: $input) { reference message }
+  }
+`;
+
+export const MY_QUOTATIONS = gql`
+  query MyQuotations($page: Int, $size: Int) {
+    myQuotations(page: $page, size: $size) {
+      totalCount
+      items {
+        id reference serviceName workType vehicleDescription description status validUntil decidedAt createdAt
+        quotedAmount { amount currency }
+      }
+    }
+  }
+`;
+
+export const DECIDE_QUOTATION = gql`
+  mutation DecideQuotation($id: ID!, $accept: Boolean!) {
+    decideQuotation(id: $id, accept: $accept) { id status }
+  }
+`;

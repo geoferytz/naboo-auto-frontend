@@ -68,18 +68,35 @@ frontend/src/app
 | Milestone | Status |
 | --- | --- |
 | 1 Discovery & setup | Done: monorepo, versions, dev compose, docs |
-| 2 Foundation | Done: schema V1, auth, roles, audit, design tokens. Pending: refresh tokens, staff user management |
-| 3 Public site & catalogues | Done: home, about, cars-for-sale (+detail, enquiry/viewing), services (+detail), contact, login, register, my-account, legal drafts. Backend admin API for vehicles/services/enquiries exists; **admin UI not built yet** |
-| 4 Rentals, service booking, quotations | Not started |
+| 2 Foundation | Done: schema V1, auth, roles, audit, design tokens |
+| 3 Public site & catalogues + staff admin | Done: public site, vehicle/service catalogues, staff dashboard, vehicle CRUD with photo uploads, enquiries, users, audit UI |
+| 4 Rentals, service booking, quotations | Done: `V2` migration, rental fleet + reservations (Postgres exclusion constraint against double-booking, idempotent `requestToken`s, server-computed totals, 180-day lead / 60-day max limits), workshop bookings (capacity serialized by row lock, 08:00–17:00 business window, 2h–90d window), quotation lifecycle (REQUESTED → QUOTED → ACCEPTED/DECLINED with lazy expiry). Public `/rentals` pages, booking/quotation forms on service pages, `my-account` self-service, admin fleet/reservations/bookings/quotations screens |
 | 5 Workshop, accessories, orders, invoices, payments | Not started |
-| 6 Admin dashboard, customer portal, notifications, reporting | Not started |
+| 6 Admin dashboard, customer portal, notifications, reporting | Partially: dashboard and `my-account` exist; notifications and reporting not started |
 | 7 Docker production deployment, Nginx, HTTPS, backups | Not started (dev compose only) |
 | 8 Hardening, e2e tests, full documentation | Not started |
 
+## Rentals, bookings, quotations (Milestone 4 notes)
+
+- `rental_reservations` uses a `daterange` exclusion constraint (`rental_no_overlap`) so overlapping blocking
+  (PENDING/CONFIRMED/ACTIVE) reservations for the same vehicle are impossible — the database is the guard of last resort
+  against races. Cancellations free dates automatically because the constraint covers only blocking statuses.
+- Reservation totals are computed server-side from the vehicle's daily rate snapshot; later price changes do not affect
+  existing reservations. `requestRental`, `bookService` and `requestQuotation` accept an optional `requestToken` for
+  client-side retry safety.
+- `service_bookings` capacity is enforced by locking the `workshop_capacity` row (`PESSIMISTIC_WRITE`) then counting
+  overlapping blocking bookings — the check and insert are atomic. Working hours are 08:00–17:00
+  `Africa/Dar_es_Salaam`, bookings must end the same day, start ≥2h ahead and ≤90 days out.
+- Quotations: `REQUESTED → QUOTED (staff attaches amount + validUntil) → ACCEPTED/DECLINED`; a sent quote expires
+  lazily once `validUntil` passes. Customers see only their own records via `myQuotations`/`myServiceBookings`/
+  `myRentalReservations`; all staff operations require `RENTAL_MANAGE`, `BOOKING_MANAGE` or `QUOTATION_MANAGE` roles.
+- A `Date` scalar (ISO `YYYY-MM-DD`) was added next to `DateTime` in `GraphQlConfig` for rental windows and quotation
+  validity.
+
 ## Known gaps / next steps
 
-1. Admin UI (vehicle CRUD, image upload with storage, enquiry handling) - backend mutations already exist.
-2. Image uploads: currently images are URLs (`https://`, `/uploads/`, `/assets/`); secure upload storage is pending.
-3. Sitemap generation for vehicle/service pages (static `robots.txt` is in place).
-4. Business must supply real contact details, opening hours, service catalogue and prices, and legal review of policy pages.
-5. Rentals, service booking engine, quotations, accessories, payments and notifications per the roadmap.
+1. Sitemap generation for vehicle/service/rental pages (static `robots.txt` is in place).
+2. Business must supply real contact details, opening hours, service catalogue and prices, and legal review of policy pages.
+3. Accessories, payments and notifications per the roadmap.
+4. Workshop opening hours and capacity rules are fixed constants (`WorkshopBookingService`); move to configurable
+   settings when the business supplies real hours.

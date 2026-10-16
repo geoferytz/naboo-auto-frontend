@@ -206,3 +206,98 @@ export interface AuditLogEntry {
   actorName: string;
   createdAt: string;
 }
+
+// ------------------------------------------------------------------ rentals & bookings
+
+export type RentalVehicleStatus = 'AVAILABLE' | 'UNAVAILABLE';
+export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+
+export interface RentalVehicle {
+  id: string;
+  slug: string;
+  title: string;
+  make: string;
+  model: string;
+  variant: string | null;
+  year: number;
+  seats: number | null;
+  fuelType: FuelType;
+  transmission: Transmission;
+  bodyType: BodyType;
+  color: string | null;
+  description: string | null;
+  dailyRate: Money;
+  deposit: Money | null;
+  status: RentalVehicleStatus;
+  published?: boolean;
+  images: VehicleImage[];
+  registrationNumber?: string | null;
+}
+
+export interface RentalAvailability {
+  available: boolean;
+  days: number;
+  dailyRate: Money;
+  total: Money;
+}
+
+export interface Reservation {
+  id: string;
+  reference: string;
+  vehicle: { id: string; slug: string; title: string };
+  fullName: string;
+  email: string;
+  phone: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+  status: ReservationStatus;
+  dailyRate: Money;
+  total: Money;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface AdminRentalFilter {
+  search?: string | null;
+  status?: RentalVehicleStatus | null;
+  published?: boolean | null;
+}
+
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+
+export interface ServiceBooking {
+  id: string;
+  reference: string;
+  service: { id: string; slug: string; name: string; category: string };
+  fullName: string;
+  email: string;
+  phone: string;
+  vehicleDescription: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  status: BookingStatus;
+  notes: string | null;
+  createdAt: string;
+}
+
+export type WorkType = 'PAINTING' | 'COLOUR_CHANGE' | 'DETAILING' | 'RESTORATION' | 'REPAIR' | 'MAINTENANCE' | 'ACCESSORIES' | 'OTHER';
+export type QuotationStatus = 'REQUESTED' | 'QUOTED' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELLED';
+
+export interface Quotation {
+  id: string;
+  reference: string;
+  serviceName: string | null;
+  fullName: string;
+  email: string;
+  phone: string;
+  workType: WorkType;
+  vehicleDescription: string;
+  description: string;
+  status: QuotationStatus;
+  quotedAmount: Money | null;
+  validUntil: string | null;
+  staffNotes: string | null;
+  decidedAt: string | null;
+  createdAt: string;
+}

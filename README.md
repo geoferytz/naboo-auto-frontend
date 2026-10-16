@@ -1,6 +1,7 @@
 # Naboo Automotive
 
-Vehicle sales, workshop services and (upcoming) rentals, accessories and payments platform for Naboo Automotive, Tanzania.
+Vehicle sales, rentals, workshop services and quotations platform for Naboo Automotive, Tanzania — with accessories
+and payments still to come.
 
 | Part | Stack |
 | --- | --- |
@@ -36,7 +37,7 @@ cd frontend && npm ci
 # terminal 1 - backend on :8080 (profile "dev": reads ../.env, applies dev seed data, enables GraphiQL at /graphiql)
 cd backend && ./mvnw spring-boot:run
 
-# terminal 2 - frontend on :4200 (proxies /graphql to :8080)
+# terminal 2 - frontend on :4200 (proxies /graphql and /api to :8080)
 cd frontend && npm start
 ```
 
