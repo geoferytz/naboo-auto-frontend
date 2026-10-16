@@ -1,7 +1,7 @@
 # Naboo Automotive
 
-Vehicle sales, rentals, workshop services and quotations platform for Naboo Automotive, Tanzania — with accessories
-and payments still to come.
+Vehicle sales, rentals, workshop jobs, accessories shop, orders, invoices and quotations platform for
+Naboo Automotive, Tanzania — with a customer portal, in-app notifications and a staff back office.
 
 | Part | Stack |
 | --- | --- |
@@ -9,6 +9,7 @@ and payments still to come.
 | `backend/` | Java 21, Spring Boot 4.1, Spring for GraphQL, Spring Security (JWT), Spring Data JPA / Hibernate 7, Flyway |
 | Database | PostgreSQL 17 |
 | Dev infra | Docker Compose (`docker-compose.dev.yml`) |
+| Prod infra | `docker-compose.prod.yml` + `deploy/` — Nginx TLS, certbot, daily backups |
 
 See [`docs/architecture.md`](docs/architecture.md) for the architecture, version record, decisions and milestone status.
 The original brief is in `ReadMe.txt` and `Naboo_Automotive_Website_Building_Roadmap.txt`.
@@ -43,6 +44,21 @@ cd frontend && npm start
 
 Open http://localhost:4200. Dev seed data (demo vehicles and services, clearly marked) lives in
 `backend/src/main/resources/db/seed-dev` and is loaded **only** with the `dev` profile.
+
+## Production deployment
+
+Dockerised stack for `https://naboo.co.tz` (and `www.`): Postgres, backend, and a single Nginx
+container that terminates TLS, serves the Angular bundle and proxies `/graphql`, `/api` and
+`/uploads` to the backend. A `certbot` container renews the Let's Encrypt certificate, and a
+`backup` container runs a daily `pg_dump` with retention.
+
+```bash
+cp deploy/env.prod.example .env.prod    # fill in secrets
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+```
+
+Full runbook — including the first-boot certificate issuance step — in
+[`docs/deployment.md`](docs/deployment.md).
 
 ## Test and build
 

@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/target
+**/.angular
+.env
+.env.*
+data
+uploads
+backups
+.git
+*.log
+docs
