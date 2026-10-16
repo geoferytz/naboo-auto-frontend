@@ -18,6 +18,10 @@ spring:
         default_batch_fetch_size: 50
   flyway:
     locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
   graphql:
     http:
       path: /graphql
@@ -57,6 +61,8 @@ app:
     full-name: ${APP_BOOTSTRAP_ADMIN_NAME:Naboo Administrator}
   rate-limit:
     sensitive-per-minute: 10
+  storage:
+    local-dir: ${STORAGE_LOCAL_DIR:./data/uploads}
 
 logging:
   level:

@@ -21,6 +21,9 @@ export interface User {
   phone: string | null;
   roles: Role[];
   staff: boolean;
+  enabled?: boolean;
+  lastLoginAt?: string | null;
+  createdAt?: string;
 }
 
 export interface AuthPayload {
@@ -118,4 +121,88 @@ export interface ServiceItem {
 export interface EnquiryReceipt {
   reference: string;
   message: string;
+}
+
+// ------------------------------------------------------------------ staff/admin
+
+export interface VehicleStatusChange {
+  fromStatus: VehicleStatus | null;
+  toStatus: VehicleStatus;
+  changedAt: string;
+}
+
+export interface AdminVehicle extends VehicleDetail {
+  published: boolean;
+  publishedAt: string | null;
+  registrationNumber: string | null;
+  statusHistory: VehicleStatusChange[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminVehicleFilter {
+  search?: string | null;
+  status?: VehicleStatus | null;
+  published?: boolean | null;
+}
+
+export type EnquiryStatus = 'NEW' | 'CONTACTED' | 'VIEWING_SCHEDULED' | 'CLOSED_WON' | 'CLOSED_LOST';
+
+export interface SalesEnquiry {
+  id: string;
+  reference: string;
+  vehicle: { id: string; slug: string; title: string; status: VehicleStatus };
+  type: EnquiryType;
+  fullName: string;
+  email: string;
+  phone: string;
+  message: string | null;
+  preferredViewingAt: string | null;
+  status: EnquiryStatus;
+  assignedToUserId: string | null;
+  createdAt: string;
+}
+
+export type ContactEnquiryStatus = 'NEW' | 'IN_PROGRESS' | 'RESOLVED';
+
+export interface ContactEnquiry {
+  id: string;
+  reference: string;
+  fullName: string;
+  email: string;
+  phone: string | null;
+  subject: string;
+  message: string;
+  status: ContactEnquiryStatus;
+  createdAt: string;
+}
+
+export interface AdminServiceCategory extends ServiceCategory {
+  sortOrder: number;
+}
+
+export interface AdminServiceItem extends ServiceItem {
+  active: boolean;
+  sortOrder: number;
+}
+
+export interface DashboardSummary {
+  newSalesEnquiries: number;
+  openSalesEnquiries: number;
+  newContactEnquiries: number;
+  vehiclesAvailable: number;
+  vehiclesReserved: number;
+  vehiclesSold: number;
+  vehiclesUnpublished: number;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  details: string | null;
+  actorUserId: string | null;
+  actorName: string;
+  createdAt: string;
 }

@@ -12,7 +12,8 @@ public record AppProperties(
         String timezone,
         Jwt jwt,
         BootstrapAdmin bootstrapAdmin,
-        RateLimit rateLimit) {
+        RateLimit rateLimit,
+        Storage storage) {
 
     public record Jwt(String secret, long ttlMinutes, String issuer) {
     }
@@ -21,5 +22,8 @@ public record AppProperties(
     }
 
     public record RateLimit(int sensitivePerMinute) {
+    }
+
+    public record Storage(String localDir) {
     }
 }

@@ -131,6 +131,13 @@ public class VehicleController {
 
     @MutationMapping
     @PreAuthorize(Permissions.VEHICLE_MANAGE)
+    public VehicleView reorderVehicleImages(@Argument UUID vehicleId, @Argument List<UUID> imageIds,
+            @AuthenticationPrincipal Jwt jwt) {
+        return vehicleService.reorderImages(vehicleId, imageIds, CurrentUser.id(jwt));
+    }
+
+    @MutationMapping
+    @PreAuthorize(Permissions.VEHICLE_MANAGE)
     public SalesEnquiryView updateSalesEnquiry(@Argument UUID id, @Argument @Valid UpdateEnquiryInput input,
             @AuthenticationPrincipal Jwt jwt) {
         return enquiryService.update(id, input, CurrentUser.id(jwt));

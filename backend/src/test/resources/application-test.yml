@@ -4,3 +4,5 @@ app:
     secret: dGVzdC1vbmx5LWp3dC1zZWNyZXQtZm9yLW5hYm9vLWF1dG9tb3RpdmUtdGVzdHMhIQ==
   rate-limit:
     sensitive-per-minute: 1000
+  storage:
+    local-dir: target/test-uploads

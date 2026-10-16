@@ -21,6 +21,10 @@ type Query {
     salesEnquiries(status: EnquiryStatus, page: Int = 0, size: Int = 20): SalesEnquiryPage!
     adminServices: [Service!]!
     contactEnquiries(status: ContactEnquiryStatus, page: Int = 0, size: Int = 20): ContactEnquiryPage!
+    adminDashboard: DashboardSummary!
+    staffUsers(includeDisabled: Boolean = false): [User!]!
+    users(search: String, page: Int = 0, size: Int = 20): UserPage!
+    auditLogs(entityType: String, entityId: String, page: Int = 0, size: Int = 50): AuditLogPage!
 }
 
 type Mutation {
@@ -45,6 +49,12 @@ type Mutation {
     updateService(id: ID!, input: ServiceInput!): Service!
 
     updateContactEnquiryStatus(id: ID!, status: ContactEnquiryStatus!): ContactEnquiry!
+
+    reorderVehicleImages(vehicleId: ID!, imageIds: [ID!]!): Vehicle!
+
+    createStaffUser(input: CreateStaffUserInput!): User!
+    setUserRoles(id: ID!, roles: [Role!]!): User!
+    setUserEnabled(id: ID!, enabled: Boolean!): User!
 }
 
 # ---------------------------------------------------------------- common
@@ -81,6 +91,54 @@ type User {
     phone: String
     roles: [Role!]!
     staff: Boolean!
+    enabled: Boolean!
+    lastLoginAt: DateTime
+    createdAt: DateTime!
+}
+
+type UserPage {
+    items: [User!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+input CreateStaffUserInput {
+    email: String!
+    fullName: String!
+    phone: String
+    password: String!
+    roles: [Role!]!
+}
+
+type AuditLog {
+    id: ID!
+    action: String!
+    entityType: String!
+    entityId: String
+    details: String
+    actorUserId: ID
+    actorName: String!
+    createdAt: DateTime!
+}
+
+type AuditLogPage {
+    items: [AuditLog!]!
+    totalCount: Int!
+    page: Int!
+    size: Int!
+    totalPages: Int!
+}
+
+type DashboardSummary {
+    newSalesEnquiries: Int!
+    openSalesEnquiries: Int!
+    newContactEnquiries: Int!
+    vehiclesAvailable: Int!
+    vehiclesReserved: Int!
+    vehiclesSold: Int!
+    vehiclesUnpublished: Int!
 }
 
 type AuthPayload {

@@ -26,16 +26,34 @@ export class AuthService {
   readonly user = signal<User | null>(null);
   readonly isAuthenticated = computed(() => this.session() !== null);
 
+  /** Resolves once the initial session restore (the `me` query) has finished. */
+  private readonly ready: Promise<void>;
+
   constructor() {
     if (this.session()) {
       // Deferred: the HTTP interceptor injects this service, so it must finish constructing first.
-      queueMicrotask(() =>
-        this.api.query<{ me: User | null }>(ME).subscribe({
-          next: ({ me }) => (me ? this.user.set(me) : this.clear()),
-          error: () => this.clear(),
-        }),
+      this.ready = new Promise((resolve) =>
+        queueMicrotask(() =>
+          this.api.query<{ me: User | null }>(ME).subscribe({
+            next: ({ me }) => {
+              me ? this.user.set(me) : this.clear();
+              resolve();
+            },
+            error: () => {
+              this.clear();
+              resolve();
+            },
+          }),
+        ),
       );
+    } else {
+      this.ready = Promise.resolve();
     }
+  }
+
+  /** Await the initial session restore before making access decisions (used by guards). */
+  whenReady(): Promise<void> {
+    return this.ready;
   }
 
   token(): string | null {

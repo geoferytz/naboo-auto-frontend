@@ -67,6 +67,10 @@ public class VehicleImage {
         return altText;
     }
 
+    public void setSortOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
     public int getSortOrder() {
         return sortOrder;
     }

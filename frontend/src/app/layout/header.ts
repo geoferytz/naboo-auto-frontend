@@ -22,6 +22,12 @@ import { Logo } from './logo';
         </nav>
 
         <div class="right">
+          @if (auth.user()?.staff) {
+            <a mat-button routerLink="/admin" class="account">
+              <mat-icon fontSet="material-symbols-outlined">admin_panel_settings</mat-icon>
+              <span class="label">Staff</span>
+            </a>
+          }
           @if (auth.isAuthenticated()) {
             <a mat-button routerLink="/my-account" class="account">
               <mat-icon fontSet="material-symbols-outlined">account_circle</mat-icon>

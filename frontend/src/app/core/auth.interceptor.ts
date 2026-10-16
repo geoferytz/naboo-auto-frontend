@@ -3,9 +3,9 @@ import { inject } from '@angular/core';
 
 import { AuthService } from './auth.service';
 
-/** Attaches the bearer token to same-origin GraphQL requests only. */
+/** Attaches the bearer token to same-origin API requests only (GraphQL and uploads). */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  if (!req.url.startsWith('/graphql')) {
+  if (!req.url.startsWith('/graphql') && !req.url.startsWith('/api/')) {
     return next(req);
   }
   const token = inject(AuthService).token();

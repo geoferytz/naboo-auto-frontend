@@ -8,5 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ContactEnquiryRepository extends JpaRepository<ContactEnquiry, UUID> {
 
+    long countByStatus(ContactEnquiry.Status status);
+
     Page<ContactEnquiry> findByStatus(ContactEnquiry.Status status, Pageable pageable);
 }

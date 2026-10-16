@@ -16,6 +16,10 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID>, JpaSpec
 
     boolean existsBySlug(String slug);
 
+    long countByStatus(VehicleStatus status);
+
+    long countByPublishedFalse();
+
     @Query("select distinct v.make from Vehicle v where v.published = true and v.status <> :excluded order by v.make")
     List<String> findPublicMakes(VehicleStatus excluded);
 }

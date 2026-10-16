@@ -114,4 +114,26 @@ public class User {
     public void recordLogin(Instant at) {
         this.lastLoginAt = at;
     }
+
+    public Instant getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void replaceRoles(Set<Role> newRoles) {
+        this.roles.clear();
+        this.roles.addAll(newRoles);
+    }
+
+    public void updateProfile(String fullName, String phone) {
+        this.fullName = fullName;
+        this.phone = phone;
+    }
+
+    public void changePasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
 }

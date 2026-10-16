@@ -21,6 +21,7 @@ import com.naboo.automotive.common.Money;
 import com.naboo.automotive.common.NotFoundException;
 import com.naboo.automotive.common.PageView;
 import com.naboo.automotive.config.AppProperties;
+import com.naboo.automotive.storage.FileStorage;
 import com.naboo.automotive.vehicles.VehicleInputs.AdminVehicleFilter;
 import com.naboo.automotive.vehicles.VehicleInputs.VehicleFilter;
 import com.naboo.automotive.vehicles.VehicleInputs.VehicleImageInput;
@@ -41,10 +42,12 @@ public class VehicleService {
     private final VehicleStatusHistoryRepository history;
     private final AuditService audit;
     private final AppProperties properties;
+    private final FileStorage storage;
     private final Clock clock = Clock.systemUTC();
 
     public VehicleService(VehicleRepository vehicles, VehicleStatusHistoryRepository history, AuditService audit,
-            AppProperties properties) {
+            AppProperties properties, FileStorage storage) {
+        this.storage = storage;
         this.vehicles = vehicles;
         this.history = history;
         this.audit = audit;
@@ -218,10 +221,25 @@ public class VehicleService {
     @Transactional
     public VehicleView removeImage(UUID vehicleId, UUID imageId, UUID actor) {
         Vehicle vehicle = load(vehicleId);
-        if (!vehicle.getImages().removeIf(i -> i.getId().equals(imageId))) {
-            throw new NotFoundException("Image not found.");
-        }
+        VehicleImage image = vehicle.getImages().stream().filter(i -> i.getId().equals(imageId)).findFirst()
+                .orElseThrow(() -> new NotFoundException("Image not found."));
+        vehicle.getImages().remove(image);
+        storage.deletePublicAfterCommit(image.getUrl());
         audit.record(actor, "VEHICLE_IMAGE_REMOVED", "Vehicle", vehicleId, imageId.toString());
+        vehicles.flush();
+        return staffView(vehicle);
+    }
+
+    @Transactional
+    public VehicleView reorderImages(UUID vehicleId, List<UUID> orderedIds, UUID actor) {
+        Vehicle vehicle = load(vehicleId);
+        List<UUID> current = vehicle.getImages().stream().map(VehicleImage::getId).toList();
+        if (orderedIds.size() != current.size() || !orderedIds.containsAll(current)) {
+            throw new BusinessRuleException("INVALID_IMAGE_ORDER", "Provide every image of this vehicle exactly once.");
+        }
+        vehicle.getImages().forEach(i -> i.setSortOrder(orderedIds.indexOf(i.getId())));
+        vehicle.getImages().sort(java.util.Comparator.comparingInt(VehicleImage::getSortOrder));
+        audit.record(actor, "VEHICLE_IMAGES_REORDERED", "Vehicle", vehicleId, null);
         vehicles.flush();
         return staffView(vehicle);
     }

@@ -11,6 +11,6 @@ Thumbs.db
 *.iml
 
 # Runtime data
-/data/
+data/
 /uploads/
 /backups/

@@ -11,6 +11,10 @@ import com.naboo.automotive.vehicles.VehicleTypes.EnquiryStatus;
 
 public interface VehicleEnquiryRepository extends JpaRepository<VehicleEnquiry, UUID> {
 
+    long countByStatus(EnquiryStatus status);
+
+    long countByStatusIn(java.util.Collection<EnquiryStatus> statuses);
+
     @EntityGraph(attributePaths = "vehicle")
     Page<VehicleEnquiry> findByStatus(EnquiryStatus status, Pageable pageable);
 
