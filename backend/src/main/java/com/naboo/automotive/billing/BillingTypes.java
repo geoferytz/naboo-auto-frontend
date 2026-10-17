@@ -47,7 +47,8 @@ public final class BillingTypes {
             @NotNull PaymentMethod method,
             @Size(max = 60) @Pattern(regexp = "^[A-Za-z0-9\\-_ ]*$", message = "letters, digits, dashes only") String reference,
             Instant paidAt,
-            @Size(max = 500) String note) {
+            @Size(max = 500) String note,
+            UUID requestToken) {
     }
 
     public record InvoiceItemView(UUID id, String description, int quantity, Money unitPrice, Money lineTotal) {

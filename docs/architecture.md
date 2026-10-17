@@ -74,7 +74,7 @@ frontend/src/app
 | 5 Workshop, accessories, orders, invoices, payments | Done: `V3` migration, workshop job cards (booking-linked, mechanic-capable), accessories catalogue + stock ledger, accessory orders with locked stock movement, draft→issued→paid invoices with partial payments and overpayment guards. Admin screens for jobs/accessories/orders/invoices; public shop with cart; orders+invoices in `my-account` |
 | 6 Admin dashboard, customer portal, notifications, reporting | Done: in-app notifications (`V4`) wired into reservation/booking/order/invoice/job/quotation transitions; bell badge in header; notifications, orders, invoices in `my-account`; dashboard reports queues, low stock, revenue this month, outstanding receivables |
 | 7 Docker production deployment, Nginx, HTTPS, backups | Done: `docker-compose.prod.yml` + `deploy/` (Nginx TLS for naboo.co.tz, certbot renewal, nightly pg_dump backups). See `docs/deployment.md` |
-| 8 Hardening, e2e tests, full documentation | Not started |
+| 8 Hardening, e2e tests, full documentation | Done: `SecurityHardeningTests` + `RateLimiterTests` (28 backend tests); payment `requestToken` idempotency (V5); sitemap/robots completed; `docs/testing.md` security review and coverage map |
 
 ## Rentals, bookings, quotations (Milestone 4 notes)
 

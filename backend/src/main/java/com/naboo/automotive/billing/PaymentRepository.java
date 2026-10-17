@@ -2,6 +2,7 @@ package com.naboo.automotive.billing;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,8 @@ import org.springframework.data.repository.query.Param;
 public interface PaymentRepository extends JpaRepository<Payment, UUID> {
 
     List<Payment> findByInvoiceIdOrderByPaidAtAsc(UUID invoiceId);
+
+    Optional<Payment> findByRequestToken(UUID requestToken);
 
     @Query("select coalesce(sum(p.amount), 0) from Payment p where p.invoice.id = :invoiceId")
     BigDecimal sumByInvoiceId(@Param("invoiceId") UUID invoiceId);

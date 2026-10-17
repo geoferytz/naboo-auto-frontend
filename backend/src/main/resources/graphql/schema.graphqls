@@ -939,4 +939,5 @@ input PaymentInput {
     reference: String
     paidAt: DateTime
     note: String
+    requestToken: ID
 }

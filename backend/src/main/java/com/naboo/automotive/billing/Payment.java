@@ -32,6 +32,10 @@ public class Payment {
     /** Optional external reference, e.g. a mobile-money transaction code. */
     private String reference;
 
+    /** Client-supplied idempotency token; repeated submissions return the existing payment. */
+    @Column(name = "request_token")
+    private UUID requestToken;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "invoice_id")
     private Invoice invoice;
@@ -62,8 +66,9 @@ public class Payment {
     }
 
     public Payment(Invoice invoice, BigDecimal amount, PaymentMethod method, Instant paidAt, UUID receivedByUserId,
-            String reference, String note) {
+            UUID requestToken, String reference, String note) {
         this.invoice = invoice;
+        this.requestToken = requestToken;
         this.amount = amount;
         this.currency = invoice.getCurrency();
         this.method = method;
@@ -79,6 +84,10 @@ public class Payment {
 
     public String getReference() {
         return reference;
+    }
+
+    public Invoice getInvoice() {
+        return invoice;
     }
 
     public BigDecimal getAmount() {

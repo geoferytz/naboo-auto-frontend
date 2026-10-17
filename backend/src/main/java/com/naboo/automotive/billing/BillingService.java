@@ -141,6 +141,12 @@ public class BillingService {
 
     @Transactional
     public InvoiceView recordPayment(UUID invoiceId, PaymentInput input, UUID actor) {
+        if (input.requestToken() != null) {
+            var existing = payments.findByRequestToken(input.requestToken());
+            if (existing.isPresent()) {
+                return view(existing.get().getInvoice());
+            }
+        }
         Invoice invoice = invoices.findForUpdate(invoiceId)
                 .orElseThrow(() -> new NotFoundException("Invoice not found."));
         invoice.requireIssuable();
@@ -155,9 +161,9 @@ public class BillingService {
                     "This payment exceeds the outstanding balance of " + remaining + ".");
         }
         Payment payment = new Payment(invoice, amount, input.method(),
-                input.paidAt() != null ? input.paidAt() : clock.instant(), actor, blankToNull(input.reference()),
-                blankToNull(input.note()));
-        payments.save(payment);
+                input.paidAt() != null ? input.paidAt() : clock.instant(), actor, input.requestToken(),
+                blankToNull(input.reference()), blankToNull(input.note()));
+        payments.saveAndFlush(payment);
         BigDecimal newPaid = paid.add(amount);
         if (newPaid.compareTo(invoice.getTotalAmount()) >= 0) {
             invoice.markPaid(clock.instant());
