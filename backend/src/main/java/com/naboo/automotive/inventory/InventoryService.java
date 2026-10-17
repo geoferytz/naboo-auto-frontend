@@ -209,8 +209,10 @@ public class InventoryService {
 
     @Transactional(readOnly = true)
     public PageView<OrderView> myOrders(UUID userId, Integer page, Integer size) {
-        UUID customerId = customers.findByUserId(userId).map(Customer::getId)
-                .orElseThrow(() -> new NotFoundException("Customer profile not found."));
+        UUID customerId = customers.findByUserId(userId).map(Customer::getId).orElse(null);
+        if (customerId == null) {
+            return PageView.empty();
+        }
         return PageView.of(orders.findByCustomerIdOrderByCreatedAtDesc(customerId,
                 PageView.request(page, size, Sort.by(Sort.Order.desc("createdAt")))), OrderView::of);
     }

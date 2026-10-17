@@ -1,7 +1,8 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, WritableSignal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
+import { DocumentNode } from 'graphql';
 
 import { Api, toApiError } from '../core/api';
 import { AuthService } from '../core/auth.service';
@@ -101,6 +102,12 @@ const WORK_LABELS: Record<string, string> = {
     </header>
     <div class="container section">
       @if (auth.user(); as u) {
+        @if (loadFailed()) {
+          <p class="load-error" role="alert">
+            One or more sections couldn't load.
+            <button mat-button type="button" (click)="loadAll()">Try again</button>
+          </p>
+        }
         <div class="grid">
           <section class="card panel" aria-labelledby="profile">
             <h2 id="profile">Profile</h2>
@@ -295,6 +302,9 @@ const WORK_LABELS: Record<string, string> = {
     .panel-head h2 { margin: 0; }
     .rows li.unread { background: #fff8e6; margin-inline: calc(var(--space-3) * -1); padding-inline: var(--space-3);
       border-radius: var(--radius-sm); }
+    .load-error { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-4);
+      padding: var(--space-3) var(--space-4); background: #fde8e9; color: #a3121c; border-radius: var(--radius-sm);
+      font-weight: 600; }
     dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-5); }
     dt { color: var(--naboo-text-muted); }
     dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
@@ -331,6 +341,7 @@ export class MyAccount {
   protected readonly unreadCount = signal(0);
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly loadFailed = signal(false);
 
   protected readonly formatMoney = formatMoney;
   protected readonly resLabel = (s: ReservationStatus) => RES_LABELS[s];
@@ -342,27 +353,28 @@ export class MyAccount {
 
   constructor() {
     inject(SeoService).set({ title: 'My account', description: 'Your Naboo Automotive account.', path: '/my-account', noIndex: true });
-    this.api.query<{ myRentalReservations: Page<Reservation> }>(MY_RESERVATIONS, { size: 20 }).subscribe({
-      next: (d) => this.reservations.set(d.myRentalReservations),
-      error: () => this.reservations.set(null),
-    });
-    this.api.query<{ myServiceBookings: Page<ServiceBooking> }>(MY_BOOKINGS, { size: 20 }).subscribe({
-      next: (d) => this.bookings.set(d.myServiceBookings),
-      error: () => this.bookings.set(null),
-    });
-    this.api.query<{ myQuotations: Page<Quotation> }>(MY_QUOTATIONS, { size: 20 }).subscribe({
-      next: (d) => this.quotations.set(d.myQuotations),
-      error: () => this.quotations.set(null),
-    });
-    this.api.query<{ myOrders: Page<Order> }>(MY_ORDERS, { size: 20 }).subscribe({
-      next: (d) => this.orders.set(d.myOrders),
-      error: () => this.orders.set(null),
-    });
-    this.api.query<{ myInvoices: Page<Invoice> }>(MY_INVOICES, { size: 20 }).subscribe({
-      next: (d) => this.invoices.set(d.myInvoices),
-      error: () => this.invoices.set(null),
-    });
+    this.loadAll();
+  }
+
+  protected loadAll(): void {
+    this.loadFailed.set(false);
+    this.loadPanel(MY_RESERVATIONS, { size: 20 }, this.reservations);
+    this.loadPanel(MY_BOOKINGS, { size: 20 }, this.bookings);
+    this.loadPanel(MY_QUOTATIONS, { size: 20 }, this.quotations);
+    this.loadPanel(MY_ORDERS, { size: 20 }, this.orders);
+    this.loadPanel(MY_INVOICES, { size: 20 }, this.invoices);
     this.loadNotifications();
+  }
+
+  /** Loads one page signal; on failure shows an empty panel and raises the retry banner. */
+  private loadPanel<T>(doc: DocumentNode, vars: Record<string, unknown>, target: WritableSignal<Page<T> | null>): void {
+    this.api.query<Record<string, Page<T>>>(doc, vars).subscribe({
+      next: (d) => target.set(Object.values(d)[0]),
+      error: () => {
+        target.set({ items: [], totalCount: 0, page: 0, size: 20, totalPages: 0 });
+        this.loadFailed.set(true);
+      },
+    });
   }
 
   private loadNotifications(): void {
@@ -373,7 +385,10 @@ export class MyAccount {
           this.notifications.set(d.myNotifications);
           this.unreadCount.set(d.myNotifications.items.filter((n) => !n.read).length);
         },
-        error: () => this.notifications.set(null),
+        error: () => {
+          this.notifications.set({ items: [], totalCount: 0, page: 0, size: 30, totalPages: 0 });
+          this.loadFailed.set(true);
+        },
       });
   }
 

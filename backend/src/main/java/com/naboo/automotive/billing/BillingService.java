@@ -53,8 +53,10 @@ public class BillingService {
 
     @Transactional(readOnly = true)
     public PageView<InvoiceView> myInvoices(UUID userId, Integer page, Integer size) {
-        UUID customerId = customers.findByUserId(userId).map(Customer::getId)
-                .orElseThrow(() -> new NotFoundException("Customer profile not found."));
+        UUID customerId = customers.findByUserId(userId).map(Customer::getId).orElse(null);
+        if (customerId == null) {
+            return PageView.empty();
+        }
         return PageView.of(invoices.findByCustomerIdOrderByCreatedAtDesc(customerId,
                 PageView.request(page, size, Sort.by(Sort.Order.desc("createdAt")))), this::view);
     }

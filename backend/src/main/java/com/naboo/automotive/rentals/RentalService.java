@@ -148,8 +148,10 @@ public class RentalService {
 
     @Transactional(readOnly = true)
     public PageView<ReservationView> myReservations(UUID userId, Integer page, Integer size) {
-        UUID customerId = customers.findByUserId(userId).map(Customer::getId)
-                .orElseThrow(() -> new NotFoundException("Customer profile not found."));
+        UUID customerId = customers.findByUserId(userId).map(Customer::getId).orElse(null);
+        if (customerId == null) {
+            return PageView.empty();
+        }
         return PageView.of(reservations.findByCustomerIdOrderByCreatedAtDesc(customerId,
                 PageView.request(page, size, Sort.by(Sort.Order.desc("createdAt")))), ReservationView::of);
     }

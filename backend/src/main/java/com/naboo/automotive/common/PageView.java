@@ -11,6 +11,11 @@ public record PageView<T>(List<T> items, long totalCount, int page, int size, in
 
     public static final int MAX_PAGE_SIZE = 50;
 
+    /** An empty first page — e.g. for users without a customer profile. */
+    public static <T> PageView<T> empty() {
+        return new PageView<>(List.of(), 0, 0, 20, 0);
+    }
+
     public static <E, T> PageView<T> of(Page<E> page, Function<E, T> mapper) {
         return new PageView<>(page.map(mapper).getContent(), page.getTotalElements(), page.getNumber(), page.getSize(),
                 page.getTotalPages());
