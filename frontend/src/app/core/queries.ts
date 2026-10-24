@@ -22,6 +22,7 @@ export const REGISTER = gql`
 
 const VEHICLE_CARD = `
   id slug title make model year mileageKm fuelType transmission bodyType condition status location
+  engineCapacityCc engineCode publishedAt
   price { amount currency }
   images { id url altText sortOrder }
 `;

@@ -347,6 +347,9 @@ input VehicleFilter {
     transmission: Transmission
     bodyType: BodyType
     condition: VehicleCondition
+    "Partial match on yard/branch location."
+    location: String
+    color: String
     includeSold: Boolean
 }
 

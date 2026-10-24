@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
@@ -18,7 +19,10 @@ import { LoadState } from '../shared/load-state';
 import { VehicleCardComponent } from '../shared/vehicle-card';
 
 const PAGE_SIZE = 12;
-const FILTER_KEYS = ['search', 'make', 'bodyType', 'fuelType', 'transmission', 'condition', 'minYear', 'maxYear', 'maxPrice'] as const;
+const FILTER_KEYS = [
+  'search', 'make', 'minYear', 'maxYear', 'minPrice', 'maxPrice',
+  'location', 'condition', 'bodyType', 'fuelType', 'transmission', 'color',
+] as const;
 
 @Component({
   selector: 'app-cars-for-sale',
@@ -28,92 +32,134 @@ const FILTER_KEYS = ['search', 'make', 'bodyType', 'fuelType', 'transmission', '
     MatButtonModule,
     MatCheckboxModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     MatSelectModule,
     VehicleCardComponent,
     LoadState,
   ],
   template: `
-    <header class="page-header">
-      <div class="container">
-        <span class="eyebrow">Cars for sale</span>
-        <h1>Find your next vehicle</h1>
-        <p class="lead">Every listing shows the current price in TZS and its live availability.</p>
-      </div>
-    </header>
-
-    <div class="container layout section">
-      <aside class="filters">
-        <details [open]="wide">
-          <summary>Search &amp; filters</summary>
+    <div class="container section layout">
+      <aside class="sidebar" aria-label="Vehicle filters">
+        <details [open]="wide" class="panel">
+          <summary>
+            <mat-icon fontSet="material-symbols-outlined">tune</mat-icon> Filters
+            <span class="found">Found cars: <strong>{{ results.hasValue() ? results.value().totalCount : '…' }}</strong></span>
+          </summary>
           <form [formGroup]="form" (ngSubmit)="apply()" class="filter-form" aria-label="Vehicle filters">
-            <mat-form-field appearance="outline">
-              <mat-label>Keyword</mat-label>
-              <input matInput formControlName="search" placeholder="e.g. Prado, Hilux" maxlength="100" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Make</mat-label>
-              <mat-select formControlName="make">
-                <mat-option [value]="''">Any make</mat-option>
-                @for (m of makes.value() ?? []; track m) {
-                  <mat-option [value]="m">{{ m }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Body type</mat-label>
-              <mat-select formControlName="bodyType">
-                <mat-option [value]="''">Any</mat-option>
-                @for (o of bodyOptions; track o.value) {
-                  <mat-option [value]="o.value">{{ o.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Fuel</mat-label>
-              <mat-select formControlName="fuelType">
-                <mat-option [value]="''">Any</mat-option>
-                @for (o of fuelOptions; track o.value) {
-                  <mat-option [value]="o.value">{{ o.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Transmission</mat-label>
-              <mat-select formControlName="transmission">
-                <mat-option [value]="''">Any</mat-option>
-                @for (o of transmissionOptions; track o.value) {
-                  <mat-option [value]="o.value">{{ o.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Condition</mat-label>
-              <mat-select formControlName="condition">
-                <mat-option [value]="''">Any</mat-option>
-                @for (o of conditionOptions; track o.value) {
-                  <mat-option [value]="o.value">{{ o.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <div class="pair">
-              <mat-form-field appearance="outline">
-                <mat-label>Year from</mat-label>
-                <input matInput type="number" inputmode="numeric" formControlName="minYear" min="1950" max="2100" />
+            <section class="group">
+              <h3>Keyword</h3>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <input matInput formControlName="search" placeholder="e.g. Prado, Hilux" maxlength="100" />
               </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Year to</mat-label>
-                <input matInput type="number" inputmode="numeric" formControlName="maxYear" min="1950" max="2100" />
+            </section>
+
+            <section class="group">
+              <h3>Basic information</h3>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Make</mat-label>
+                <mat-select formControlName="make">
+                  <mat-option [value]="''">Any make</mat-option>
+                  @for (m of makes.value() ?? []; track m) {
+                    <mat-option [value]="m">{{ m }}</mat-option>
+                  }
+                </mat-select>
               </mat-form-field>
-            </div>
-            <mat-form-field appearance="outline">
-              <mat-label>Maximum price (TZS)</mat-label>
-              <input matInput type="number" inputmode="numeric" formControlName="maxPrice" min="0" step="1000000" />
-            </mat-form-field>
+              <div class="pair">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Year from</mat-label>
+                  <input matInput type="number" inputmode="numeric" formControlName="minYear" min="1950" max="2100" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Year to</mat-label>
+                  <input matInput type="number" inputmode="numeric" formControlName="maxYear" min="1950" max="2100" />
+                </mat-form-field>
+              </div>
+            </section>
+
+            <section class="group">
+              <h3>Car cost</h3>
+              <div class="pair">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Price from</mat-label>
+                  <input matInput type="number" inputmode="numeric" formControlName="minPrice" min="0" step="1000000" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Price to</mat-label>
+                  <input matInput type="number" inputmode="numeric" formControlName="maxPrice" min="0" step="1000000" />
+                </mat-form-field>
+              </div>
+              <p class="hint">Prices in TZS</p>
+            </section>
+
+            <section class="group">
+              <h3>Search region</h3>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Location / yard</mat-label>
+                <input matInput formControlName="location" placeholder="e.g. Dar es Salaam" maxlength="80" />
+              </mat-form-field>
+            </section>
+
+            <section class="group">
+              <h3>Vehicle condition</h3>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-select formControlName="condition">
+                  <mat-option [value]="''">Any condition</mat-option>
+                  @for (o of conditionOptions; track o.value) {
+                    <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </section>
+
+            <section class="group">
+              <h3>Characteristics</h3>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Body type</mat-label>
+                <mat-select formControlName="bodyType">
+                  <mat-option [value]="''">Any</mat-option>
+                  @for (o of bodyOptions; track o.value) {
+                    <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Fuel</mat-label>
+                <mat-select formControlName="fuelType">
+                  <mat-option [value]="''">Any</mat-option>
+                  @for (o of fuelOptions; track o.value) {
+                    <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Transmission</mat-label>
+                <mat-select formControlName="transmission">
+                  <mat-option [value]="''">Any</mat-option>
+                  @for (o of transmissionOptions; track o.value) {
+                    <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </section>
+
+            <section class="group">
+              <h3>Colour</h3>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <input matInput formControlName="color" placeholder="e.g. White" maxlength="40" />
+              </mat-form-field>
+            </section>
+
             <mat-checkbox formControlName="includeSold">Include sold vehicles</mat-checkbox>
+
+            <div class="found-row">
+              <span>Found cars: <strong>{{ results.hasValue() ? results.value().totalCount : '…' }}</strong></span>
+            </div>
             <div class="actions">
-              <button mat-flat-button type="submit">Show results</button>
-              <button mat-button type="button" (click)="reset()">Clear</button>
+              <button mat-flat-button type="submit" class="show-btn">Show</button>
+              <button mat-icon-button type="button" (click)="reset()" aria-label="Clear all filters">
+                <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+              </button>
             </div>
           </form>
         </details>
@@ -121,13 +167,10 @@ const FILTER_KEYS = ['search', 'make', 'bodyType', 'fuelType', 'transmission', '
 
       <section class="results" aria-labelledby="results-heading">
         <div class="results-bar">
-          <h2 id="results-heading" aria-live="polite">
-            @if (results.hasValue()) {
-              {{ results.value().totalCount }} {{ results.value().totalCount === 1 ? 'vehicle' : 'vehicles' }}
-            } @else {
-              Vehicles
-            }
-          </h2>
+          <h1 id="results-heading" aria-live="polite">
+            Cars for sale
+            <span class="count">{{ results.hasValue() ? '· ' + results.value().totalCount + ' found' : '' }}</span>
+          </h1>
           <mat-form-field appearance="outline" class="sort" subscriptSizing="dynamic">
             <mat-label>Sort by</mat-label>
             <mat-select [value]="sort()" (selectionChange)="setSort($event.value)">
@@ -170,22 +213,37 @@ const FILTER_KEYS = ['search', 'make', 'bodyType', 'fuelType', 'transmission', '
     </div>
   `,
   styles: `
-    .layout { display: grid; gap: var(--space-5); padding-top: var(--space-6); }
-    details { background: var(--naboo-grey); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
-    summary { cursor: pointer; font-weight: 700; padding-block: var(--space-2); }
-    .filter-form { display: flex; flex-direction: column; padding-top: var(--space-3); }
-    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-    mat-checkbox { margin-bottom: var(--space-4); }
+    .layout { display: grid; gap: var(--space-5); padding-top: var(--space-5); }
+    .panel { background: #fff; border: 1px solid var(--naboo-border); border-radius: var(--radius-md); overflow: hidden; }
+    summary { cursor: pointer; font-weight: 700; padding: var(--space-3) var(--space-4); display: flex; align-items: center; gap: var(--space-2);
+      border-bottom: 1px solid var(--naboo-border); }
+    summary .found { margin-left: auto; font-weight: 500; font-size: .85rem; color: var(--naboo-text-muted); }
+    summary::-webkit-details-marker { display: none; }
+    .filter-form { display: flex; flex-direction: column; }
+    .group { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--naboo-border);
+      display: flex; flex-direction: column; gap: var(--space-2); }
+    .group h3 { font-size: .85rem; font-weight: 700; margin: 0 0 var(--space-1); color: var(--naboo-text);
+      display: flex; align-items: center; gap: var(--space-2); }
+    .group h3::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--naboo-red); flex-shrink: 0; }
+    .group mat-form-field { width: 100%; }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+    .hint { font-size: .8rem; color: var(--naboo-text-muted); margin: 0; }
+    .filter-form > mat-checkbox { margin: var(--space-3) var(--space-4) 0; }
+    .found-row { padding: var(--space-3) var(--space-4) 0; font-size: .9rem; color: var(--naboo-text-muted); }
+    .actions { display: flex; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); }
+    .show-btn { flex: 1; }
     .results-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-3);
       margin-bottom: var(--space-4); }
-    .results-bar h2 { margin: 0; font-size: 1.3rem; }
-    .sort { width: 220px; }
+    .results-bar h1 { margin: 0; font-size: 1.4rem; }
+    .count { font-weight: 500; font-size: .95rem; color: var(--naboo-text-muted); }
+    .sort { width: 210px; }
+    .grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
     .pager { display: flex; justify-content: center; align-items: center; gap: var(--space-4); margin-top: var(--space-6); }
     .hidden { visibility: hidden; }
     @media (min-width: 960px) {
-      .layout { grid-template-columns: 290px 1fr; align-items: start; }
-      .filters { position: sticky; top: calc(var(--header-height) + var(--space-4)); }
-      summary { pointer-events: none; list-style: none; }
+      .layout { grid-template-columns: 280px 1fr; align-items: start; }
+      .sidebar { position: sticky; top: calc(var(--header-height) + var(--space-4)); }
+      summary { cursor: default; }
     }
   `,
 })
@@ -211,13 +269,16 @@ export class CarsForSale {
   protected readonly form = this.fb.nonNullable.group({
     search: '',
     make: '',
+    minYear: '',
+    maxYear: '',
+    minPrice: '',
+    maxPrice: '',
+    location: '',
+    condition: '',
     bodyType: '',
     fuelType: '',
     transmission: '',
-    condition: '',
-    minYear: '',
-    maxYear: '',
-    maxPrice: '',
+    color: '',
     includeSold: false,
   });
 
@@ -278,7 +339,10 @@ function toFilter(p: ParamMap): VehicleFilter {
     const n = Number(p.get(k));
     return p.get(k) && Number.isFinite(n) ? Math.trunc(n) : null;
   };
-  const maxPrice = num('maxPrice');
+  const price = (k: string) => {
+    const n = num(k);
+    return n != null && n >= 0 ? String(n) : null;
+  };
   return {
     search: p.get('search'),
     make: p.get('make'),
@@ -288,7 +352,10 @@ function toFilter(p: ParamMap): VehicleFilter {
     condition: p.get('condition') as VehicleFilter['condition'],
     minYear: num('minYear'),
     maxYear: num('maxYear'),
-    maxPrice: maxPrice != null && maxPrice >= 0 ? String(maxPrice) : null,
+    minPrice: price('minPrice'),
+    maxPrice: price('maxPrice'),
+    location: p.get('location'),
+    color: p.get('color'),
     includeSold: p.get('includeSold') === 'true',
   };
 }

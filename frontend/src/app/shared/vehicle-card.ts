@@ -1,13 +1,15 @@
 import { Component, computed, input } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
 
-import { CONDITION_LABELS, FUEL_LABELS, STATUS_LABELS, TRANSMISSION_LABELS, formatMoney, formatNumber } from '../core/format';
+import { FUEL_LABELS, STATUS_LABELS, TRANSMISSION_LABELS, formatMoney, formatNumber } from '../core/format';
 import { VehicleCard as Vehicle } from '../core/models';
 import { VehiclePlaceholder } from './vehicle-placeholder';
 
 @Component({
   selector: 'app-vehicle-card',
-  imports: [RouterLink, VehiclePlaceholder],
+  imports: [RouterLink, DatePipe, MatButtonModule, VehiclePlaceholder],
   template: `
     @let v = vehicle();
     <article class="card vehicle" [class.sold]="v.status === 'SOLD'">
@@ -22,17 +24,22 @@ import { VehiclePlaceholder } from './vehicle-placeholder';
         }
       </a>
       <div class="body">
-        <h3><a [routerLink]="['/cars-for-sale', v.slug]">{{ v.title }}</a></h3>
-        <ul class="specs" aria-label="Key specifications">
-          <li>{{ formatNumber(v.mileageKm) }} km</li>
-          <li>{{ fuel[v.fuelType] }}</li>
-          <li>{{ transmission[v.transmission] }}</li>
-          <li>{{ condition[v.condition] }}</li>
-          @if (v.location) {
-            <li class="loc">{{ v.location }}</li>
+        <div class="topline">
+          @if (v.publishedAt) {
+            <time class="posted" [attr.datetime]="v.publishedAt">{{ v.publishedAt | date: 'MMM d, y' }}</time>
           }
-        </ul>
-        <p class="price">{{ formatMoney(v.price) }}</p>
+        </div>
+        <h3><a [routerLink]="['/cars-for-sale', v.slug]">{{ v.title }}</a></h3>
+        <dl class="specs" aria-label="Key specifications">
+          <div><dt>Mileage</dt><dd>{{ formatNumber(v.mileageKm) }} km</dd></div>
+          <div><dt>Location</dt><dd>{{ v.location ?? '—' }}</dd></div>
+          <div><dt>Engine</dt><dd>{{ engine(v) }}</dd></div>
+          <div><dt>Transmission</dt><dd>{{ transmission[v.transmission] }}</dd></div>
+        </dl>
+        <div class="foot">
+          <p class="price">{{ formatMoney(v.price) }}</p>
+          <a mat-flat-button class="details" [routerLink]="['/cars-for-sale', v.slug]">More details</a>
+        </div>
       </div>
     </article>
   `,
@@ -44,13 +51,19 @@ import { VehiclePlaceholder } from './vehicle-placeholder';
     .badge { position: absolute; top: 12px; left: 12px; }
     .sold .media img, .sold app-vehicle-placeholder { filter: grayscale(.8); opacity: .8; }
     .body { padding: var(--space-4); display: flex; flex-direction: column; flex: 1; }
-    h3 { font-size: 1.05rem; margin-bottom: var(--space-2); }
+    .topline { min-height: 1em; }
+    .posted { font-size: .75rem; color: var(--naboo-text-muted); }
+    h3 { font-size: 1.05rem; margin: var(--space-1) 0 var(--space-3); }
     h3 a { color: var(--naboo-text); text-decoration: none; }
     h3 a:hover { color: var(--naboo-red-dark); }
-    .specs { list-style: none; margin: 0 0 var(--space-3); padding: 0; display: flex; flex-wrap: wrap; gap: 4px 12px;
-      color: var(--naboo-text-muted); font-size: .875rem; }
-    .specs li + li::before { content: '•'; margin-right: 12px; color: var(--naboo-grey-dark); }
-    .price { margin: auto 0 0; font-size: 1.2rem; font-weight: 800; }
+    .specs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2) var(--space-3); margin: 0 0 var(--space-3); }
+    .specs > div { display: flex; justify-content: space-between; gap: var(--space-2); font-size: .82rem;
+      border-bottom: 1px solid var(--naboo-border); padding-bottom: var(--space-1); }
+    .specs dt { color: var(--naboo-text-muted); }
+    .specs dd { margin: 0; font-weight: 600; text-align: right; }
+    .foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: auto; }
+    .price { margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--naboo-red-dark); }
+    .details { flex-shrink: 0; }
   `,
 })
 export class VehicleCardComponent {
@@ -58,8 +71,12 @@ export class VehicleCardComponent {
   protected readonly cover = computed(() => this.vehicle().images[0] ?? null);
   protected readonly fuel = FUEL_LABELS;
   protected readonly transmission = TRANSMISSION_LABELS;
-  protected readonly condition = CONDITION_LABELS;
   protected readonly statusLabel = STATUS_LABELS;
   protected readonly formatMoney = formatMoney;
   protected readonly formatNumber = formatNumber;
+
+  protected engine(v: Vehicle): string {
+    const parts = [v.engineCapacityCc ? `${formatNumber(v.engineCapacityCc)} cc` : null, v.engineCode].filter(Boolean);
+    return parts.length ? parts.join(' · ') : FUEL_LABELS[v.fuelType];
+  }
 }

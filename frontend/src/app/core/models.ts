@@ -62,14 +62,15 @@ export interface VehicleCard {
   price: Money;
   status: VehicleStatus;
   location: string | null;
+  engineCapacityCc?: number | null;
+  engineCode?: string | null;
+  publishedAt?: string | null;
   images: VehicleImage[];
 }
 
 export interface VehicleDetail extends VehicleCard {
   variant: string | null;
   color: string | null;
-  engineCapacityCc: number | null;
-  engineCode: string | null;
   description: string | null;
   features: string[];
   enquiriesOpen: boolean;
@@ -96,6 +97,8 @@ export interface VehicleFilter {
   transmission?: Transmission | null;
   bodyType?: BodyType | null;
   condition?: VehicleCondition | null;
+  location?: string | null;
+  color?: string | null;
   includeSold?: boolean | null;
 }
 
