@@ -82,6 +82,11 @@ export class AuthService {
     void this.router.navigateByUrl('/');
   }
 
+  /** Drops the stored session (used when the server rejects a stale/invalid token). */
+  clearSession(): void {
+    this.clear();
+  }
+
   private store(payload: AuthPayload): void {
     const s = { token: payload.token, expiresAt: payload.expiresAt };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(s));
