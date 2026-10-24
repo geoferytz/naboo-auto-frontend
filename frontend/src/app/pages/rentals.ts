@@ -71,6 +71,8 @@ import { VehiclePlaceholder } from '../shared/vehicle-placeholder';
   `,
 })
 export class Rentals {
+  private readonly api = inject(Api);
+
   protected readonly formatMoney = formatMoney;
   protected readonly fuel = (f: keyof typeof FUEL_LABELS) => FUEL_LABELS[f];
   protected readonly trans = (t: keyof typeof TRANSMISSION_LABELS) => TRANSMISSION_LABELS[t];
@@ -78,7 +80,7 @@ export class Rentals {
 
   protected readonly rentals = rxResource({
     stream: () =>
-      inject(Api)
+      this.api
         .query<{ rentalVehicles: Page<RentalVehicle> }>(RENTAL_VEHICLES, { page: 0, size: 24 })
         .pipe(map((d) => d.rentalVehicles)),
   });
