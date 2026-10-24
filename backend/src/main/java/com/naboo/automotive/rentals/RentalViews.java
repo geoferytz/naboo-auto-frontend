@@ -21,13 +21,14 @@ public final class RentalViews {
     /** {@code registrationNumber} is populated only for staff views. */
     public record RentalVehicleView(UUID id, String slug, String title, String make, String model, String variant,
             int year, Integer seats, FuelType fuelType, Transmission transmission, BodyType bodyType, String color,
-            String description, Money dailyRate, Money deposit, RentalVehicleStatus status, boolean published,
-            List<ImageView> images, Instant publishedAt, Instant createdAt, Instant updatedAt, String registrationNumber) {
+            String location, String description, Money dailyRate, Money deposit, RentalVehicleStatus status,
+            boolean published, List<ImageView> images, Instant publishedAt, Instant createdAt, Instant updatedAt,
+            String registrationNumber) {
 
         static RentalVehicleView of(RentalVehicle v, boolean staff) {
             return new RentalVehicleView(v.getId(), v.getSlug(), v.title(), v.getMake(), v.getModel(), v.getVariant(),
                     v.getModelYear(), v.getSeats(), v.getFuelType(), v.getTransmission(), v.getBodyType(), v.getColor(),
-                    v.getDescription(), Money.of(v.getDailyRateAmount(), v.getCurrency()),
+                    v.getLocation(), v.getDescription(), Money.of(v.getDailyRateAmount(), v.getCurrency()),
                     Money.of(v.getDepositAmount(), v.getCurrency()), v.getStatus(), v.isPublished(),
                     v.getImages().stream().map(i -> new ImageView(i.getId(), i.getUrl(), i.getAltText(), i.getSortOrder())).toList(),
                     v.getPublishedAt(), v.getCreatedAt(), v.getUpdatedAt(), staff ? v.getRegistrationNumber() : null);

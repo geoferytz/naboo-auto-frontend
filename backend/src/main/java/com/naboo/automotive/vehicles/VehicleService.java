@@ -72,7 +72,8 @@ public class VehicleService {
             if (notBlank(f.search())) {
                 String like = "%" + escapeLike(f.search().trim().toLowerCase(Locale.ROOT)) + "%";
                 p.add(cb.or(cb.like(cb.lower(root.get("make")), like, '\\'), cb.like(cb.lower(root.get("model")), like, '\\'),
-                        cb.like(cb.lower(cb.coalesce(root.get("variant"), "")), like, '\\')));
+                        cb.like(cb.lower(cb.coalesce(root.get("variant"), "")), like, '\\'),
+                        cb.like(cb.lower(cb.coalesce(root.get("location"), "")), like, '\\')));
             }
             if (notBlank(f.make())) {
                 p.add(cb.equal(cb.lower(root.get("make")), f.make().trim().toLowerCase(Locale.ROOT)));
@@ -132,6 +133,7 @@ public class VehicleService {
                 String like = "%" + escapeLike(filter.search().trim().toLowerCase(Locale.ROOT)) + "%";
                 p.add(cb.or(cb.like(cb.lower(root.get("make")), like, '\\'), cb.like(cb.lower(root.get("model")), like, '\\'),
                         cb.like(cb.lower(root.get("slug")), like, '\\'),
+                        cb.like(cb.lower(cb.coalesce(root.get("location"), "")), like, '\\'),
                         cb.like(cb.lower(cb.coalesce(root.get("registrationNumber"), "")), like, '\\')));
             }
             if (filter != null && filter.status() != null) {

@@ -55,6 +55,8 @@ public final class VehicleInputs {
             @Size(max = 40) String color,
             @NotNull VehicleCondition condition,
             @Positive Integer engineCapacityCc,
+            @Size(max = 30) String engineCode,
+            @Size(max = 80) String location,
             @Size(max = 10000) String description,
             @Size(max = 20) String registrationNumber,
             @NotBlank @Size(max = 20) String priceAmount,

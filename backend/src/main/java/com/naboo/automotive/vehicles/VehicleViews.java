@@ -29,7 +29,8 @@ public final class VehicleViews {
      */
     public record VehicleView(UUID id, String slug, String title, String make, String model, String variant, int year,
             Integer mileageKm, FuelType fuelType, Transmission transmission, BodyType bodyType, String color,
-            VehicleCondition condition, Integer engineCapacityCc, String description, Money price, VehicleStatus status,
+            VehicleCondition condition, Integer engineCapacityCc, String engineCode, String location, String description,
+            Money price, VehicleStatus status,
             boolean published, boolean enquiriesOpen, boolean viewingsOpen, List<String> features, List<ImageView> images,
             Instant publishedAt, Instant createdAt, Instant updatedAt, String registrationNumber,
             List<StatusChangeView> statusHistory) {
@@ -37,7 +38,8 @@ public final class VehicleViews {
         static VehicleView of(Vehicle v, boolean staff, List<StatusChangeView> history) {
             return new VehicleView(v.getId(), v.getSlug(), v.title(), v.getMake(), v.getModel(), v.getVariant(),
                     v.getModelYear(), v.getMileageKm(), v.getFuelType(), v.getTransmission(), v.getBodyType(),
-                    v.getColor(), v.getCondition(), v.getEngineCapacityCc(), v.getDescription(),
+                    v.getColor(), v.getCondition(), v.getEngineCapacityCc(), v.getEngineCode(), v.getLocation(),
+                    v.getDescription(),
                     Money.of(v.getPriceAmount(), v.getCurrency()), v.getStatus(), v.isPublished(),
                     VehicleEnquiryService.acceptsEnquiries(v, EnquiryType.GENERAL),
                     VehicleEnquiryService.acceptsEnquiries(v, EnquiryType.VIEWING),

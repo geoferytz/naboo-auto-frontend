@@ -290,6 +290,9 @@ type Vehicle {
     color: String
     condition: VehicleCondition!
     engineCapacityCc: Int
+    engineCode: String
+    "Yard or branch where the vehicle is located."
+    location: String
     description: String
     price: Money!
     status: VehicleStatus!
@@ -365,6 +368,10 @@ input VehicleInput {
     color: String
     condition: VehicleCondition!
     engineCapacityCc: Int
+    "e.g. 1KD-FTV, 2TR-FE"
+    engineCode: String
+    "Yard or branch where the vehicle is located."
+    location: String
     description: String
     registrationNumber: String
     "Decimal string in the business currency (TZS)."
@@ -518,6 +525,8 @@ type RentalVehicle {
     transmission: Transmission!
     bodyType: BodyType!
     color: String
+    "Pickup point or yard."
+    location: String
     description: String
     dailyRate: Money!
     deposit: Money
@@ -587,6 +596,8 @@ input RentalVehicleInput {
     transmission: Transmission!
     bodyType: BodyType!
     color: String
+    "Pickup point or yard."
+    location: String
     description: String
     registrationNumber: String
     "Decimal string in the business currency (TZS)."

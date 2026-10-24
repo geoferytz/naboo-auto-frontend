@@ -4,7 +4,7 @@ const USER_FIELDS = 'id email fullName phone roles staff enabled lastLoginAt cre
 
 const ADMIN_VEHICLE_FIELDS = `
   id slug title make model variant year mileageKm fuelType transmission bodyType color condition
-  engineCapacityCc description features status published enquiriesOpen viewingsOpen
+  engineCapacityCc engineCode location description features status published enquiriesOpen viewingsOpen
   price { amount currency }
   images { id url altText sortOrder }
   registrationNumber publishedAt createdAt updatedAt
@@ -181,7 +181,7 @@ export const SET_USER_ENABLED = gql`
 `;
 
 const ADMIN_RENTAL_FIELDS = `
-  id slug title make model variant year seats fuelType transmission bodyType color description status published
+  id slug title make model variant year seats fuelType transmission bodyType color location description status published
   dailyRate { amount currency }
   deposit { amount currency }
   images { id url altText sortOrder }

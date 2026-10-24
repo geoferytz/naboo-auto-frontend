@@ -116,6 +116,10 @@ const CURRENT_YEAR = new Date().getFullYear();
                 <input matInput formControlName="color" maxlength="40" />
               </mat-form-field>
               <mat-form-field appearance="outline">
+                <mat-label>Pickup location / yard (optional)</mat-label>
+                <input matInput formControlName="location" maxlength="80" placeholder="e.g. Main yard, Dar es Salaam" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
                 <mat-label>Daily rate (TZS)</mat-label>
                 <input matInput formControlName="dailyRateAmount" inputmode="decimal" placeholder="e.g. 150000" />
                 <mat-error>{{ err('dailyRateAmount', 'Daily rate') }}</mat-error>
@@ -275,6 +279,7 @@ export class AdminRentalEdit {
     dailyRateAmount: ['', [Validators.required, Validators.pattern(/^\d+(\.\d{1,2})?$/)]],
     depositAmount: ['', Validators.pattern(/^\d+(\.\d{1,2})?$/)],
     registrationNumber: ['', Validators.maxLength(20)],
+    location: ['', Validators.maxLength(80)],
     description: ['', Validators.maxLength(5000)],
   });
 
@@ -330,6 +335,7 @@ export class AdminRentalEdit {
           dailyRateAmount: adminRentalVehicle.dailyRate.amount,
           depositAmount: adminRentalVehicle.deposit?.amount ?? '',
           registrationNumber: adminRentalVehicle.registrationNumber ?? '',
+          location: adminRentalVehicle.location ?? '',
           description: adminRentalVehicle.description ?? '',
         });
         this.stateForm.patchValue({ status: adminRentalVehicle.status, published: adminRentalVehicle.published ?? false });
@@ -352,6 +358,7 @@ export class AdminRentalEdit {
       color: v.color || null,
       description: v.description || null,
       registrationNumber: v.registrationNumber || null,
+      location: v.location || null,
       depositAmount: v.depositAmount || null,
     };
     this.saving.set(true);

@@ -10,6 +10,7 @@ import { map } from 'rxjs';
 
 import { Api, toApiError } from '../core/api';
 import { AuthService } from '../core/auth.service';
+import { whatsappLink } from '../core/business';
 import {
   BODY_LABELS,
   CONDITION_LABELS,
@@ -84,8 +85,11 @@ import { VehiclePlaceholder } from '../shared/vehicle-placeholder';
               <div><dt>Transmission</dt><dd>{{ transmission[v.transmission] }}</dd></div>
               <div><dt>Body type</dt><dd>{{ body[v.bodyType] }}</dd></div>
               <div><dt>Condition</dt><dd>{{ condition[v.condition] }}</dd></div>
-              @if (v.engineCapacityCc) {
-                <div><dt>Engine</dt><dd>{{ formatNumber(v.engineCapacityCc) }} cc</dd></div>
+              @if (v.engineCapacityCc || v.engineCode) {
+                <div><dt>Engine</dt><dd>{{ v.engineCapacityCc ? formatNumber(v.engineCapacityCc) + ' cc' : '' }}{{ v.engineCapacityCc && v.engineCode ? ' · ' : '' }}{{ v.engineCode ?? '' }}</dd></div>
+              }
+              @if (v.location) {
+                <div><dt>Location</dt><dd>{{ v.location }}</dd></div>
               }
               @if (v.color) {
                 <div><dt>Colour</dt><dd>{{ v.color }}</dd></div>
@@ -127,6 +131,11 @@ import { VehiclePlaceholder } from '../shared/vehicle-placeholder';
               </p>
               <a mat-flat-button routerLink="/cars-for-sale">See available vehicles</a>
             } @else {
+              @if (whatsappFor(v); as wa) {
+                <a mat-stroked-button class="wa" [href]="wa" target="_blank" rel="noopener">
+                  Chat on WhatsApp about this car
+                </a>
+              }
               <form [formGroup]="form" (ngSubmit)="submit(v)" novalidate>
                 <mat-button-toggle-group formControlName="type" aria-label="Enquiry type" class="type">
                   <mat-button-toggle value="GENERAL">Ask a question</mat-button-toggle>
@@ -211,6 +220,8 @@ import { VehiclePlaceholder } from '../shared/vehicle-placeholder';
     .type { margin-bottom: var(--space-3); width: 100%; }
     .type mat-button-toggle { flex: 1; }
     .hint { font-size: .85rem; color: var(--naboo-text-muted); margin: var(--space-2) 0; }
+    .wa { display: flex; justify-content: center; width: 100%; margin-bottom: var(--space-3);
+      border-color: #25d366; color: #128c4a; }
     .submit { width: 100%; margin-top: var(--space-2); }
     .ref { font-family: ui-monospace, monospace; font-size: 1.1rem; letter-spacing: .04em; }
     @media (min-width: 960px) {
@@ -286,6 +297,12 @@ export class VehicleDetail {
 
   protected err(name: keyof typeof this.form.controls, label: string): string {
     return controlError(this.form.controls[name], label);
+  }
+
+  protected whatsappFor(v: Vehicle): string | null {
+    return whatsappLink(
+      `Hello ${'Naboo Automotive'}, I'm interested in the ${v.title} (${formatMoney(v.price)}) listed on your website.`,
+    );
   }
 
   protected submit(v: Vehicle): void {

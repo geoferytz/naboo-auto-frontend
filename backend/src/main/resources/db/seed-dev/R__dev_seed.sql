@@ -41,21 +41,21 @@ JOIN service_categories c ON c.slug = s.category_slug
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO vehicles (slug, make, model, variant, model_year, mileage_km, fuel_type, transmission, body_type, color,
-                      vehicle_condition, engine_capacity_cc, description, price_amount, status, published, published_at)
+                      vehicle_condition, engine_capacity_cc, engine_code, location, description, price_amount, status, published, published_at)
 VALUES
     ('demo-toyota-land-cruiser-prado-2018', 'Toyota', 'Land Cruiser Prado', 'TX-L', 2018, 86000, 'DIESEL', 'AUTOMATIC', 'SUV', 'Pearl White',
-        'FOREIGN_USED', 2800, 'Demonstration listing for development only.', 98000000.00, 'AVAILABLE', TRUE, now()),
+        'FOREIGN_USED', 2800, '1KD-FTV', 'Main yard, Dar es Salaam', 'Demonstration listing for development only.', 98000000.00, 'AVAILABLE', TRUE, now()),
     ('demo-toyota-rav4-2017', 'Toyota', 'RAV4', 'G', 2017, 74000, 'PETROL', 'AUTOMATIC', 'SUV', 'Silver',
-        'FOREIGN_USED', 2000, 'Demonstration listing for development only.', 52000000.00, 'AVAILABLE', TRUE, now()),
+        'FOREIGN_USED', 2000, '3ZR-FAE', 'Main yard, Dar es Salaam', 'Demonstration listing for development only.', 52000000.00, 'AVAILABLE', TRUE, now()),
     ('demo-nissan-x-trail-2016', 'Nissan', 'X-Trail', '20X', 2016, 92000, 'PETROL', 'AUTOMATIC', 'SUV', 'Black',
-        'FOREIGN_USED', 2000, 'Demonstration listing for development only.', 38500000.00, 'RESERVED', TRUE, now()),
+        'FOREIGN_USED', 2000, 'MR20DE', 'Main yard, Dar es Salaam', 'Demonstration listing for development only.', 38500000.00, 'RESERVED', TRUE, now()),
     ('demo-toyota-hilux-2019', 'Toyota', 'Hilux', 'Double Cab', 2019, 61000, 'DIESEL', 'MANUAL', 'PICKUP', 'Grey',
-        'LOCALLY_USED', 2400, 'Demonstration listing for development only.', 75000000.00, 'AVAILABLE', TRUE, now()),
+        'LOCALLY_USED', 2400, '2GD-FTV', 'Dodoma branch', 'Demonstration listing for development only.', 75000000.00, 'AVAILABLE', TRUE, now()),
     ('demo-subaru-forester-2015', 'Subaru', 'Forester', '2.0i', 2015, 110000, 'PETROL', 'AUTOMATIC', 'SUV', 'Blue',
-        'FOREIGN_USED', 2000, 'Demonstration listing for development only.', 29000000.00, 'SOLD', TRUE, now()),
+        'FOREIGN_USED', 2000, 'FB20', 'Main yard, Dar es Salaam', 'Demonstration listing for development only.', 29000000.00, 'SOLD', TRUE, now()),
     ('demo-mazda-cx5-2018-draft', 'Mazda', 'CX-5', 'XD', 2018, 70000, 'DIESEL', 'AUTOMATIC', 'SUV', 'Red',
-        'FOREIGN_USED', 2200, 'Unpublished demonstration listing for development only.', 45000000.00, 'AVAILABLE', FALSE, NULL)
-ON CONFLICT (slug) DO NOTHING;
+        'FOREIGN_USED', 2200, 'SH-VPTR', 'Main yard, Dar es Salaam', 'Unpublished demonstration listing for development only.', 45000000.00, 'AVAILABLE', FALSE, NULL)
+ON CONFLICT (slug) DO UPDATE SET engine_code = EXCLUDED.engine_code, location = EXCLUDED.location;
 
 INSERT INTO vehicle_features (vehicle_id, sort_order, feature)
 SELECT v.id, f.ord, f.feature

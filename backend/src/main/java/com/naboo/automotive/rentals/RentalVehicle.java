@@ -67,6 +67,9 @@ public class RentalVehicle {
 
     private String color;
 
+    @Column(length = 80)
+    private String location;
+
     private String description;
 
     @Column(name = "registration_number")
@@ -124,6 +127,7 @@ public class RentalVehicle {
         this.transmission = in.transmission();
         this.bodyType = in.bodyType();
         this.color = trimToNull(in.color());
+        this.location = trimToNull(in.location());
         this.description = trimToNull(in.description());
         this.registrationNumber = trimToNull(in.registrationNumber());
         this.dailyRateAmount = dailyRate;
@@ -195,6 +199,10 @@ public class RentalVehicle {
 
     public String getColor() {
         return color;
+    }
+
+    public String getLocation() {
+        return location;
     }
 
     public String getDescription() {

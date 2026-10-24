@@ -9,6 +9,7 @@ import { map, of } from 'rxjs';
 
 import { Api, toApiError } from '../core/api';
 import { AuthService } from '../core/auth.service';
+import { whatsappLink } from '../core/business';
 import { BODY_LABELS, FUEL_LABELS, TRANSMISSION_LABELS, formatMoney } from '../core/format';
 import { EnquiryReceipt, RentalAvailability, RentalVehicle } from '../core/models';
 import { RENTAL_AVAILABILITY, RENTAL_VEHICLE_BY_SLUG, REQUEST_RENTAL } from '../core/queries';
@@ -64,6 +65,9 @@ import { VehiclePlaceholder } from '../shared/vehicle-placeholder';
               <div><dt>Fuel</dt><dd>{{ fuel[v.fuelType] }}</dd></div>
               <div><dt>Transmission</dt><dd>{{ transmission[v.transmission] }}</dd></div>
               <div><dt>Body type</dt><dd>{{ body[v.bodyType] }}</dd></div>
+              @if (v.location) {
+                <div><dt>Pickup point</dt><dd>{{ v.location }}</dd></div>
+              }
               @if (v.color) {
                 <div><dt>Colour</dt><dd>{{ v.color }}</dd></div>
               }
@@ -145,6 +149,11 @@ import { VehiclePlaceholder } from '../shared/vehicle-placeholder';
                 {{ sending() ? 'Sending…' : 'Request reservation' }}
               </button>
               <p class="hint small">We hold the vehicle once our team confirms. No payment is taken online.</p>
+              @if (whatsappFor(v); as wa) {
+                <a mat-stroked-button class="wa" [href]="wa" target="_blank" rel="noopener">
+                  Ask about this rental on WhatsApp
+                </a>
+              }
             </form>
           }
         </aside>
@@ -187,6 +196,7 @@ import { VehiclePlaceholder } from '../shared/vehicle-placeholder';
     .quote .total { font-size: 1.05rem; }
     .quote.unavailable { background: #fde8e9; }
     .hint { color: var(--naboo-text-muted); font-size: .85rem; margin: 0; }
+    .wa { display: flex; justify-content: center; border-color: #25d366; color: #128c4a; }
     .ref { font-family: ui-monospace, monospace; }
     @media (min-width: 960px) { .layout { grid-template-columns: 1fr 380px; align-items: start; } }
   `,
@@ -285,6 +295,10 @@ export class RentalDetail {
 
   protected err(name: keyof typeof this.form.controls, label: string): string {
     return controlError(this.form.controls[name], label);
+  }
+
+  protected whatsappFor(v: RentalVehicle): string | null {
+    return whatsappLink(`Hello Naboo Automotive, I'd like to rent the ${v.title} (${formatMoney(v.dailyRate)}/day).`);
   }
 
   protected submit(): void {

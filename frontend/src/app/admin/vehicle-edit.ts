@@ -139,6 +139,14 @@ const CURRENT_YEAR = new Date().getFullYear();
                 <input matInput formControlName="engineCapacityCc" type="number" min="0" />
               </mat-form-field>
               <mat-form-field appearance="outline">
+                <mat-label>Engine code (optional)</mat-label>
+                <input matInput formControlName="engineCode" maxlength="30" placeholder="e.g. 1KD-FTV" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Location / yard (optional)</mat-label>
+                <input matInput formControlName="location" maxlength="80" placeholder="e.g. Main yard, Dar es Salaam" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
                 <mat-label>Price (TZS)</mat-label>
                 <input matInput formControlName="priceAmount" inputmode="decimal" placeholder="e.g. 45000000" />
                 <mat-error>{{ err('priceAmount', 'Price') }}</mat-error>
@@ -317,6 +325,8 @@ export class AdminVehicleEdit {
     bodyType: ['SUV', Validators.required],
     color: ['', Validators.maxLength(40)],
     engineCapacityCc: [null as number | null, Validators.min(0)],
+    engineCode: ['', Validators.maxLength(30)],
+    location: ['', Validators.maxLength(80)],
     priceAmount: ['', [Validators.required, Validators.pattern(/^\d+(\.\d{1,2})?$/)]],
     registrationNumber: ['', Validators.maxLength(20)],
     description: ['', Validators.maxLength(5000)],
@@ -374,6 +384,8 @@ export class AdminVehicleEdit {
           bodyType: adminVehicle.bodyType,
           color: adminVehicle.color ?? '',
           engineCapacityCc: adminVehicle.engineCapacityCc,
+          engineCode: adminVehicle.engineCode ?? '',
+          location: adminVehicle.location ?? '',
           priceAmount: adminVehicle.price.amount,
           registrationNumber: adminVehicle.registrationNumber ?? '',
           description: adminVehicle.description ?? '',
@@ -397,6 +409,8 @@ export class AdminVehicleEdit {
       ...v,
       variant: v.variant || null,
       color: v.color || null,
+      engineCode: v.engineCode || null,
+      location: v.location || null,
       description: v.description || null,
       registrationNumber: v.registrationNumber || null,
       features: v.features.split('\n').map((f) => f.trim()).filter(Boolean),

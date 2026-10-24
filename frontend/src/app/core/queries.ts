@@ -21,7 +21,7 @@ export const REGISTER = gql`
 `;
 
 const VEHICLE_CARD = `
-  id slug title make model year mileageKm fuelType transmission bodyType condition status
+  id slug title make model year mileageKm fuelType transmission bodyType condition status location
   price { amount currency }
   images { id url altText sortOrder }
 `;
@@ -45,7 +45,7 @@ export const VEHICLE_BY_SLUG = gql`
   query VehicleBySlug($slug: String!) {
     vehicleBySlug(slug: $slug) {
       ${VEHICLE_CARD}
-      variant color engineCapacityCc description features enquiriesOpen viewingsOpen
+      variant color engineCapacityCc engineCode description features enquiriesOpen viewingsOpen
     }
   }
 `;
@@ -82,7 +82,7 @@ export const SUBMIT_CONTACT_ENQUIRY = gql`
 `;
 
 const RENTAL_CARD = `
-  id slug title make model variant year seats fuelType transmission bodyType color
+  id slug title make model variant year seats fuelType transmission bodyType color location
   dailyRate { amount currency }
   deposit { amount currency }
   images { id url altText sortOrder }

@@ -79,6 +79,12 @@ public class Vehicle {
     @Column(name = "engine_capacity_cc")
     private Integer engineCapacityCc;
 
+    @Column(name = "engine_code", length = 30)
+    private String engineCode;
+
+    @Column(length = 80)
+    private String location;
+
     private String description;
 
     @Column(name = "registration_number")
@@ -141,6 +147,8 @@ public class Vehicle {
         this.color = trimToNull(in.color());
         this.condition = in.condition();
         this.engineCapacityCc = in.engineCapacityCc();
+        this.engineCode = trimToNull(in.engineCode());
+        this.location = trimToNull(in.location());
         this.description = trimToNull(in.description());
         this.registrationNumber = trimToNull(in.registrationNumber());
         this.priceAmount = price;
@@ -226,6 +234,14 @@ public class Vehicle {
 
     public Integer getEngineCapacityCc() {
         return engineCapacityCc;
+    }
+
+    public String getEngineCode() {
+        return engineCode;
+    }
+
+    public String getLocation() {
+        return location;
     }
 
     public String getDescription() {

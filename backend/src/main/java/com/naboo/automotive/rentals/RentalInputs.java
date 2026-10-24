@@ -34,6 +34,7 @@ public final class RentalInputs {
             @NotNull Transmission transmission,
             @NotNull BodyType bodyType,
             @Size(max = 40) String color,
+            @Size(max = 80) String location,
             @Size(max = 10000) String description,
             @Size(max = 20) String registrationNumber,
             @NotBlank @Size(max = 20) String dailyRateAmount,

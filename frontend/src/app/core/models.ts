@@ -61,6 +61,7 @@ export interface VehicleCard {
   condition: VehicleCondition;
   price: Money;
   status: VehicleStatus;
+  location: string | null;
   images: VehicleImage[];
 }
 
@@ -68,6 +69,7 @@ export interface VehicleDetail extends VehicleCard {
   variant: string | null;
   color: string | null;
   engineCapacityCc: number | null;
+  engineCode: string | null;
   description: string | null;
   features: string[];
   enquiriesOpen: boolean;
@@ -246,6 +248,7 @@ export interface RentalVehicle {
   transmission: Transmission;
   bodyType: BodyType;
   color: string | null;
+  location?: string | null;
   description: string | null;
   dailyRate: Money;
   deposit: Money | null;

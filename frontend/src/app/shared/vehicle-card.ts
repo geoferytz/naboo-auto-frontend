@@ -28,6 +28,9 @@ import { VehiclePlaceholder } from './vehicle-placeholder';
           <li>{{ fuel[v.fuelType] }}</li>
           <li>{{ transmission[v.transmission] }}</li>
           <li>{{ condition[v.condition] }}</li>
+          @if (v.location) {
+            <li class="loc">{{ v.location }}</li>
+          }
         </ul>
         <p class="price">{{ formatMoney(v.price) }}</p>
       </div>

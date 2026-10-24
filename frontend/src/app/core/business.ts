@@ -14,3 +14,8 @@ export const BUSINESS = {
   openingHours: null as string[] | null, // e.g. ['Mon–Fri 08:00–18:00', 'Sat 09:00–14:00']
   mapUrl: null as string | null,
 };
+
+/** wa.me deep link with a prefilled message, or null when WhatsApp is not configured. */
+export function whatsappLink(message: string): string | null {
+  return BUSINESS.whatsapp ? `https://wa.me/${BUSINESS.whatsapp}?text=${encodeURIComponent(message)}` : null;
+}
