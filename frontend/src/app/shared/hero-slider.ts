@@ -138,7 +138,10 @@ const AUTOPLAY_MS = 6000;
       color: var(--naboo-white); text-decoration: none; font-size: .8rem; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
     .caption strong { font-size: .9rem; }
     .caption span { color: #c4c8ce; }
-    @media (min-width: 960px) { .caption { display: flex; } }
+    @media (min-width: 960px) {
+      .caption { display: flex; }
+      .badges { position: absolute; left: var(--space-6); bottom: var(--space-6); margin: 0; }
+    }
     .primary { background: var(--naboo-red) !important; color: var(--naboo-white) !important; }
     .primary:hover { background: var(--naboo-red-dark) !important; }
     .secondary { border-color: rgba(255,255,255,.55) !important; color: var(--naboo-white) !important; }
