@@ -23,6 +23,12 @@ interface HeroSlide {
 
 const AUTOPLAY_MS = 6000;
 
+const TRUST_BADGES: { icon: string; text: string }[] = [
+  { icon: 'verified', text: 'Quality Vehicles' },
+  { icon: 'handyman', text: 'Professional Service' },
+  { icon: 'check_circle', text: 'Trusted & Transparent' },
+];
+
 /**
  * Homepage hero carousel: autoplaying slides with arrows, dots, touch swipe and
  * keyboard navigation. Pauses on hover/focus and honours prefers-reduced-motion.
@@ -185,11 +191,7 @@ export class HeroSlider {
         'Discover quality vehicles selected for performance, comfort, and style. Find your next car with Naboo Automotive.',
       primary: { label: 'Explore cars', link: '/cars-for-sale' },
       secondary: { label: 'Contact our team', link: '/contact', queryParams: { subject: 'Vehicle enquiry' } },
-      badges: [
-        { icon: 'verified', text: 'Quality Vehicles' },
-        { icon: 'handyman', text: 'Professional Service' },
-        { icon: 'check_circle', text: 'Trusted & Transparent' },
-      ],
+      badges: TRUST_BADGES,
       caption: { title: 'Toyota Land Cruiser Prado TX-L', specs: ['2020', 'Diesel', 'Automatic'] },
       layout: 'split',
     },
@@ -203,6 +205,8 @@ export class HeroSlider {
         'Enjoy convenient vehicle rentals for business, travel, special occasions, and everyday mobility.',
       primary: { label: 'Explore rentals', link: '/rentals' },
       secondary: { label: 'Book a vehicle', link: '/rentals' },
+      badges: TRUST_BADGES,
+      caption: { title: 'Toyota Fortuner', specs: ['2022', 'Diesel', 'Automatic'] },
     },
     {
       image: 'assets/images/automotive/hero-workshop.jpeg',
@@ -214,6 +218,8 @@ export class HeroSlider {
         'Professional repairs, servicing, restoration, customization, and vehicle care from one trusted automotive destination.',
       primary: { label: 'Our services', link: '/services' },
       secondary: { label: 'Book a service', link: '/contact', queryParams: { subject: 'Service booking' } },
+      badges: TRUST_BADGES,
+      caption: { title: 'Naboo Workshop', specs: ['Diagnostics', 'Repairs', 'Restoration'] },
     },
     {
       image: 'assets/images/automotive/hero-customization.jpeg',
@@ -225,6 +231,8 @@ export class HeroSlider {
         'Personalize your vehicle with quality accessories, color changes, detailing, and restoration services.',
       primary: { label: 'Explore customization', link: '/services' },
       secondary: { label: 'Shop accessories', link: '/accessories' },
+      badges: TRUST_BADGES,
+      caption: { title: 'Custom & Detailing', specs: ['Accessories', 'Paint', 'Restoration'] },
     },
   ];
 
