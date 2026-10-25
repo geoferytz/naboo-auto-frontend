@@ -17,6 +17,8 @@ interface HeroSlide {
   badges?: { icon: string; text: string }[];
   /** Optional vehicle card pinned to the bottom-right of the slide. */
   caption?: { title: string; specs: string[]; link?: string };
+  /** 'split' anchors the image to the right half, fading into the dark text side. */
+  layout?: 'full' | 'split';
 }
 
 const AUTOPLAY_MS = 6000;
@@ -46,7 +48,7 @@ const AUTOPLAY_MS = 6000;
     >
       @for (s of slides; track s.headline; let i = $index) {
         <div class="slide" [class.active]="i === current()" [attr.aria-hidden]="i !== current()">
-          <img class="bg" [src]="s.image" [alt]="i === current() ? s.alt : ''" (error)="imageFailed.add(i)" [class.failed]="imageFailed.has(i)" [attr.fetchpriority]="i === 0 ? 'high' : null" />
+          <img class="bg" [class.split]="s.layout === 'split'" [src]="s.image" [alt]="i === current() ? s.alt : ''" (error)="imageFailed.add(i)" [class.failed]="imageFailed.has(i)" [attr.fetchpriority]="i === 0 ? 'high' : null" />
           <div class="overlay" aria-hidden="true"></div>
           <div class="container content">
             <span class="eyebrow">{{ s.label }}</span>
@@ -109,6 +111,9 @@ const AUTOPLAY_MS = 6000;
     .slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .7s ease, visibility .7s; }
     .slide.active { opacity: 1; visibility: visible; z-index: 1; }
     .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+    .bg.split { left: auto; right: 0; width: 62%; object-position: center;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 32%);
+      mask-image: linear-gradient(90deg, transparent 0%, black 32%); }
     .bg.failed { display: none; }
     .overlay { position: absolute; inset: 0;
       background: linear-gradient(90deg, rgba(10,11,14,.88) 0%, rgba(10,11,14,.62) 42%, rgba(10,11,14,.18) 72%, rgba(10,11,14,.05) 100%); }
@@ -152,6 +157,9 @@ const AUTOPLAY_MS = 6000;
     @media (max-width: 720px) {
       .slider { height: 78svh; min-height: 460px; }
       .overlay { background: linear-gradient(180deg, rgba(10,11,14,.35) 0%, rgba(10,11,14,.8) 78%); }
+      .bg.split { left: 0; width: 100%;
+        -webkit-mask-image: linear-gradient(180deg, black 50%, transparent 92%);
+        mask-image: linear-gradient(180deg, black 50%, transparent 92%); }
       .content { justify-content: flex-end; padding-bottom: 72px; }
       .actions { flex-direction: column; align-items: stretch; }
       .arrow { top: auto; bottom: var(--space-4); transform: none; }
@@ -167,8 +175,8 @@ const AUTOPLAY_MS = 6000;
 export class HeroSlider {
   protected readonly slides: HeroSlide[] = [
     {
-      image: 'assets/images/automotive/hero-rentals.jpeg',
-      alt: 'A Toyota SUV driving along a scenic road at sunset',
+      image: 'assets/images/automotive/hero-prado.jpeg',
+      alt: 'A black Toyota Land Cruiser Prado parked on a hilltop at sunset',
       label: 'Naboo Automotive · Tanzania',
       headline: 'Find Your',
       accent: ' Perfect Drive.',
@@ -182,10 +190,11 @@ export class HeroSlider {
         { icon: 'check_circle', text: 'Trusted & Transparent' },
       ],
       caption: { title: 'Toyota Land Cruiser Prado TX-L', specs: ['2020', 'Diesel', 'Automatic'] },
+      layout: 'split',
     },
     {
-      image: 'assets/images/automotive/hero-cars.jpeg',
-      alt: 'A black executive sedan under red studio lights',
+      image: 'assets/images/automotive/hero-rentals.jpeg',
+      alt: 'A Toyota SUV driving along a scenic road at sunset',
       label: 'Drive your way',
       headline: 'The Right Car for',
       accent: ' Every Journey.',
