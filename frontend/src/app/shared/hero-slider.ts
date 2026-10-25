@@ -131,11 +131,11 @@ const AUTOPLAY_MS = 6000;
       padding: 0; list-style: none; font-size: .85rem; font-weight: 600; color: #e3e6ea; }
     .badges li { display: inline-flex; align-items: center; gap: var(--space-2); }
     .badges mat-icon { font-size: 20px; width: 20px; height: 20px; color: var(--naboo-white); }
-    .caption { position: absolute; right: var(--space-5); bottom: var(--space-6); z-index: 3;
-      display: none; flex-direction: column; gap: 2px; padding: var(--space-3) var(--space-4);
-      background: rgba(16,17,20,.72); border-left: 3px solid var(--naboo-red); backdrop-filter: blur(6px);
-      color: var(--naboo-white); text-decoration: none; font-size: .8rem; }
-    .caption:hover { background: rgba(16,17,20,.9); }
+    .caption { position: absolute; right: max(var(--space-5), calc((100vw - var(--container)) / 2 + var(--space-6)));
+      bottom: var(--space-6); z-index: 3;
+      display: none; flex-direction: column; gap: 2px; padding: var(--space-2) var(--space-4);
+      border-left: 3px solid var(--naboo-red);
+      color: var(--naboo-white); text-decoration: none; font-size: .8rem; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
     .caption strong { font-size: .9rem; }
     .caption span { color: #c4c8ce; }
     @media (min-width: 960px) { .caption { display: flex; } }
