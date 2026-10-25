@@ -7,8 +7,8 @@
  */
 export const BUSINESS = {
   name: 'Naboo Automotive',
-  phone: '+255 717 778 899' as string | null,
-  whatsapp: '255717778899' as string | null, // international format digits only
+  phone: '+255 684 455 740' as string | null,
+  whatsapp: '255684455740' as string | null, // international format digits only
   email: null as string | null,
   address: null as string | null,
   openingHours: null as string[] | null, // e.g. ['Mon–Fri 08:00–18:00', 'Sat 09:00–14:00']
