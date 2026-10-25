@@ -19,7 +19,7 @@ import { Logo } from './logo';
 
         <nav class="nav" aria-label="Main">
           @for (link of links; track link.path) {
-            <a [routerLink]="link.path" routerLinkActive="active">{{ link.label }}</a>
+            <a [routerLink]="link.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: !!link.exact }">{{ link.label }}</a>
           }
         </nav>
 
@@ -65,7 +65,7 @@ import { Logo } from './logo';
       @if (open()) {
         <nav id="mobile-nav" class="mobile" aria-label="Mobile">
           @for (link of links; track link.path) {
-            <a [routerLink]="link.path" routerLinkActive="active">{{ link.label }}</a>
+            <a [routerLink]="link.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: !!link.exact }">{{ link.label }}</a>
           }
           <a routerLink="/contact" [queryParams]="{ subject: 'Quotation request' }">Get a quote</a>
         </nav>
@@ -103,7 +103,8 @@ export class Header {
   private readonly api = inject(Api);
   protected readonly open = signal(false);
   protected readonly unread = signal(0);
-  protected readonly links = [
+  protected readonly links: { path: string; label: string; exact?: boolean }[] = [
+    { path: '/', label: 'Home', exact: true },
     { path: '/cars-for-sale', label: 'Cars for sale' },
     { path: '/rentals', label: 'Rentals' },
     { path: '/services', label: 'Services' },
