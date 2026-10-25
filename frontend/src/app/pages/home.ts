@@ -26,7 +26,14 @@ import { VehicleCardComponent } from '../shared/vehicle-card';
         <h2 id="what-we-do">Your Complete Automotive Solution</h2>
         <div class="grid pillars">
           @for (p of pillars; track p.title) {
-            <a class="card pillar" [routerLink]="p.link" [queryParams]="p.query ?? null">
+            <a
+              class="card pillar"
+              [routerLink]="p.link ?? null"
+              [queryParams]="p.query ?? null"
+              [attr.href]="p.wa ?? null"
+              [attr.target]="p.wa ? '_blank' : null"
+              [attr.rel]="p.wa ? 'noopener' : null"
+            >
               <img class="shot" [src]="p.image" [alt]="p.imageAlt" loading="lazy" decoding="async" />
               <span class="pill-icon" aria-hidden="true"><mat-icon fontSet="material-symbols-outlined">{{ p.icon }}</mat-icon></span>
               <h3>{{ p.title }}</h3>
@@ -167,11 +174,23 @@ export class Home {
   private readonly api = inject(Api);
   protected readonly wa = whatsappLink("Hi Naboo Automotive — I'd like to find my perfect car.");
 
-  protected readonly pillars = [
+  protected readonly pillars: {
+    icon: string;
+    image: string;
+    imageAlt: string;
+    title: string;
+    text: string;
+    link?: string;
+    query?: Record<string, string>;
+    wa?: string | null;
+    cta: string;
+  }[] = [
     { icon: 'directions_car', image: 'assets/images/automotive/pillar-sales.jpeg', imageAlt: 'A row of vehicles for sale at the Naboo yard', title: 'Cars for sale', text: 'Inspected new and used vehicles with clear prices and specifications.', link: '/cars-for-sale', cta: 'Browse vehicles' },
     { icon: 'build', image: 'assets/images/automotive/pillar-repairs.jpeg', imageAlt: 'A technician working on a car engine', title: 'Repairs & maintenance', text: 'Servicing, diagnostics, brakes, suspension and electrical work.', link: '/services', cta: 'View services' },
     { icon: 'format_paint', image: 'assets/images/automotive/pillar-painting.jpeg', imageAlt: 'A freshly painted red car in the spray booth', title: 'Painting & restoration', text: 'Resprays, colour changes, bodywork and complete restorations.', link: '/services', cta: 'View services' },
     { icon: 'request_quote', image: 'assets/images/automotive/pillar-quote.jpeg', imageAlt: 'An itemised quotation sheet', title: 'Request a quotation', text: 'Tell us about your vehicle and the work you need — we will reply with a quote.', link: '/contact', query: { subject: 'Quotation request' }, cta: 'Get a quote' },
+    { icon: 'forum', image: 'assets/images/automotive/hero-cars.jpeg', imageAlt: 'A premium sedan under showroom lighting', title: 'Expert Consultation', text: 'Get personalized advice from our automotive experts. We help you make informed decisions about buying, and selling your vehicle.', wa: whatsappLink('Hi Naboo Automotive — I would like expert advice about a vehicle.'), cta: 'Chat with an expert' },
+    { icon: 'fact_check', image: 'assets/images/automotive/hero-workshop.jpeg', imageAlt: 'A vehicle being inspected in the Naboo workshop', title: 'Quality Assurance', text: 'Rest easy knowing that every car we offer undergoes rigorous quality checks. We stand behind the reliability and safety of our vehicles.', wa: whatsappLink('Hi Naboo Automotive — I have a question about vehicle quality checks.'), cta: 'Ask about our checks' },
   ];
 
   protected readonly advantages = [
