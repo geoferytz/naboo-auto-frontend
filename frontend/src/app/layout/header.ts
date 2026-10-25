@@ -6,6 +6,7 @@ import { filter, interval, switchMap } from 'rxjs';
 
 import { Api } from '../core/api';
 import { AuthService } from '../core/auth.service';
+import { BUSINESS } from '../core/business';
 import { UNREAD_NOTIFICATION_COUNT } from '../core/queries';
 import { Logo } from './logo';
 
@@ -47,7 +48,13 @@ import { Logo } from './logo';
               <mat-icon fontSet="material-symbols-outlined">login</mat-icon><span class="label">Sign in</span>
             </a>
           }
-          <a mat-flat-button routerLink="/contact" [queryParams]="{ subject: 'Quotation request' }" class="cta">Get a quote</a>
+          @if (business.phone) {
+            <a mat-button class="account phone" [href]="'tel:' + business.phone.replaceAll(' ', '')">
+              <mat-icon fontSet="material-symbols-outlined">call</mat-icon>
+              <span class="label">{{ business.phone }}</span>
+            </a>
+          }
+          <a mat-flat-button routerLink="/contact" [queryParams]="{ subject: 'Quotation request' }" class="cta">Enquire Now</a>
           <button
             mat-icon-button
             class="menu-toggle"
@@ -67,7 +74,7 @@ import { Logo } from './logo';
           @for (link of links; track link.path) {
             <a [routerLink]="link.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: !!link.exact }">{{ link.label }}</a>
           }
-          <a routerLink="/contact" [queryParams]="{ subject: 'Quotation request' }">Get a quote</a>
+          <a routerLink="/contact" [queryParams]="{ subject: 'Quotation request' }">Enquire now</a>
         </nav>
       }
     </header>
@@ -100,6 +107,7 @@ import { Logo } from './logo';
 })
 export class Header {
   protected readonly auth = inject(AuthService);
+  protected readonly business = BUSINESS;
   private readonly api = inject(Api);
   protected readonly open = signal(false);
   protected readonly unread = signal(0);

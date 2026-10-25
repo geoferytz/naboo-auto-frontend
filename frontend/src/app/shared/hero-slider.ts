@@ -8,9 +8,15 @@ interface HeroSlide {
   alt: string;
   label: string;
   headline: string;
+  /** Trailing part of the headline rendered in the red accent colour. */
+  accent?: string;
   description: string;
   primary: { label: string; link: string; queryParams?: Record<string, string> };
   secondary: { label: string; link: string; queryParams?: Record<string, string> };
+  /** Trust items shown under the CTAs, e.g. 'Quality vehicles'. */
+  badges?: { icon: string; text: string }[];
+  /** Optional vehicle card pinned to the bottom-right of the slide. */
+  caption?: { title: string; specs: string[]; link?: string };
 }
 
 const AUTOPLAY_MS = 6000;
@@ -44,13 +50,33 @@ const AUTOPLAY_MS = 6000;
           <div class="overlay" aria-hidden="true"></div>
           <div class="container content">
             <span class="eyebrow">{{ s.label }}</span>
-            <h1>{{ s.headline }}</h1>
+            <h1>{{ s.headline }} @if (s.accent) {<span class="accent">{{ s.accent }}</span>}</h1>
             <p class="lead">{{ s.description }}</p>
             <div class="actions">
               <a mat-flat-button class="btn-lg primary" [routerLink]="s.primary.link" [queryParams]="s.primary.queryParams">{{ s.primary.label }}</a>
               <a mat-stroked-button class="btn-lg secondary" [routerLink]="s.secondary.link" [queryParams]="s.secondary.queryParams">{{ s.secondary.label }}</a>
             </div>
+            @if (s.badges?.length) {
+              <ul class="badges">
+                @for (b of s.badges; track b.text) {
+                  <li><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">{{ b.icon }}</mat-icon>{{ b.text }}</li>
+                }
+              </ul>
+            }
           </div>
+          @if (s.caption; as c) {
+            @if (c.link) {
+              <a class="caption" [routerLink]="c.link">
+                <strong>{{ c.title }}</strong>
+                <span>{{ c.specs.join('  ·  ') }}</span>
+              </a>
+            } @else {
+              <div class="caption">
+                <strong>{{ c.title }}</strong>
+                <span>{{ c.specs.join('  ·  ') }}</span>
+              </div>
+            }
+          }
         </div>
       }
 
@@ -92,8 +118,21 @@ const AUTOPLAY_MS = 6000;
     @keyframes rise { from { opacity: 0; transform: translateY(18px); } }
     .eyebrow { color: var(--naboo-red); font-size: .8rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
     h1 { font-size: clamp(1.9rem, 5vw, 3.6rem); line-height: 1.08; margin: var(--space-3) 0; font-weight: 800; }
+    .accent { color: var(--naboo-red); }
     .lead { color: #d5d9de; font-size: clamp(.95rem, 1.6vw, 1.15rem); max-width: 34rem; margin: 0 0 var(--space-5); }
     .actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+    .badges { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-5); margin: var(--space-5) 0 0;
+      padding: 0; list-style: none; font-size: .85rem; font-weight: 600; color: #e3e6ea; }
+    .badges li { display: inline-flex; align-items: center; gap: var(--space-2); }
+    .badges mat-icon { font-size: 20px; width: 20px; height: 20px; color: var(--naboo-white); }
+    .caption { position: absolute; right: var(--space-5); bottom: var(--space-6); z-index: 3;
+      display: none; flex-direction: column; gap: 2px; padding: var(--space-3) var(--space-4);
+      background: rgba(16,17,20,.72); border-left: 3px solid var(--naboo-red); backdrop-filter: blur(6px);
+      color: var(--naboo-white); text-decoration: none; font-size: .8rem; }
+    .caption:hover { background: rgba(16,17,20,.9); }
+    .caption strong { font-size: .9rem; }
+    .caption span { color: #c4c8ce; }
+    @media (min-width: 960px) { .caption { display: flex; } }
     .primary { background: var(--naboo-red) !important; color: var(--naboo-white) !important; }
     .primary:hover { background: var(--naboo-red-dark) !important; }
     .secondary { border-color: rgba(255,255,255,.55) !important; color: var(--naboo-white) !important; }
@@ -128,20 +167,28 @@ const AUTOPLAY_MS = 6000;
 export class HeroSlider {
   protected readonly slides: HeroSlide[] = [
     {
-      image: 'assets/images/automotive/hero-cars.jpeg',
-      alt: 'A black luxury sedan under red studio lights',
-      label: 'Premium vehicles',
-      headline: 'Find Your Perfect Drive.',
+      image: 'assets/images/automotive/hero-rentals.jpeg',
+      alt: 'A Toyota SUV driving along a scenic road at sunset',
+      label: 'Naboo Automotive · Tanzania',
+      headline: 'Find Your',
+      accent: ' Perfect Drive.',
       description:
         'Discover quality vehicles selected for performance, comfort, and style. Find your next car with Naboo Automotive.',
       primary: { label: 'Explore cars', link: '/cars-for-sale' },
       secondary: { label: 'Contact our team', link: '/contact', queryParams: { subject: 'Vehicle enquiry' } },
+      badges: [
+        { icon: 'verified', text: 'Quality Vehicles' },
+        { icon: 'handyman', text: 'Professional Service' },
+        { icon: 'check_circle', text: 'Trusted & Transparent' },
+      ],
+      caption: { title: 'Toyota Land Cruiser Prado TX-L', specs: ['2020', 'Diesel', 'Automatic'] },
     },
     {
-      image: 'assets/images/automotive/hero-rentals.jpeg',
-      alt: 'A silver SUV driving along a scenic mountain road at sunset',
+      image: 'assets/images/automotive/hero-cars.jpeg',
+      alt: 'A black executive sedan under red studio lights',
       label: 'Drive your way',
-      headline: 'The Right Car for Every Journey.',
+      headline: 'The Right Car for',
+      accent: ' Every Journey.',
       description:
         'Enjoy convenient vehicle rentals for business, travel, special occasions, and everyday mobility.',
       primary: { label: 'Explore rentals', link: '/rentals' },
@@ -151,7 +198,8 @@ export class HeroSlider {
       image: 'assets/images/automotive/hero-workshop.jpeg',
       alt: 'A technician servicing a silver sports car in a modern workshop',
       label: 'Expert automotive care',
-      headline: 'More Than Just a Drive.',
+      headline: 'More Than',
+      accent: ' Just a Drive.',
       description:
         'Professional repairs, servicing, restoration, customization, and vehicle care from one trusted automotive destination.',
       primary: { label: 'Our services', link: '/services' },
@@ -161,7 +209,8 @@ export class HeroSlider {
       image: 'assets/images/automotive/hero-customization.jpeg',
       alt: 'A freshly detailed black luxury car with dramatic red lighting',
       label: 'Make it yours',
-      headline: 'Your Vision. Your Vehicle.',
+      headline: 'Your Vision.',
+      accent: ' Your Vehicle.',
       description:
         'Personalize your vehicle with quality accessories, color changes, detailing, and restoration services.',
       primary: { label: 'Explore customization', link: '/services' },

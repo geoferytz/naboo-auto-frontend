@@ -17,8 +17,10 @@ import { Logo } from './logo';
         <nav aria-label="Footer">
           <h2>Explore</h2>
           <a routerLink="/cars-for-sale">Cars for sale</a>
+          <a routerLink="/rentals">Rentals</a>
           <a routerLink="/services">Services</a>
-          <a routerLink="/about">About us</a>
+          <a routerLink="/accessories">Shop</a>
+          <a routerLink="/about">About</a>
           <a routerLink="/contact">Contact</a>
         </nav>
         <div>
@@ -34,6 +36,14 @@ import { Logo } from './logo';
           }
           <a routerLink="/contact">Send us a message</a>
         </div>
+        @if (hasSocials) {
+          <nav aria-label="Social media">
+            <h2>Follow Us</h2>
+            @for (s of socials; track s.label) {
+              <a [href]="s.url" target="_blank" rel="noopener">{{ s.label }}</a>
+            }
+          </nav>
+        }
         <nav aria-label="Legal">
           <h2>Legal</h2>
           <a routerLink="/privacy-policy">Privacy policy</a>
@@ -60,4 +70,11 @@ import { Logo } from './logo';
 export class Footer {
   protected readonly business = BUSINESS;
   protected readonly year = new Date().getFullYear();
+  protected readonly socials = [
+    { label: 'Facebook', url: BUSINESS.socials?.facebook },
+    { label: 'Instagram', url: BUSINESS.socials?.instagram },
+    { label: 'X', url: BUSINESS.socials?.x },
+    { label: 'LinkedIn', url: BUSINESS.socials?.linkedin },
+  ].filter((s): s is { label: string; url: string } => !!s.url);
+  protected readonly hasSocials = this.socials.length > 0;
 }
