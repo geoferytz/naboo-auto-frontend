@@ -118,7 +118,8 @@ const AUTOPLAY_MS = 6000;
     .overlay { position: absolute; inset: 0;
       background: linear-gradient(90deg, rgba(10,11,14,.88) 0%, rgba(10,11,14,.62) 42%, rgba(10,11,14,.18) 72%, rgba(10,11,14,.05) 100%); }
     .content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column;
-      justify-content: center; max-width: 720px; padding-bottom: var(--space-7); }
+      justify-content: center; padding-bottom: var(--space-7); }
+    .content > * { max-width: 40rem; }
     .slide.active .content { animation: rise .6s ease .15s backwards; }
     @keyframes rise { from { opacity: 0; transform: translateY(18px); } }
     .eyebrow { color: var(--naboo-red); font-size: .8rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
