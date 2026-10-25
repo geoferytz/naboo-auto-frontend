@@ -25,6 +25,13 @@ import { Logo } from './logo';
         </nav>
 
         <div class="right">
+          @if (business.phone) {
+            <a mat-button class="account phone" [href]="'tel:' + business.phone.replaceAll(' ', '')">
+              <mat-icon fontSet="material-symbols-outlined">call</mat-icon>
+              <span class="label">{{ business.phone }}</span>
+            </a>
+          }
+          <a mat-flat-button routerLink="/contact" [queryParams]="{ subject: 'Quotation request' }" class="cta">Enquire Now</a>
           @if (auth.user()?.staff) {
             <a mat-button routerLink="/admin" class="account">
               <mat-icon fontSet="material-symbols-outlined">admin_panel_settings</mat-icon>
@@ -44,17 +51,10 @@ import { Logo } from './logo';
               <span class="label">{{ auth.user()?.fullName ?? 'My account' }}</span>
             </a>
           } @else {
-            <a mat-button routerLink="/login" class="account">
+            <a mat-button routerLink="/login" class="account signin">
               <mat-icon fontSet="material-symbols-outlined">login</mat-icon><span class="label">Sign in</span>
             </a>
           }
-          @if (business.phone) {
-            <a mat-button class="account phone" [href]="'tel:' + business.phone.replaceAll(' ', '')">
-              <mat-icon fontSet="material-symbols-outlined">call</mat-icon>
-              <span class="label">{{ business.phone }}</span>
-            </a>
-          }
-          <a mat-flat-button routerLink="/contact" [queryParams]="{ subject: 'Quotation request' }" class="cta">Enquire Now</a>
           <button
             mat-icon-button
             class="menu-toggle"
@@ -88,10 +88,10 @@ import { Logo } from './logo';
     .nav a, .mobile a { color: #d9dce0; text-decoration: none; font-weight: 500; font-size: 0.95rem; }
     .nav a { padding-block: 22px; border-bottom: 2px solid transparent; }
     .nav a:hover, .nav a.active { color: var(--naboo-white); border-bottom-color: var(--naboo-red); }
-    .right { margin-left: auto; display: flex; align-items: center; gap: var(--space-2); }
+    .right { margin-left: auto; display: flex; align-items: center; gap: var(--space-1); }
     .account { color: var(--naboo-white) !important; }
     .account .label { display: none; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .cta { display: none !important; }
+    .cta { display: none !important; margin-right: var(--space-2); }
     .menu-toggle { color: var(--naboo-white); }
     .bell { position: relative; }
     .dot { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; border-radius: 9px;
