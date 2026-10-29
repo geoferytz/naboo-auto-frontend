@@ -44,6 +44,7 @@ public final class InventoryTypes {
             @NotBlank @Size(max = 120) String name,
             @Size(max = 60) String category,
             @Size(max = 4000) String description,
+            @Size(max = 500) String imageUrl,
             @NotBlank @Size(max = 20) String priceAmount,
             @NotNull @Min(0) @Max(1_000_000) Integer stockQuantity,
             boolean active) {
@@ -72,11 +73,11 @@ public final class InventoryTypes {
             UUID requestToken) {
     }
 
-    public record AccessoryView(UUID id, String sku, String name, String category, String description, Money price,
-            int stockQuantity, boolean active, boolean inStock, Instant createdAt) {
+    public record AccessoryView(UUID id, String sku, String name, String category, String description, String imageUrl,
+            Money price, int stockQuantity, boolean active, boolean inStock, Instant createdAt) {
 
         static AccessoryView of(Accessory a) {
-            return new AccessoryView(a.getId(), a.getSku(), a.getName(), a.getCategory(), a.getDescription(),
+            return new AccessoryView(a.getId(), a.getSku(), a.getName(), a.getCategory(), a.getDescription(), a.getImageUrl(),
                     Money.of(a.getPriceAmount(), a.getCurrency()), a.getStockQuantity(), a.isActive(),
                     a.getStockQuantity() > 0, a.getCreatedAt());
         }

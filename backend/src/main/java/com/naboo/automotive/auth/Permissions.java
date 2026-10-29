@@ -16,6 +16,7 @@ public final class Permissions {
     public static final String SERVICE_CATALOGUE_MANAGE = "hasAnyRole('SUPER_ADMIN','MANAGER')";
     public static final String CONTACT_ENQUIRY_VIEW = "hasAnyRole('SUPER_ADMIN','MANAGER','SALES_AGENT','SERVICE_ADVISOR')";
     public static final String USER_MANAGE = "hasRole('SUPER_ADMIN')";
+    public static final String SITE_MANAGE = "hasAnyRole('SUPER_ADMIN','MANAGER')";
     public static final String AUDIT_VIEW = "hasAnyRole('SUPER_ADMIN','MANAGER')";
 
     private Permissions() {

@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.Year;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -28,6 +29,7 @@ import com.naboo.automotive.customers.CustomerRepository;
 import com.naboo.automotive.notifications.Notification.NotificationType;
 import com.naboo.automotive.notifications.NotificationService;
 import com.naboo.automotive.rentals.RentalInputs.AdminRentalFilter;
+import com.naboo.automotive.rentals.RentalInputs.RentalFilter;
 import com.naboo.automotive.rentals.RentalInputs.RentalVehicleInput;
 import com.naboo.automotive.rentals.RentalInputs.ReservationInput;
 import com.naboo.automotive.rentals.RentalTypes.RentalVehicleStatus;
@@ -76,12 +78,34 @@ public class RentalService {
     // ------------------------------------------------------------------ public catalogue
 
     @Transactional(readOnly = true)
-    public PageView<RentalVehicleView> searchPublic(Integer page, Integer size) {
-        Specification<RentalVehicle> spec = (root, q, cb) -> cb.and(cb.isTrue(root.get("published")),
-                cb.equal(root.get("status"), RentalVehicleStatus.AVAILABLE));
+    public PageView<RentalVehicleView> searchPublic(RentalFilter filter, Integer page, Integer size) {
+        RentalFilter f = filter == null ? new RentalFilter(null, null, null, null, null, null) : filter;
+        BigDecimal minPrice = Money.parseAmount(f.minPrice(), "minPrice");
+        BigDecimal maxPrice = Money.parseAmount(f.maxPrice(), "maxPrice");
+        if ((f.minYear() != null && f.maxYear() != null && f.minYear() > f.maxYear())
+                || (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0)) {
+            throw new BusinessRuleException("INVALID_FILTER", "The minimum must not exceed the maximum.");
+        }
+        Specification<RentalVehicle> spec = (root, q, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.isTrue(root.get("published")));
+            predicates.add(cb.equal(root.get("status"), RentalVehicleStatus.AVAILABLE));
+            if (notBlank(f.make())) predicates.add(cb.equal(cb.lower(root.get("make")), f.make().trim().toLowerCase(Locale.ROOT)));
+            if (notBlank(f.model())) predicates.add(cb.equal(cb.lower(root.get("model")), f.model().trim().toLowerCase(Locale.ROOT)));
+            if (f.minYear() != null) predicates.add(cb.greaterThanOrEqualTo(root.get("modelYear"), f.minYear()));
+            if (f.maxYear() != null) predicates.add(cb.lessThanOrEqualTo(root.get("modelYear"), f.maxYear()));
+            if (minPrice != null) predicates.add(cb.greaterThanOrEqualTo(root.get("dailyRateAmount"), minPrice));
+            if (maxPrice != null) predicates.add(cb.lessThanOrEqualTo(root.get("dailyRateAmount"), maxPrice));
+            return cb.and(predicates.toArray(Predicate[]::new));
+        };
         return PageView.of(
                 vehicles.findAll(spec, PageView.request(page, size, Sort.by(Sort.Order.asc("dailyRateAmount"), Sort.Order.asc("id")))),
                 v -> RentalVehicleView.of(v, false));
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.naboo.automotive.common.VehicleSearchOption> searchOptions() {
+        return vehicles.findSearchOptions(RentalVehicleStatus.AVAILABLE);
     }
 
     @Transactional(readOnly = true)

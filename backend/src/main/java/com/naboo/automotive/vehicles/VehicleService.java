@@ -58,7 +58,7 @@ public class VehicleService {
 
     @Transactional(readOnly = true)
     public PageView<VehicleView> searchPublic(VehicleFilter filter, Integer page, Integer size, VehicleSort sort) {
-        VehicleFilter f = filter == null ? new VehicleFilter(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null) : filter;
+        VehicleFilter f = filter == null ? new VehicleFilter(null, null, null, null, null, null, null, null, null, null, null, null, null) : filter;
         BigDecimal minPrice = Money.parseAmount(f.minPrice(), "minPrice");
         BigDecimal maxPrice = Money.parseAmount(f.maxPrice(), "maxPrice");
         List<VehicleStatus> statuses = Boolean.TRUE.equals(f.includeSold())
@@ -108,13 +108,6 @@ public class VehicleService {
             if (f.condition() != null) {
                 p.add(cb.equal(root.get("condition"), f.condition()));
             }
-            if (notBlank(f.location())) {
-                String like = "%" + escapeLike(f.location().trim().toLowerCase(Locale.ROOT)) + "%";
-                p.add(cb.like(cb.lower(cb.coalesce(root.get("location"), "")), like, '\\'));
-            }
-            if (notBlank(f.color())) {
-                p.add(cb.equal(cb.lower(cb.coalesce(root.get("color"), "")), f.color().trim().toLowerCase(Locale.ROOT)));
-            }
             return cb.and(p.toArray(Predicate[]::new));
         };
         return PageView.of(vehicles.findAll(spec, PageView.request(page, size, sortOf(sort))), v -> VehicleView.of(v, false, null));
@@ -128,6 +121,11 @@ public class VehicleService {
     @Transactional(readOnly = true)
     public List<String> publicMakes() {
         return vehicles.findPublicMakes(VehicleStatus.UNAVAILABLE);
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.naboo.automotive.common.VehicleSearchOption> searchOptions() {
+        return vehicles.findSearchOptions(List.of(VehicleStatus.AVAILABLE, VehicleStatus.RESERVED));
     }
 
     // ------------------------------------------------------------------ staff

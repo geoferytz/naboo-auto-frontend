@@ -70,11 +70,44 @@ public class UploadController {
         }
     }
 
+    @PostMapping("/api/uploads/site")
+    @PreAuthorize(Permissions.SITE_MANAGE)
+    public ResponseEntity<java.util.Map<String, String>> uploadSiteImage(@RequestParam("file") MultipartFile file) throws IOException {
+        checkSize(file);
+        // Site images (e.g. logos) may need transparency, so PNGs with alpha stay PNG.
+        ImageProcessor.ProcessedImage image = images.toWebImage(file.getBytes());
+        String url = storage.storePublic("site", image.bytes(), image.extension());
+        return ResponseEntity.ok(java.util.Map.of("url", url));
+    }
+
+    @PostMapping("/api/uploads/services")
+    @PreAuthorize(Permissions.SERVICE_CATALOGUE_MANAGE)
+    public ResponseEntity<java.util.Map<String, String>> uploadServiceImage(@RequestParam("file") MultipartFile file) throws IOException {
+        return uploadImage(file, "services");
+    }
+
+    @PostMapping("/api/uploads/accessories")
+    @PreAuthorize(Permissions.INVENTORY_MANAGE)
+    public ResponseEntity<java.util.Map<String, String>> uploadAccessoryImage(@RequestParam("file") MultipartFile file) throws IOException {
+        return uploadImage(file, "accessories");
+    }
+
+    private ResponseEntity<java.util.Map<String, String>> uploadImage(MultipartFile file, String folder) throws IOException {
+        checkSize(file);
+        ImageProcessor.ProcessedImage image = images.toWebImage(file.getBytes());
+        String url = storage.storePublic(folder, image.bytes(), image.extension());
+        return ResponseEntity.ok(java.util.Map.of("url", url));
+    }
+
     private String store(MultipartFile file, String folder) throws IOException {
+        checkSize(file);
+        return storage.storePublic(folder, images.toWebJpeg(file.getBytes()), "jpg");
+    }
+
+    private static void checkSize(MultipartFile file) {
         if (file.isEmpty() || file.getSize() > MAX_BYTES) {
             throw new BusinessRuleException("INVALID_FILE_SIZE", "Photos must be between 1 byte and 10 MB.");
         }
-        return storage.storePublic(folder, images.toWebJpeg(file.getBytes()), "jpg");
     }
 
     private static String validateAlt(String altText) {

@@ -44,6 +44,15 @@ public final class RentalInputs {
     public record AdminRentalFilter(@Size(max = 100) String search, RentalVehicleStatus status, Boolean published) {
     }
 
+    public record RentalFilter(
+            @Size(max = 60) String make,
+            @Size(max = 60) String model,
+            @Min(1950) @Max(2100) Integer minYear,
+            @Min(1950) @Max(2100) Integer maxYear,
+            @Size(max = 20) String minPrice,
+            @Size(max = 20) String maxPrice) {
+    }
+
     public record ReservationInput(
             @NotNull UUID rentalVehicleId,
             @NotBlank @Size(max = 120) String fullName,

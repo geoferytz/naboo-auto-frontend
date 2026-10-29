@@ -53,6 +53,9 @@ public class ServiceOffering {
 
     private String description;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "price_type", nullable = false)
     private PriceType priceType;
@@ -90,12 +93,13 @@ public class ServiceOffering {
         this.currency = currency;
     }
 
-    public void apply(ServiceCategory category, String name, String summary, String description, PriceType priceType,
-            BigDecimal priceAmount, Integer durationMinutes, boolean active, int sortOrder) {
+    public void apply(ServiceCategory category, String name, String summary, String description, String imageUrl,
+            PriceType priceType, BigDecimal priceAmount, Integer durationMinutes, boolean active, int sortOrder) {
         this.category = category;
         this.name = name;
         this.summary = summary;
         this.description = description;
+        this.imageUrl = imageUrl;
         this.priceType = priceType;
         this.priceAmount = priceType.requiresAmount() ? priceAmount : null;
         this.durationMinutes = durationMinutes;
@@ -125,6 +129,10 @@ public class ServiceOffering {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public PriceType getPriceType() {

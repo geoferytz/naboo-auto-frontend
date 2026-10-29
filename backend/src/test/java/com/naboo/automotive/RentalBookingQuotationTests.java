@@ -18,6 +18,43 @@ class RentalBookingQuotationTests extends GraphQlIntegrationTest {
 
     private static final ZoneId TZ = ZoneId.of("Africa/Dar_es_Salaam");
 
+    @Test
+    void publicRentalSearchFiltersDailyRatesAndHidesPrivateOptions() {
+        String staff = tokenFor(Role.RENTAL_AGENT);
+        String make = "Search" + UUID.randomUUID().toString().substring(0, 8);
+        Map<String, Object> input = new HashMap<>(Map.of("make", make, "model", "Search SUV", "year", 2021,
+                "fuelType", "PETROL", "transmission", "AUTOMATIC", "bodyType", "SUV", "dailyRateAmount", "150000.25"));
+        String id = assertNoErrors(gql(staff,
+                "mutation($i: RentalVehicleInput!) { createRentalVehicle(input: $i) { id } }",
+                Map.of("i", input))).read("$.data.createRentalVehicle.id");
+        String optionsQuery = "{ rentalSearchOptions { make model year } }";
+        assertThat(assertNoErrors(gql(optionsQuery, null)).<List<String>>read("$.data.rentalSearchOptions[*].make")).doesNotContain(make);
+        assertNoErrors(gql(staff, "mutation($id: ID!) { setRentalVehiclePublished(id: $id, published: true) { id } }", Map.of("id", id)));
+        assertThat(assertNoErrors(gql(optionsQuery, null)).<List<String>>read("$.data.rentalSearchOptions[*].make")).contains(make);
+
+        String query = "query($f: RentalFilter) { rentalVehicles(filter: $f, size: 1) { totalCount items { id dailyRate { amount } } } }";
+        Map<String, Object> filter = new HashMap<>(Map.of("make", make.toLowerCase(), "model", "search suv",
+                "minYear", 2021, "maxYear", 2021, "minPrice", "150000.25", "maxPrice", "150000.25"));
+        DocumentContext match = assertNoErrors(gql(query, Map.of("f", filter)));
+        assertThat(match.read("$.data.rentalVehicles.totalCount", Integer.class)).isEqualTo(1);
+        assertThat(match.read("$.data.rentalVehicles.items[0].id", String.class)).isEqualTo(id);
+        assertThat(match.read("$.data.rentalVehicles.items[0].dailyRate.amount", String.class)).isEqualTo("150000.25");
+        for (Map.Entry<String, Object> mismatch : Map.<String, Object>of("model", "Other", "minYear", 2022,
+                "maxPrice", "150000.24").entrySet()) {
+            Map<String, Object> changed = new HashMap<>(filter);
+            changed.put(mismatch.getKey(), mismatch.getValue());
+            // Keep each range valid while proving the filter excludes the car.
+            if (mismatch.getKey().equals("minYear")) changed.remove("maxYear");
+            if (mismatch.getKey().equals("maxPrice")) changed.remove("minPrice");
+            assertThat(assertNoErrors(gql(query, Map.of("f", changed)))
+                    .read("$.data.rentalVehicles.totalCount", Integer.class)).isZero();
+        }
+        assertThat(errorCode(gql(query, Map.of("f", Map.of("minPrice", "-1"))))).isEqualTo("INVALID_AMOUNT");
+        assertNoErrors(gql(staff, "mutation($id: ID!) { setRentalVehicleStatus(id: $id, status: UNAVAILABLE) { id } }", Map.of("id", id)));
+        assertThat(assertNoErrors(gql(query, Map.of("f", filter))).read("$.data.rentalVehicles.totalCount", Integer.class)).isZero();
+        assertThat(assertNoErrors(gql(optionsQuery, null)).<List<String>>read("$.data.rentalSearchOptions[*].make")).doesNotContain(make);
+    }
+
     private String createRental(String token) {
         Map<String, Object> input = new HashMap<>(Map.of("make", "Toyota", "model", "RAV4", "year", 2021, "seats", 5,
                 "fuelType", "PETROL", "transmission", "AUTOMATIC", "bodyType", "SUV", "dailyRateAmount", "150000",

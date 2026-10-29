@@ -27,6 +27,23 @@ class VehicleApiTests extends GraphQlIntegrationTest {
     private static final String ENQUIRE = """
             mutation($input: VehicleEnquiryInput!) { submitVehicleEnquiry(input: $input) { reference } }""";
 
+    @Test
+    void searchOptionsExcludeDraftAndSoldVehicles() {
+        String staff = tokenFor(Role.SALES_AGENT);
+        String make = "Facet" + UUID.randomUUID().toString().substring(0, 8);
+        String id = assertNoErrors(gql(staff, CREATE, Map.of("input", vehicleInput(make, "45000000"))))
+                .read("$.data.createVehicle.id");
+        String options = "{ vehicleSearchOptions { make model year } }";
+        assertThat(assertNoErrors(gql(options, null)).<List<String>>read("$.data.vehicleSearchOptions[*].make")).doesNotContain(make);
+        assertNoErrors(gql(staff, PUBLISH, Map.of("id", id)));
+        assertThat(assertNoErrors(gql(options, null)).<List<String>>read("$.data.vehicleSearchOptions[*].make")).contains(make);
+        assertThat(assertNoErrors(gql(SEARCH, Map.of("filter", Map.of("make", make, "model", "Testmodel",
+                "minYear", 2019, "maxYear", 2019, "minPrice", "45000000", "maxPrice", "45000000"))))
+                .read("$.data.vehicles.totalCount", Integer.class)).isEqualTo(1);
+        assertNoErrors(gql(staff, SET_STATUS, Map.of("id", id, "status", "SOLD")));
+        assertThat(assertNoErrors(gql(options, null)).<List<String>>read("$.data.vehicleSearchOptions[*].make")).doesNotContain(make);
+    }
+
     private Map<String, Object> vehicleInput(String make, String price) {
         Map<String, Object> input = new HashMap<>();
         input.put("make", make);

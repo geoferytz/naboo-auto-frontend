@@ -37,6 +37,9 @@ public class Accessory {
 
     private String description;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Column(name = "price_amount", nullable = false, precision = 14, scale = 2)
     private BigDecimal priceAmount;
 
@@ -71,6 +74,7 @@ public class Accessory {
         this.name = in.name().trim();
         this.category = blankToNull(in.category());
         this.description = blankToNull(in.description());
+        this.imageUrl = blankToNull(in.imageUrl());
         this.priceAmount = price;
         this.active = in.active();
     }
@@ -111,6 +115,10 @@ public class Accessory {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public BigDecimal getPriceAmount() {

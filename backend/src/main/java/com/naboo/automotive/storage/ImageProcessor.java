@@ -31,29 +31,78 @@ public class ImageProcessor {
     static final long MAX_PIXELS = 40_000_000L;
     static final int MAX_EDGE = 2000;
 
+    public record ProcessedImage(byte[] bytes, String extension) {}
+
     public byte[] toWebJpeg(byte[] input) {
+        return encodeJpeg(resize(validateAndDecode(input), false));
+    }
+
+    /** Like {@link #toWebJpeg} but keeps PNGs with real transparency as PNG instead of flattening to white. */
+    public ProcessedImage toWebImage(byte[] input) {
+        BufferedImage source = validateAndDecode(input);
+        boolean alpha = hasTransparency(source);
+        BufferedImage target = resize(source, alpha);
+        return alpha
+            ? new ProcessedImage(encodePng(target), "png")
+            : new ProcessedImage(encodeJpeg(target), "jpg");
+    }
+
+    private static BufferedImage validateAndDecode(byte[] input) {
         if (!isJpeg(input) && !isPng(input)) {
             throw new BusinessRuleException("UNSUPPORTED_IMAGE", "Only JPEG and PNG photos are accepted.");
         }
-        BufferedImage source = decode(input);
+        return decode(input);
+    }
+
+    private static boolean hasTransparency(BufferedImage image) {
+        if (!image.getColorModel().hasAlpha()) {
+            return false;
+        }
+        // Only treat it as transparent if at least one pixel is actually non-opaque.
+        int w = image.getWidth();
+        int h = image.getHeight();
+        for (int y = 0; y < h; y += 4) {
+            for (int x = 0; x < w; x += 4) {
+                if ((image.getRGB(x, y) >>> 24) < 0xFF) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static BufferedImage resize(BufferedImage source, boolean alpha) {
         int w = source.getWidth();
         int h = source.getHeight();
         double scale = Math.min(1.0, (double) MAX_EDGE / Math.max(w, h));
         int tw = Math.max(1, (int) Math.round(w * scale));
         int th = Math.max(1, (int) Math.round(h * scale));
 
-        BufferedImage target = new BufferedImage(tw, th, BufferedImage.TYPE_INT_RGB);
+        BufferedImage target = new BufferedImage(tw, th, alpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
         Graphics2D g = target.createGraphics();
         try {
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g.setColor(Color.WHITE);
-            g.fillRect(0, 0, tw, th);
+            if (!alpha) {
+                g.setColor(Color.WHITE);
+                g.fillRect(0, 0, tw, th);
+            }
             g.drawImage(source, 0, 0, tw, th, null);
         } finally {
             g.dispose();
         }
-        return encodeJpeg(target);
+        return target;
+    }
+
+    private static byte[] encodePng(BufferedImage image) {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            if (!ImageIO.write(image, "png", out)) {
+                throw new IllegalStateException("PNG encoding failed");
+            }
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new IllegalStateException("PNG encoding failed", e);
+        }
     }
 
     private static BufferedImage decode(byte[] input) {

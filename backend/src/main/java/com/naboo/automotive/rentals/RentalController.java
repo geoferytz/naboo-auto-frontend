@@ -43,8 +43,14 @@ public class RentalController {
     // ------------------------------------------------------------------ public
 
     @QueryMapping
-    public PageView<RentalVehicleView> rentalVehicles(@Argument Integer page, @Argument Integer size) {
-        return rentalService.searchPublic(page, size);
+    public PageView<RentalVehicleView> rentalVehicles(@Argument @Valid RentalInputs.RentalFilter filter,
+            @Argument Integer page, @Argument Integer size) {
+        return rentalService.searchPublic(filter, page, size);
+    }
+
+    @QueryMapping
+    public List<com.naboo.automotive.common.VehicleSearchOption> rentalSearchOptions() {
+        return rentalService.searchOptions();
     }
 
     @QueryMapping

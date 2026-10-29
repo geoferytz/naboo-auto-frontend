@@ -32,10 +32,10 @@ public class ServiceCatalogue {
         }
     }
 
-    public record ServiceView(UUID id, String slug, String name, String summary, String description, CategoryView category,
-            PriceType priceType, Money price, Integer durationMinutes, boolean active, int sortOrder) {
+    public record ServiceView(UUID id, String slug, String name, String summary, String description, String imageUrl,
+            CategoryView category, PriceType priceType, Money price, Integer durationMinutes, boolean active, int sortOrder) {
         static ServiceView of(ServiceOffering s) {
-            return new ServiceView(s.getId(), s.getSlug(), s.getName(), s.getSummary(), s.getDescription(),
+            return new ServiceView(s.getId(), s.getSlug(), s.getName(), s.getSummary(), s.getDescription(), s.getImageUrl(),
                     CategoryView.of(s.getCategory()), s.getPriceType(), Money.of(s.getPriceAmount(), s.getCurrency()),
                     s.getDurationMinutes(), s.isActive(), s.getSortOrder());
         }
@@ -50,6 +50,7 @@ public class ServiceCatalogue {
             @NotBlank @Size(max = 120) String name,
             @NotBlank @Size(max = 300) String summary,
             @Size(max = 10000) String description,
+            @Size(max = 500) String imageUrl,
             @NotNull PriceType priceType,
             @Size(max = 20) String priceAmount,
             @Positive @Max(10080) Integer durationMinutes,
@@ -145,7 +146,8 @@ public class ServiceCatalogue {
         if (input.priceType().requiresAmount() && amount == null) {
             throw new BusinessRuleException("PRICE_REQUIRED", "A price is required for " + input.priceType() + " services.");
         }
-        service.apply(category, input.name().trim(), input.summary().trim(), input.description(), input.priceType(), amount,
+        service.apply(category, input.name().trim(), input.summary().trim(), input.description(), input.imageUrl(),
+                input.priceType(), amount,
                 input.durationMinutes(), input.active() == null || input.active(),
                 input.sortOrder() == null ? 0 : input.sortOrder());
     }

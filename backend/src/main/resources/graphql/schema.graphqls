@@ -12,6 +12,8 @@ type Query {
     vehicles(filter: VehicleFilter, page: Int = 0, size: Int = 12, sort: VehicleSort = NEWEST): VehiclePage!
     vehicleBySlug(slug: String!): Vehicle
     vehicleMakes: [String!]!
+    vehicleSearchOptions: [VehicleSearchOption!]!
+    rentalSearchOptions: [VehicleSearchOption!]!
 
     # ---- Public service catalogue
     serviceCategories: [ServiceCategory!]!
@@ -19,7 +21,7 @@ type Query {
     serviceBySlug(slug: String!): Service
 
     # ---- Public rental catalogue
-    rentalVehicles(page: Int = 0, size: Int = 12): RentalVehiclePage!
+    rentalVehicles(filter: RentalFilter, page: Int = 0, size: Int = 12): RentalVehiclePage!
     rentalVehicleBySlug(slug: String!): RentalVehicle
     rentalAvailability(rentalVehicleId: ID!, startDate: Date!, endDate: Date!): RentalAvailability!
 
@@ -57,6 +59,9 @@ type Query {
     orders(status: OrderStatus, page: Int = 0, size: Int = 20): OrderPage!
     invoices(status: InvoiceStatus, page: Int = 0, size: Int = 20): InvoicePage!
     invoice(id: ID!): Invoice
+
+    "JSON document of admin-managed public site content (homepage, contact details). Null until first save."
+    siteContent: String
 }
 
 type Mutation {
@@ -129,6 +134,8 @@ type Mutation {
     issueInvoice(id: ID!): Invoice!
     voidInvoice(id: ID!): Invoice!
     recordPayment(invoiceId: ID!, input: PaymentInput!): Invoice!
+
+    updateSiteContent(content: String!): String
 }
 
 # ---------------------------------------------------------------- common
@@ -347,10 +354,23 @@ input VehicleFilter {
     transmission: Transmission
     bodyType: BodyType
     condition: VehicleCondition
-    "Partial match on yard/branch location."
-    location: String
-    color: String
     includeSold: Boolean
+}
+
+type VehicleSearchOption {
+    make: String!
+    model: String!
+    year: Int!
+}
+
+# Price bounds refer to the daily rental rate in TZS.
+input RentalFilter {
+    make: String
+    model: String
+    minYear: Int
+    maxYear: Int
+    minPrice: String
+    maxPrice: String
 }
 
 input AdminVehicleFilter {
@@ -451,6 +471,7 @@ type Service {
     name: String!
     summary: String!
     description: String
+    imageUrl: String
     category: ServiceCategory!
     priceType: PriceType!
     "Null for INSPECTION_REQUIRED and QUOTE_REQUIRED services."
@@ -471,6 +492,7 @@ input ServiceInput {
     name: String!
     summary: String!
     description: String
+    imageUrl: String
     priceType: PriceType!
     priceAmount: String
     durationMinutes: Int
@@ -794,6 +816,7 @@ type Accessory {
     name: String!
     category: String
     description: String
+    imageUrl: String
     price: Money!
     stockQuantity: Int!
     active: Boolean!
@@ -853,6 +876,7 @@ input AccessoryInput {
     name: String!
     category: String
     description: String
+    imageUrl: String
     priceAmount: String!
     stockQuantity: Int!
     active: Boolean!

@@ -63,6 +63,11 @@ public class VehicleController {
         return vehicleService.publicMakes();
     }
 
+    @QueryMapping
+    public List<com.naboo.automotive.common.VehicleSearchOption> vehicleSearchOptions() {
+        return vehicleService.searchOptions();
+    }
+
     @MutationMapping
     public EnquiryReceipt submitVehicleEnquiry(@Argument @Valid VehicleEnquiryInput input, @AuthenticationPrincipal Jwt jwt,
             @ContextValue(name = ClientIpInterceptor.CLIENT_IP, required = false) String clientIp) {

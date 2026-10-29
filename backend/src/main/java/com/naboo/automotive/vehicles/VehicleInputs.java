@@ -40,8 +40,6 @@ public final class VehicleInputs {
             Transmission transmission,
             BodyType bodyType,
             VehicleCondition condition,
-            @Size(max = 80) String location,
-            @Size(max = 40) String color,
             Boolean includeSold) {
     }
 

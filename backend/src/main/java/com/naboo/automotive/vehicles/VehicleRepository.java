@@ -22,4 +22,11 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID>, JpaSpec
 
     @Query("select distinct v.make from Vehicle v where v.published = true and v.status <> :excluded order by v.make")
     List<String> findPublicMakes(VehicleStatus excluded);
+
+    @Query("""
+            select distinct new com.naboo.automotive.common.VehicleSearchOption(v.make, v.model, v.modelYear)
+            from Vehicle v where v.published = true and v.status in :statuses
+            order by v.make, v.model, v.modelYear desc
+            """)
+    List<com.naboo.automotive.common.VehicleSearchOption> findSearchOptions(List<VehicleStatus> statuses);
 }
