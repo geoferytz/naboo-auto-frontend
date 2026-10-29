@@ -1,0 +1,5 @@
+
+    :host { display: inline-flex; align-items: center; gap: 10px; }
+    .word { display: flex; flex-direction: column; font-weight: 800; font-size: 1.15rem; letter-spacing: 0.12em; line-height: 1; }
+    .sub { font-size: 0.56rem; font-weight: 600; letter-spacing: 0.32em; color: #aab0b8; margin-top: 4px; }
+  

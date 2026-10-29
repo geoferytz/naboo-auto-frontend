@@ -1,0 +1,51 @@
+
+    <header class="page-header">
+      <div class="container">
+        <span class="eyebrow">About us</span>
+        <h1>One place for buying, servicing and restoring your vehicle</h1>
+        <p class="lead">
+          Naboo Automotive brings vehicle sales and a full-service workshop together, so customers in Tanzania can buy, maintain,
+          repaint and restore their vehicles with one trusted team.
+        </p>
+      </div>
+    </header>
+    <section class="section">
+      <div class="container grid">
+        @for (v of values; track v.title) {
+          <article class="card value">
+            <h2>{{ v.title }}</h2>
+            <p>{{ v.text }}</p>
+          </article>
+        }
+      </div>
+    </section>
+    <section class="section partners">
+      <div class="container">
+        <span class="eyebrow">Our partners</span>
+        <h2>Trusted partners we work with</h2>
+        <p class="lead">We work with suppliers, insurers and service providers to give our customers reliable vehicles and workshop support.</p>
+        <div class="partner-grid">
+          @for (p of partners; track p.name) {
+            <article class="card partner">
+              @if (p.logo) {
+                <img [src]="p.logo" [alt]="p.name + ' logo'" loading="lazy" />
+              } @else {
+                <span class="mono" aria-hidden="true">{{ p.name.slice(0, 2).toUpperCase() }}</span>
+              }
+              <h3>{{ p.name }}</h3>
+              <p>{{ p.blurb }}</p>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+    <section class="section section--dark">
+      <div class="container cta">
+        <h2>Ready to get started?</h2>
+        <div class="actions">
+          <a mat-flat-button class="btn-lg" routerLink="/cars-for-sale">Browse vehicles</a>
+          <a mat-stroked-button class="btn-lg" routerLink="/contact">Contact us</a>
+        </div>
+      </div>
+    </section>
+  

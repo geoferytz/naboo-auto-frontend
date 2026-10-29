@@ -1,0 +1,149 @@
+
+    @if (vehicle.hasValue() && vehicle.value(); as v) {
+      <header class="page-header">
+        <div class="container">
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a routerLink="/rentals">Rentals</a> / {{ v.make }}</nav>
+          <h1>{{ v.title }}</h1>
+          <p class="price">{{ formatMoney(v.dailyRate) }} <span class="per">/ day</span></p>
+        </div>
+      </header>
+
+      <div class="container section layout">
+        <div class="main">
+          <div class="gallery">
+            <div class="hero-img">
+              @if (activeImage(); as img) {
+                <img [src]="img.url" [alt]="img.altText" width="1200" height="750" />
+              } @else {
+                <app-vehicle-placeholder [label]="v.title" />
+              }
+            </div>
+            @if (v.images.length > 1) {
+              <div class="thumbs" role="list" aria-label="Photos">
+                @for (img of v.images; track img.id; let i = $index) {
+                  <button type="button" role="listitem" [class.active]="i === imageIndex()" (click)="imageIndex.set(i)"
+                          [attr.aria-label]="'Show photo ' + (i + 1) + ': ' + img.altText">
+                    <img [src]="img.url" alt="" loading="lazy" width="120" height="75" />
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <section aria-labelledby="specs">
+            <h2 id="specs">Specifications</h2>
+            <dl class="specs">
+              <div><dt>Year</dt><dd>{{ v.year }}</dd></div>
+              <div><dt>Make</dt><dd>{{ v.make }}</dd></div>
+              <div><dt>Model</dt><dd>{{ v.model }}{{ v.variant ? ' ' + v.variant : '' }}</dd></div>
+              @if (v.seats) {
+                <div><dt>Seats</dt><dd>{{ v.seats }}</dd></div>
+              }
+              <div><dt>Fuel</dt><dd>{{ fuel[v.fuelType] }}</dd></div>
+              <div><dt>Transmission</dt><dd>{{ transmission[v.transmission] }}</dd></div>
+              <div><dt>Body type</dt><dd>{{ body[v.bodyType] }}</dd></div>
+              @if (v.location) {
+                <div><dt>Pickup point</dt><dd>{{ v.location }}</dd></div>
+              }
+              @if (v.color) {
+                <div><dt>Colour</dt><dd>{{ v.color }}</dd></div>
+              }
+            </dl>
+          </section>
+
+          @if (v.description) {
+            <section aria-labelledby="desc">
+              <h2 id="desc">About this vehicle</h2>
+              <p class="description">{{ v.description }}</p>
+            </section>
+          }
+        </div>
+
+        <aside class="card book" aria-labelledby="book-h">
+          <h2 id="book-h">Reserve this vehicle</h2>
+          @if (receipt(); as r) {
+            <div class="alert alert--success" role="status">
+              <p><strong>{{ r.message }}</strong></p>
+              <p>Your reference: <strong class="ref">{{ r.reference }}</strong></p>
+            </div>
+            <a mat-stroked-button routerLink="/my-account">View my reservations</a>
+          } @else {
+            <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid one" novalidate>
+              <mat-form-field appearance="outline">
+                <mat-label>Pickup date</mat-label>
+                <input matInput formControlName="startDate" type="date" [min]="today" />
+                <mat-error>{{ err('startDate', 'Pickup date') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Return date</mat-label>
+                <input matInput formControlName="endDate" type="date" [min]="today" />
+                <mat-error>{{ err('endDate', 'Return date') }}</mat-error>
+              </mat-form-field>
+
+              @if (availability(); as a) {
+                <div class="quote" [class.unavailable]="!a.available" role="status">
+                  @if (a.available) {
+                    <p><strong>{{ a.days }} day{{ a.days === 1 ? '' : 's' }}</strong> ·
+                      {{ formatMoney(a.dailyRate) }}/day</p>
+                    <p class="total">Estimated total: <strong>{{ formatMoney(a.total) }}</strong></p>
+                  } @else {
+                    <p>These dates are not available for this vehicle. Please choose different dates.</p>
+                  }
+                </div>
+              } @else if (checking()) {
+                <p class="hint">Checking availability…</p>
+              } @else if (datesTouched() && !datesValid()) {
+                <p class="hint">Choose a return date after the pickup date.</p>
+              }
+
+              <mat-form-field appearance="outline">
+                <mat-label>Full name</mat-label>
+                <input matInput formControlName="fullName" autocomplete="name" maxlength="120" />
+                <mat-error>{{ err('fullName', 'Full name') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Email</mat-label>
+                <input matInput formControlName="email" type="email" autocomplete="email" />
+                <mat-error>{{ err('email', 'Email') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Phone</mat-label>
+                <input matInput formControlName="phone" type="tel" autocomplete="tel" placeholder="+255 7XX XXX XXX" />
+                <mat-error>{{ err('phone', 'Phone number') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Notes (optional)</mat-label>
+                <textarea matInput formControlName="notes" rows="2" maxlength="2000"
+                          placeholder="Pickup location, driver requirements, extras…"></textarea>
+              </mat-form-field>
+              @if (v.deposit) {
+                <p class="hint">A refundable deposit of {{ formatMoney(v.deposit) }} applies.</p>
+              }
+              @if (error()) {
+                <p class="alert alert--error" role="alert">{{ error() }}</p>
+              }
+              <button mat-flat-button class="btn-lg" type="submit" [disabled]="sending()">
+                {{ sending() ? 'Sending…' : 'Request reservation' }}
+              </button>
+              <p class="hint small">We hold the vehicle once our team confirms. No payment is taken online.</p>
+              @if (whatsappFor(v); as wa) {
+                <a mat-stroked-button class="wa" [href]="wa" target="_blank" rel="noopener">
+                  Ask about this rental on WhatsApp
+                </a>
+              }
+            </form>
+          }
+        </aside>
+      </div>
+    } @else if (vehicle.hasValue() && !vehicle.value()) {
+      <div class="container section">
+        <h1>Vehicle not found</h1>
+        <p class="lead">This rental vehicle may no longer be listed.</p>
+        <a mat-flat-button routerLink="/rentals">View all rentals</a>
+      </div>
+    } @else {
+      <div class="container section">
+        <app-load-state [state]="vehicle.error() ? 'error' : 'loading'" (retry)="vehicle.reload()" />
+      </div>
+    }
+  

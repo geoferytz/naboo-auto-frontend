@@ -1,0 +1,29 @@
+.auth {
+  display: flex;
+  justify-content: center;
+}
+
+.panel {
+  width: 100%;
+  max-width: 460px;
+  padding: var(--space-6) var(--space-5);
+}
+
+h1 {
+  font-size: 1.8rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+.alt {
+  margin: var(--space-5) 0 0;
+  color: var(--naboo-text-muted);
+}
+
+.hint {
+  color: var(--naboo-text-muted);
+  font-size: 0.85rem;
+}

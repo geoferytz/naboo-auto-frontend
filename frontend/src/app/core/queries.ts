@@ -22,7 +22,6 @@ export const REGISTER = gql`
 
 const VEHICLE_CARD = `
   id slug title make model year mileageKm fuelType transmission bodyType condition status location
-  engineCapacityCc engineCode publishedAt
   price { amount currency }
   images { id url altText sortOrder }
 `;
@@ -42,6 +41,14 @@ export const VEHICLE_MAKES = gql`
   }
 `;
 
+export const VEHICLE_SEARCH_OPTIONS = gql`
+  query VehicleSearchOptions { vehicleSearchOptions { make model year } }
+`;
+
+export const RENTAL_SEARCH_OPTIONS = gql`
+  query RentalSearchOptions { rentalSearchOptions { make model year } }
+`;
+
 export const VEHICLE_BY_SLUG = gql`
   query VehicleBySlug($slug: String!) {
     vehicleBySlug(slug: $slug) {
@@ -58,7 +65,7 @@ export const SUBMIT_VEHICLE_ENQUIRY = gql`
 `;
 
 const SERVICE_FIELDS = `
-  id slug name summary description priceType durationMinutes
+  id slug name summary description imageUrl priceType durationMinutes
   price { amount currency }
   category { id slug name description }
 `;
@@ -90,8 +97,8 @@ const RENTAL_CARD = `
 `;
 
 export const RENTAL_VEHICLES = gql`
-  query RentalVehicles($page: Int, $size: Int) {
-    rentalVehicles(page: $page, size: $size) {
+  query RentalVehicles($filter: RentalFilter, $page: Int, $size: Int) {
+    rentalVehicles(filter: $filter, page: $page, size: $size) {
       totalCount page size totalPages
       items { ${RENTAL_CARD} }
     }
@@ -191,7 +198,7 @@ export const ACCESSORIES = gql`
   query Accessories($category: String, $page: Int, $size: Int) {
     accessories(category: $category, page: $page, size: $size) {
       totalCount page size totalPages
-      items { id sku name category description price { amount currency } stockQuantity inStock }
+      items { id sku name category description imageUrl price { amount currency } stockQuantity inStock }
     }
   }
 `;
@@ -245,6 +252,18 @@ export const MARK_NOTIFICATION_READ = gql`
 export const MARK_ALL_NOTIFICATIONS_READ = gql`
   mutation MarkAllNotificationsRead {
     markAllNotificationsRead
+  }
+`;
+
+export const SITE_CONTENT = gql`
+  query SiteContent {
+    siteContent
+  }
+`;
+
+export const UPDATE_SITE_CONTENT = gql`
+  mutation UpdateSiteContent($content: String!) {
+    updateSiteContent(content: $content)
   }
 `;
 

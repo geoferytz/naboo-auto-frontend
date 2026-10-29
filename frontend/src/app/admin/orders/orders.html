@@ -1,0 +1,56 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container">
+        <span class="eyebrow">Staff</span>
+        <h1>Accessory orders</h1>
+      </div>
+    </header>
+
+    <div class="container section">
+      <mat-button-toggle-group [value]="statusFilter()" (change)="setFilter($event.value)" aria-label="Filter by status">
+        <mat-button-toggle value="">All</mat-button-toggle>
+        @for (s of statusKeys; track s) {
+          <mat-button-toggle [value]="s">{{ label(s) }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading orders…" emptyText="No orders in this state." (retry)="load()" />
+      } @else {
+        <div class="list">
+          @for (o of items(); track o.id) {
+            <article class="card row">
+              <div class="main">
+                <div class="line">
+                  <span class="ref">{{ o.reference }}</span>
+                  <span class="badge" [attr.data-status]="o.status">{{ label(o.status) }}</span>
+                </div>
+                <ul class="lines">
+                  @for (i of o.items; track i.id) {
+                    <li>{{ i.quantity }} × {{ i.description }} — {{ formatMoney(i.lineTotal) }}</li>
+                  }
+                </ul>
+                <span class="price">Total: {{ formatMoney(o.total) }}</span>
+                <span class="meta">{{ o.fullName }} · {{ o.phone }} · {{ o.email }} · {{ o.createdAt | date: 'short' }}</span>
+                @if (o.notes) {
+                  <span class="meta notes">“{{ o.notes }}”</span>
+                }
+              </div>
+              <div class="actions">
+                @for (n of next(o.status); track n.status) {
+                  @if (n.status === 'CANCELLED') {
+                    <button mat-stroked-button type="button" [disabled]="busy()" (click)="update(o, n.status)">{{ n.label }}</button>
+                  } @else {
+                    <button mat-flat-button type="button" [disabled]="busy()" (click)="update(o, n.status)">{{ n.label }}</button>
+                  }
+                }
+              </div>
+            </article>
+          }
+        </div>
+        @if (error()) {
+          <p class="alert alert--error" role="alert">{{ error() }}</p>
+        }
+      }
+    </div>
+  

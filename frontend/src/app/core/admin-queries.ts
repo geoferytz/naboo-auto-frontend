@@ -116,7 +116,7 @@ export const ADMIN_SERVICES = gql`
   query AdminServices {
     serviceCategories { id slug name description sortOrder }
     adminServices {
-      id slug name summary description priceType durationMinutes active sortOrder
+      id slug name summary description imageUrl priceType durationMinutes active sortOrder
       price { amount currency }
       category { id slug name }
     }
@@ -348,7 +348,7 @@ export const ADMIN_ACCESSORIES = gql`
   query AdminAccessories($search: String, $active: Boolean, $page: Int, $size: Int) {
     adminAccessories(search: $search, active: $active, page: $page, size: $size) {
       totalCount page size totalPages
-      items { id sku name category description price { amount currency } stockQuantity active inStock }
+      items { id sku name category description imageUrl price { amount currency } stockQuantity active inStock }
     }
   }
 `;

@@ -1,0 +1,82 @@
+
+    <header class="page-header">
+      <div class="container">
+        <span class="eyebrow">Workshop services</span>
+        <h1>{{ page()?.title ?? 'Repairs, maintenance, painting & restoration' }}</h1>
+        @if (page(); as categoryPage) {
+          <p class="lead">{{ categoryPage.description }}</p>
+          <div class="actions">
+            <a mat-flat-button routerLink="/contact" [queryParams]="{ subject: enquirySubject() }">Enquire about this service</a>
+            <a mat-stroked-button routerLink="/services">All workshop services</a>
+          </div>
+        }
+        <p class="lead">
+          Prices are shown as fixed, starting-from, hourly, or by quotation. Anything beyond the agreed scope is quoted and
+          approved by you before work continues.
+        </p>
+      </div>
+    </header>
+
+    <div class="container section">
+      @if (groups().length) {
+        @if (groups().length > 1) {
+          <nav class="jump" aria-label="Service categories">
+            @for (g of groups(); track g.category.id) {
+              <a [routerLink]="pagePath()" [fragment]="g.category.slug">{{ g.category.name }}</a>
+            }
+          </nav>
+        }
+        @for (g of groups(); track g.category.id) {
+          <section class="group" [id]="g.category.slug" [attr.aria-labelledby]="g.category.slug + '-h'">
+            <h2 [id]="g.category.slug + '-h'">{{ g.category.name }}</h2>
+            @if (g.category.description) {
+              <p class="lead">{{ g.category.description }}</p>
+            }
+            <div class="grid">
+              @for (s of g.services; track s.id; let i = $index) {
+                <article class="card service">
+                  <a class="shot" [routerLink]="['/services', s.slug]" [attr.aria-label]="s.name">
+                    <img [src]="serviceImage(s, i)" [alt]="s.name" loading="lazy" decoding="async" />
+                  </a>
+                  <span class="svc-icon" aria-hidden="true">
+                    <mat-icon fontSet="material-symbols-outlined">{{ categoryIcon(g.category.slug) }}</mat-icon>
+                  </span>
+                  <h3><a [routerLink]="['/services', s.slug]">{{ s.name }}</a></h3>
+                  <p>{{ s.summary }}</p>
+                  <div class="meta">
+                    <strong class="price">{{ servicePrice(s) }}</strong>
+                    @if (formatDuration(s.durationMinutes); as d) {
+                      <span class="dur">
+                        <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">schedule</mat-icon>{{ d }}
+                      </span>
+                    }
+                  </div>
+                  <a class="more" [routerLink]="['/services', s.slug]">
+                    View details <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">arrow_forward</mat-icon>
+                  </a>
+                </article>
+              }
+            </div>
+          </section>
+        }
+      } @else {
+        <app-load-state
+          [state]="catalogue.isLoading() ? 'loading' : catalogue.error() ? 'error' : 'empty'"
+          emptyText="Our service catalogue is being updated. Contact us and we will advise on pricing."
+          (retry)="catalogue.reload()"
+        >
+          <a mat-flat-button routerLink="/contact" [queryParams]="{ subject: enquirySubject() }">Contact the workshop</a>
+        </app-load-state>
+      }
+    </div>
+
+    <section class="section section--grey">
+      <div class="container cta">
+        <div>
+          <h2>Not sure what your vehicle needs?</h2>
+          <p class="lead">Describe the problem and we will recommend the right service or arrange an inspection.</p>
+        </div>
+        <a mat-flat-button class="btn-lg" routerLink="/contact" [queryParams]="{ subject: 'Inspection request' }">Request an inspection</a>
+      </div>
+    </section>
+  

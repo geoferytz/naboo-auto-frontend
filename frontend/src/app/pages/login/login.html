@@ -1,0 +1,25 @@
+
+    <div class="container section auth">
+      <section class="card panel" aria-labelledby="h">
+        <h1 id="h">Sign in</h1>
+        <p class="lead">Access your enquiries, bookings and quotations.</p>
+        <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" autocomplete="email" />
+            <mat-error>{{ err('email', 'Email') }}</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="password" type="password" autocomplete="current-password" />
+            <mat-error>{{ err('password', 'Password') }}</mat-error>
+          </mat-form-field>
+          @if (error()) {
+            <p class="alert alert--error" role="alert">{{ error() }}</p>
+          }
+          <button mat-flat-button class="btn-lg" type="submit" [disabled]="sending()">{{ sending() ? 'Signing in…' : 'Sign in' }}</button>
+        </form>
+        <p class="alt">New to Naboo Automotive? <a routerLink="/register" [queryParams]="{ returnUrl: returnUrl() }">Create an account</a></p>
+      </section>
+    </div>
+  

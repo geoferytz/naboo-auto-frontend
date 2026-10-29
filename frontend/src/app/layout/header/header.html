@@ -1,0 +1,106 @@
+<div class="contact-strip">
+    <div class="container contact-inner">
+      @if (business.address) {
+        <span class="contact-item">
+          <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">location_on</mat-icon>
+          {{ business.address }}
+        </span>
+      }
+      @if (business.phone) {
+        <a class="contact-item" [href]="'tel:' + business.phone.replaceAll(' ', '')">
+          <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">call</mat-icon>
+          {{ business.phone }}
+        </a>
+      }
+      @if (business.email) {
+        <a class="contact-item" [href]="'mailto:' + business.email">
+          <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">mail</mat-icon>
+          {{ business.email }}
+        </a>
+      }
+    </div>
+  </div>
+<header class="header">
+  <div class="container bar">
+    <a routerLink="/" class="brand" aria-label="Naboo Automotive home">
+      @if (business.logoUrl) {
+        <img class="logo-img" [src]="business.logoUrl" alt="Naboo Automotive" />
+      } @else {
+        <app-logo />
+      }
+    </a>
+
+    <nav class="nav" aria-label="Main">
+      <ng-container [ngTemplateOutlet]="navigationItems" />
+    </nav>
+
+    <div class="right">
+      <a mat-flat-button routerLink="/contact" [queryParams]="{ subject: 'Quotation request' }" class="cta">Enquire Now</a>
+      @if (auth.user()?.staff) {
+        <a mat-button routerLink="/admin" class="account">
+          <mat-icon fontSet="material-symbols-outlined">admin_panel_settings</mat-icon>
+          <span class="label">Staff</span>
+        </a>
+      }
+      @if (auth.isAuthenticated()) {
+        <a mat-button routerLink="/my-account" class="account bell"
+           [attr.aria-label]="unread() > 0 ? 'My account — ' + unread() + ' unread notifications' : 'My account'">
+          <mat-icon fontSet="material-symbols-outlined">notifications</mat-icon>
+          @if (unread() > 0) {
+            <span class="dot" aria-hidden="true">{{ unread() > 9 ? '9+' : unread() }}</span>
+          }
+        </a>
+        <a mat-button routerLink="/my-account" class="account">
+          <mat-icon fontSet="material-symbols-outlined">account_circle</mat-icon>
+          <span class="label">{{ auth.user()?.fullName ?? 'My account' }}</span>
+        </a>
+      } @else {
+        <a mat-button routerLink="/login" class="account signin">
+          <mat-icon fontSet="material-symbols-outlined">login</mat-icon><span class="label">Sign in</span>
+        </a>
+      }
+      <button
+        mat-icon-button
+        class="menu-toggle"
+        type="button"
+        [attr.aria-expanded]="open()"
+        aria-controls="mobile-nav"
+        [attr.aria-label]="open() ? 'Close menu' : 'Open menu'"
+        (click)="open.set(!open())"
+      >
+        <mat-icon fontSet="material-symbols-outlined">{{ open() ? 'close' : 'menu' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  @if (open()) {
+    <nav id="mobile-nav" class="mobile" aria-label="Mobile">
+      <ng-container [ngTemplateOutlet]="navigationItems" />
+      <a routerLink="/contact" [queryParams]="{ subject: 'Quotation request' }">Enquire now</a>
+    </nav>
+  }
+</header>
+
+<ng-template #navigationItems>
+  @for (link of links; track link.label) {
+    @if (link.children; as children) {
+      <button type="button" class="nav-trigger" [class.active]="groupActive(link)"
+              [matMenuTriggerFor]="submenu" #trigger="matMenuTrigger"
+              [class.expanded]="trigger.menuOpen">
+        {{ link.label }}
+      </button>
+      <mat-menu #submenu="matMenu" [overlapTrigger]="false">
+        @for (child of children; track child.path) {
+          <a mat-menu-item [routerLink]="child.path" routerLinkActive="submenu-active"
+             ariaCurrentWhenActive="page" (click)="open.set(false)">
+            <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">{{ child.icon }}</mat-icon>
+            <span>{{ child.label }}</span>
+          </a>
+        }
+      </mat-menu>
+    } @else {
+      <a [routerLink]="link.path" routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: !!link.exact }" ariaCurrentWhenActive="page">{{ link.label }}</a>
+    }
+  }
+</ng-template>

@@ -1,0 +1,44 @@
+<header class="page-header">
+  <div class="container">
+    <span class="eyebrow">Your next drive</span>
+    <h1>Car Exchange</h1>
+    <p class="lead">Thinking about a different vehicle? Tell us about your current car and what you would like to drive next.</p>
+    <div class="actions">
+      <a mat-flat-button routerLink="/contact" [queryParams]="{ subject: 'Car exchange enquiry' }">Request an assessment</a>
+      <a mat-stroked-button routerLink="/cars-for-sale">Browse cars for sale</a>
+    </div>
+  </div>
+</header>
+
+<section class="container section" aria-labelledby="exchange-process">
+  <span class="eyebrow">How it works</span>
+  <h2 id="exchange-process">Start with a conversation</h2>
+  <ol class="steps">
+    <li class="card">
+      <h3>Tell us about your car</h3>
+      <p>Share the make, model, year, mileage, condition and service history, along with details of the vehicle you want.</p>
+    </li>
+    <li class="card">
+      <h3>Arrange an assessment</h3>
+      <p>Our team will contact you to discuss your vehicle and the information or inspection needed to assess it.</p>
+    </li>
+    <li class="card">
+      <h3>Review your options</h3>
+      <p>Any exchange offer, price difference and terms will be confirmed after assessment, subject to vehicle availability and your approval.</p>
+    </li>
+  </ol>
+</section>
+
+<section class="section section--grey">
+  <div class="container enquiry">
+    <div>
+      <h2>Ready to discuss an exchange?</h2>
+      <p>Send us your vehicle details and our team will help you explore the options.</p>
+    </div>
+    @if (whatsapp; as link) {
+      <a mat-flat-button [href]="link" target="_blank" rel="noopener">Chat on WhatsApp</a>
+    } @else {
+      <a mat-flat-button routerLink="/contact" [queryParams]="{ subject: 'Car exchange enquiry' }">Contact our team</a>
+    }
+  </div>
+</section>

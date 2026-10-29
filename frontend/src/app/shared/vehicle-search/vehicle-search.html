@@ -1,0 +1,49 @@
+<div class="search-panel">
+  <div class="purpose" role="group" aria-label="Search catalogue">
+    <button type="button" [class.selected]="kind() === 'sale'" [attr.aria-pressed]="kind() === 'sale'" (click)="setKind('sale')">Cars for Sale</button>
+    <button type="button" [class.selected]="kind() === 'rental'" [attr.aria-pressed]="kind() === 'rental'" (click)="setKind('rental')">Cars for Rental</button>
+  </div>
+  <form [formGroup]="form" (ngSubmit)="search()" role="search" aria-label="Find a vehicle">
+    <label class="field">
+      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">directions_car</mat-icon>
+      <span class="visually-hidden">Make</span>
+      <select formControlName="make" (change)="makeChanged()">
+        <option value="">All Makes</option>
+        @for (make of makes(); track make) { <option [value]="make">{{ make }}</option> }
+      </select>
+    </label>
+    <label class="field">
+      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">sell</mat-icon>
+      <span class="visually-hidden">Model</span>
+      <select formControlName="model" (change)="form.controls.year.setValue('')">
+        <option value="">{{ form.controls.make.value ? 'All Models' : 'Choose Make First' }}</option>
+        @for (model of models(); track model) { <option [value]="model">{{ model }}</option> }
+      </select>
+    </label>
+    <label class="field">
+      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">calendar_month</mat-icon>
+      <span class="visually-hidden">Year</span>
+      <select formControlName="year">
+        <option value="">Any Year</option>
+        @for (year of years(); track year) { <option [value]="year">{{ year }}</option> }
+      </select>
+    </label>
+    <label class="field">
+      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">paid</mat-icon>
+      <span class="visually-hidden">{{ kind() === 'sale' ? 'Price range in TZS' : 'Daily rate range in TZS' }}</span>
+      <select formControlName="budget">
+        <option value="">{{ kind() === 'sale' ? 'Price Range (TZS)' : 'Daily Rate (TZS)' }}</option>
+        @for (budget of budgets(); track budget.value) { <option [value]="budget.value">{{ budget.label }}</option> }
+      </select>
+    </label>
+    <button class="submit" type="submit">
+      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">search</mat-icon>
+      {{ kind() === 'sale' ? 'Search Cars' : 'Search Rentals' }}
+    </button>
+  </form>
+  @if (options.isLoading()) {
+    <p class="feedback" role="status">Loading vehicle options…</p>
+  } @else if (options.error()) {
+    <p class="feedback" role="status">Could not load makes and models. <button type="button" (click)="options.reload()">Try again</button></p>
+  }
+</div>

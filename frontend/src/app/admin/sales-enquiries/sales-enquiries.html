@@ -1,0 +1,82 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container">
+        <span class="eyebrow">Staff</span>
+        <h1>Sales enquiries</h1>
+      </div>
+    </header>
+
+    <div class="container section">
+      <mat-button-toggle-group [value]="statusFilter()" (change)="setFilter($event.value)" aria-label="Filter by status">
+        <mat-button-toggle value="">All</mat-button-toggle>
+        @for (s of statusKeys; track s) {
+          <mat-button-toggle [value]="s">{{ label(s) }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading enquiries…" emptyText="No enquiries in this state." (retry)="load()" />
+      } @else {
+        <div class="list">
+          @for (e of items(); track e.id) {
+            <article class="card enquiry">
+              <button type="button" class="summary" (click)="toggle(e.id)" [attr.aria-expanded]="open() === e.id">
+                <span class="ref">{{ e.reference }}</span>
+                <span class="who">
+                  <strong>{{ e.fullName }}</strong>
+                  <span class="meta">{{ e.vehicle.title }} · {{ e.type === 'VIEWING' ? 'Viewing request' : 'Question' }}</span>
+                </span>
+                <span class="badge" [attr.data-status]="e.status">{{ label(e.status) }}</span>
+                <span class="meta">{{ e.createdAt | date: 'mediumDate' }}</span>
+              </button>
+              @if (open() === e.id) {
+                <div class="detail">
+                  <dl>
+                    <div><dt>Vehicle</dt><dd><a [routerLink]="['/admin/vehicles', e.vehicle.id]">{{ e.vehicle.title }}</a></dd></div>
+                    <div><dt>Email</dt><dd><a [href]="'mailto:' + e.email">{{ e.email }}</a></dd></div>
+                    <div><dt>Phone</dt><dd><a [href]="'tel:' + e.phone">{{ e.phone }}</a></dd></div>
+                    @if (e.preferredViewingAt) {
+                      <div><dt>Preferred viewing</dt><dd>{{ e.preferredViewingAt | date: 'medium' }}</dd></div>
+                    }
+                    @if (e.message) {
+                      <div class="full"><dt>Message</dt><dd class="msg">{{ e.message }}</dd></div>
+                    }
+                  </dl>
+                  <form [formGroup]="editForm" (ngSubmit)="save(e)" class="edit">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Status</mat-label>
+                      <mat-select formControlName="status">
+                        @for (s of statusKeys; track s) {
+                          <mat-option [value]="s">{{ label(s) }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Assigned to</mat-label>
+                      <mat-select formControlName="assignedToUserId">
+                        <mat-option value="">Unassigned</mat-option>
+                        @for (u of staff(); track u.id) {
+                          <mat-option [value]="u.id">{{ u.fullName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    <button mat-flat-button type="submit" [disabled]="busy()">Save</button>
+                  </form>
+                </div>
+              }
+            </article>
+          }
+        </div>
+        @if (error()) {
+          <p class="alert alert--error" role="alert">{{ error() }}</p>
+        }
+        @if ((page()?.totalPages ?? 0) > 1) {
+          <nav class="pager" aria-label="Pages">
+            <button mat-stroked-button type="button" [disabled]="page()!.page === 0" (click)="load(page()!.page - 1)">Previous</button>
+            <span>Page {{ page()!.page + 1 }} of {{ page()!.totalPages }}</span>
+            <button mat-stroked-button type="button" [disabled]="page()!.page + 1 >= page()!.totalPages" (click)="load(page()!.page + 1)">Next</button>
+          </nav>
+        }
+      }
+    </div>
+  

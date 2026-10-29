@@ -1,6 +1,6 @@
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
-import { safeRedirect } from '../pages/login';
+import { safeRedirect } from '../pages/login/login';
 import { PHONE_PATTERN, applyServerErrors, controlError } from './form-errors';
 
 describe('form helpers', () => {

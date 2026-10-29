@@ -1,0 +1,74 @@
+
+    <section
+      class="slider"
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Featured"
+      tabindex="0"
+      (mouseenter)="paused.set(true)"
+      (mouseleave)="paused.set(false)"
+      (focusin)="paused.set(true)"
+      (focusout)="paused.set(false)"
+      (keydown.arrowLeft)="go(-1)"
+      (keydown.arrowRight)="go(1)"
+      (touchstart)="touchStart($event)"
+      (touchend)="touchEnd($event)"
+    >
+      @for (s of slides(); track s.headline; let i = $index) {
+        <div class="slide" [class.active]="i === current()" [attr.aria-hidden]="i !== current()">
+          <img class="bg" [class.split]="s.layout === 'split'" [src]="s.image" [alt]="i === current() ? s.alt : ''" (error)="imageFailed.add(i)" [class.failed]="imageFailed.has(i)" [attr.fetchpriority]="i === 0 ? 'high' : null" />
+          <div class="overlay" aria-hidden="true"></div>
+          <div class="container content">
+            <span class="eyebrow">{{ s.label }}</span>
+            <h1><span class="title-line">{{ s.headline }}</span> @if (s.accent) {<span class="accent">{{ s.accent }}</span>} @if (s.suffix) {<span>{{ ' ' + s.suffix }}</span>}</h1>
+            <p class="lead">{{ s.description }}</p>
+            <div class="actions">
+              <a mat-flat-button class="btn-lg primary" [routerLink]="s.primary.link" [queryParams]="s.primary.queryParams">{{ s.primary.label }}</a>
+              <a mat-stroked-button class="btn-lg secondary" [routerLink]="s.secondary.link" [queryParams]="s.secondary.queryParams">{{ s.secondary.label }}</a>
+            </div>
+            @if (s.badges?.length) {
+              <ul class="badges">
+                @for (b of s.badges; track b.text) {
+                  <li><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">{{ b.icon }}</mat-icon>{{ b.text }}</li>
+                }
+              </ul>
+            }
+          </div>
+          @if (s.caption; as c) {
+            @if (c.link) {
+              <a class="caption" [routerLink]="c.link">
+                <strong>{{ c.title }}</strong>
+                <span>{{ c.specs.join('  ·  ') }}</span>
+              </a>
+            } @else {
+              <div class="caption">
+                <strong>{{ c.title }}</strong>
+                <span>{{ c.specs.join('  ·  ') }}</span>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      <button mat-icon-button type="button" class="arrow prev" aria-label="Previous slide" (click)="go(-1)">
+        <mat-icon fontSet="material-symbols-outlined">arrow_back</mat-icon>
+      </button>
+      <button mat-icon-button type="button" class="arrow next" aria-label="Next slide" (click)="go(1)">
+        <mat-icon fontSet="material-symbols-outlined">arrow_forward</mat-icon>
+      </button>
+
+      <div class="dots" role="tablist" aria-label="Slides">
+        @for (s of slides(); track s.headline; let i = $index) {
+          <button
+            type="button"
+            role="tab"
+            class="dot"
+            [class.active]="i === current()"
+            [attr.aria-selected]="i === current()"
+            [attr.aria-label]="'Slide ' + (i + 1) + ': ' + s.label"
+            (click)="jump(i)"
+          ></button>
+        }
+      </div>
+    </section>
+  

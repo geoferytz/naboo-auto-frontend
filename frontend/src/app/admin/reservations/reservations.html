@@ -1,0 +1,60 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container">
+        <span class="eyebrow">Staff</span>
+        <h1>Rental reservations</h1>
+      </div>
+    </header>
+
+    <div class="container section">
+      <mat-button-toggle-group [value]="statusFilter()" (change)="setFilter($event.value)" aria-label="Filter by status">
+        <mat-button-toggle value="">All</mat-button-toggle>
+        @for (s of statusKeys; track s) {
+          <mat-button-toggle [value]="s">{{ label(s) }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading reservations…" emptyText="No reservations in this state." (retry)="load()" />
+      } @else {
+        <div class="list">
+          @for (r of items(); track r.id) {
+            <article class="card row">
+              <div class="main">
+                <div class="line">
+                  <span class="ref">{{ r.reference }}</span>
+                  <span class="badge" [attr.data-status]="r.status">{{ label(r.status) }}</span>
+                </div>
+                <strong>{{ r.vehicle.title }}</strong>
+                <span class="meta">{{ r.startDate | date: 'mediumDate' }} → {{ r.endDate | date: 'mediumDate' }} ·
+                  {{ r.days }} day{{ r.days === 1 ? '' : 's' }} · {{ formatMoney(r.total) }}</span>
+                <span class="meta">{{ r.fullName }} · {{ r.phone }} · {{ r.email }}</span>
+                @if (r.notes) {
+                  <span class="meta notes">“{{ r.notes }}”</span>
+                }
+              </div>
+              <div class="actions">
+                @for (n of next(r.status); track n.status) {
+                  @if (n.status === 'CANCELLED') {
+                    <button mat-stroked-button type="button" [disabled]="busy()" (click)="update(r, n.status)">{{ n.label }}</button>
+                  } @else {
+                    <button mat-flat-button type="button" [disabled]="busy()" (click)="update(r, n.status)">{{ n.label }}</button>
+                  }
+                }
+              </div>
+            </article>
+          }
+        </div>
+        @if (error()) {
+          <p class="alert alert--error" role="alert">{{ error() }}</p>
+        }
+        @if ((page()?.totalPages ?? 0) > 1) {
+          <nav class="pager" aria-label="Pages">
+            <button mat-stroked-button type="button" [disabled]="page()!.page === 0" (click)="load(page()!.page - 1)">Previous</button>
+            <span>Page {{ page()!.page + 1 }} of {{ page()!.totalPages }}</span>
+            <button mat-stroked-button type="button" [disabled]="page()!.page + 1 >= page()!.totalPages" (click)="load(page()!.page + 1)">Next</button>
+          </nav>
+        }
+      }
+    </div>
+  

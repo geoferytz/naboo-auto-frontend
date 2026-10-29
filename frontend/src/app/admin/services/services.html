@@ -1,0 +1,162 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container head">
+        <div>
+          <span class="eyebrow">Staff</span>
+          <h1>Service catalogue</h1>
+        </div>
+        @if (editable()) {
+          <button mat-flat-button type="button" (click)="editCategory(null)">Add category</button>
+        }
+      </div>
+    </header>
+
+    <div class="container section">
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading catalogue…" (retry)="load()" />
+      } @else {
+        @for (cat of categories(); track cat.id) {
+          <section class="card cat" [attr.aria-labelledby]="'cat-' + cat.id">
+            <div class="cat-head">
+              <div>
+                <h2 [id]="'cat-' + cat.id">{{ cat.name }}</h2>
+                @if (cat.description) {
+                  <p class="hint">{{ cat.description }}</p>
+                }
+              </div>
+              @if (editable()) {
+                <div class="cat-actions">
+                  <button mat-stroked-button type="button" (click)="editCategory(cat)">Edit</button>
+                  <button mat-stroked-button type="button" (click)="editService(null, cat.id)">Add service</button>
+                </div>
+              }
+            </div>
+            <ul class="services">
+              @for (s of servicesOf(cat.id); track s.id) {
+                <li>
+                  <div class="svc">
+                    @if (s.imageUrl) {
+                      <img class="svc-thumb" [src]="s.imageUrl" [alt]="''" />
+                    }
+                    <strong>{{ s.name }}</strong>
+                    @if (!s.active) {
+                      <span class="badge">Hidden</span>
+                    }
+                    <span class="meta">{{ priceLabel(s) }}</span>
+                  </div>
+                  @if (editable()) {
+                    <button mat-button type="button" (click)="editService(s, cat.id)">Edit</button>
+                  }
+                </li>
+              } @empty {
+                <li class="meta">No services in this category yet.</li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (editing(); as ed) {
+          <section class="card editor" aria-labelledby="editor-h">
+            @if (ed.kind === 'category') {
+              <h2 id="editor-h">{{ ed.id ? 'Edit category' : 'New category' }}</h2>
+              <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="form-grid" novalidate>
+                <mat-form-field appearance="outline" class="full">
+                  <mat-label>Name</mat-label>
+                  <input matInput formControlName="name" maxlength="80" />
+                  <mat-error>{{ catErr('name', 'Name') }}</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full">
+                  <mat-label>Description (optional)</mat-label>
+                  <textarea matInput formControlName="description" rows="2" maxlength="500"></textarea>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Sort order</mat-label>
+                  <input matInput formControlName="sortOrder" type="number" min="0" />
+                </mat-form-field>
+                @if (formError()) {
+                  <p class="alert alert--error full" role="alert">{{ formError() }}</p>
+                }
+                <div class="full actions">
+                  <button mat-flat-button type="submit" [disabled]="busy()">Save category</button>
+                  <button mat-button type="button" (click)="editing.set(null)">Cancel</button>
+                </div>
+              </form>
+            } @else {
+              <h2 id="editor-h">{{ ed.id ? 'Edit service' : 'New service' }}</h2>
+              <form [formGroup]="serviceForm" (ngSubmit)="saveService(ed.categoryId)" class="form-grid" novalidate>
+                <mat-form-field appearance="outline" class="full">
+                  <mat-label>Name</mat-label>
+                  <input matInput formControlName="name" maxlength="100" />
+                  <mat-error>{{ svcErr('name', 'Name') }}</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full">
+                  <mat-label>Summary</mat-label>
+                  <input matInput formControlName="summary" maxlength="200" />
+                  <mat-error>{{ svcErr('summary', 'Summary') }}</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full">
+                  <mat-label>Description (optional)</mat-label>
+                  <textarea matInput formControlName="description" rows="3" maxlength="4000"></textarea>
+                </mat-form-field>
+                <div class="full image-field">
+                  <span class="image-label">Card image (optional)</span>
+                  <div class="image-row">
+                    @if (serviceForm.controls.imageUrl.value; as url) {
+                      <img class="image-preview" [src]="url" alt="Service card image preview" />
+                    } @else {
+                      <span class="image-empty" aria-hidden="true">
+                        <mat-icon fontSet="material-symbols-outlined">image</mat-icon>
+                      </span>
+                    }
+                    <div class="image-actions">
+                      <button mat-stroked-button type="button" [disabled]="uploadingImage()" (click)="fileInput.click()">
+                        {{ uploadingImage() ? 'Uploading…' : 'Upload image' }}
+                      </button>
+                      @if (serviceForm.controls.imageUrl.value) {
+                        <button mat-button type="button" (click)="serviceForm.controls.imageUrl.setValue(''); serviceForm.controls.imageUrl.markAsDirty()">
+                          Remove
+                        </button>
+                      }
+                      <p class="hint">Shown on the service card and detail page. Leave empty to use the default photo.</p>
+                    </div>
+                  </div>
+                  <input #fileInput type="file" accept="image/jpeg,image/png" hidden (change)="uploadImage($event)" />
+                </div>
+                <mat-form-field appearance="outline">
+                  <mat-label>Price type</mat-label>
+                  <mat-select formControlName="priceType">
+                    @for (o of priceTypeOptions; track o.value) {
+                      <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                @if (needsPrice()) {
+                  <mat-form-field appearance="outline">
+                    <mat-label>Price (TZS)</mat-label>
+                    <input matInput formControlName="priceAmount" inputmode="decimal" />
+                    <mat-error>{{ svcErr('priceAmount', 'Price') }}</mat-error>
+                  </mat-form-field>
+                }
+                <mat-form-field appearance="outline">
+                  <mat-label>Duration (minutes, optional)</mat-label>
+                  <input matInput formControlName="durationMinutes" type="number" min="0" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Sort order</mat-label>
+                  <input matInput formControlName="sortOrder" type="number" min="0" />
+                </mat-form-field>
+                <mat-checkbox formControlName="active" class="full">Visible on the website</mat-checkbox>
+                @if (formError()) {
+                  <p class="alert alert--error full" role="alert">{{ formError() }}</p>
+                }
+                <div class="full actions">
+                  <button mat-flat-button type="submit" [disabled]="busy()">Save service</button>
+                  <button mat-button type="button" (click)="editing.set(null)">Cancel</button>
+                </div>
+              </form>
+            }
+          </section>
+        }
+      }
+    </div>
+  

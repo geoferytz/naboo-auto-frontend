@@ -1,0 +1,103 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container head">
+        <div>
+          <span class="eyebrow">Staff</span>
+          <h1>Workshop jobs</h1>
+        </div>
+        <button mat-flat-button type="button" (click)="showCreate.set(!showCreate())">
+          {{ showCreate() ? 'Close form' : 'New job card' }}
+        </button>
+      </div>
+    </header>
+
+    <div class="container section">
+      @if (showCreate()) {
+        <form [formGroup]="createForm" (ngSubmit)="create()" class="card create" novalidate>
+          <mat-form-field appearance="outline">
+            <mat-label>Vehicle</mat-label>
+            <input matInput formControlName="vehicleDescription" maxlength="200" placeholder="e.g. 2019 Toyota Hilux, T 456 DEF" />
+            <mat-error>Describe the vehicle.</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Work to be done</mat-label>
+            <textarea matInput formControlName="description" rows="3" maxlength="4000"
+                      placeholder="e.g. Replace front brake pads and skim discs"></textarea>
+            <mat-error>Describe the work.</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Scheduled for (optional)</mat-label>
+            <input matInput formControlName="scheduledFor" type="datetime-local" />
+          </mat-form-field>
+          @if (createError()) {
+            <p class="alert alert--error" role="alert">{{ createError() }}</p>
+          }
+          <button mat-flat-button type="submit" [disabled]="busy()">Create job card</button>
+        </form>
+      }
+
+      <mat-button-toggle-group [value]="statusFilter()" (change)="setFilter($event.value)" aria-label="Filter by status">
+        <mat-button-toggle value="">All</mat-button-toggle>
+        @for (s of statusKeys; track s) {
+          <mat-button-toggle [value]="s">{{ label(s) }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading jobs…" emptyText="No jobs in this state." (retry)="load()" />
+      } @else {
+        <div class="list">
+          @for (j of items(); track j.id) {
+            <article class="card row">
+              <div class="main">
+                <div class="line">
+                  <span class="ref">{{ j.reference }}</span>
+                  <span class="badge" [attr.data-status]="j.status">{{ label(j.status) }}</span>
+                </div>
+                <strong>{{ j.vehicleDescription }}</strong>
+                <span class="meta">{{ j.description }}</span>
+                @if (j.booking) {
+                  <span class="meta">From booking {{ j.booking.reference }} ({{ j.booking.serviceName }})</span>
+                }
+                @if (j.scheduledFor) {
+                  <span class="meta">Scheduled: {{ j.scheduledFor | date: 'medium' }}</span>
+                }
+                @if (j.status === 'IN_PROGRESS' || j.status === 'ON_HOLD') {
+                  <form class="notes-form" (ngSubmit)="saveNotes(j)">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Labour notes</mat-label>
+                      <input matInput [ngModel]="j.laborNotes ?? ''" (ngModelChange)="notesDraft[j.id] = $event"
+                             maxlength="500" />
+                    </mat-form-field>
+                    <button mat-stroked-button type="submit" [disabled]="busy()">Save note</button>
+                  </form>
+                }
+                @if (j.laborNotes && j.status !== 'IN_PROGRESS' && j.status !== 'ON_HOLD') {
+                  <span class="meta notes">“{{ j.laborNotes }}”</span>
+                }
+              </div>
+              <div class="actions">
+                @for (n of next(j.status); track n.status) {
+                  @if (n.status === 'CANCELLED') {
+                    <button mat-stroked-button type="button" [disabled]="busy()" (click)="update(j, n.status)">{{ n.label }}</button>
+                  } @else {
+                    <button mat-flat-button type="button" [disabled]="busy()" (click)="update(j, n.status)">{{ n.label }}</button>
+                  }
+                }
+              </div>
+            </article>
+          }
+        </div>
+        @if (error()) {
+          <p class="alert alert--error" role="alert">{{ error() }}</p>
+        }
+        @if ((page()?.totalPages ?? 0) > 1) {
+          <nav class="pager" aria-label="Pages">
+            <button mat-stroked-button type="button" [disabled]="page()!.page === 0" (click)="load(page()!.page - 1)">Previous</button>
+            <span>Page {{ page()!.page + 1 }} of {{ page()!.totalPages }}</span>
+            <button mat-stroked-button type="button" [disabled]="page()!.page + 1 >= page()!.totalPages" (click)="load(page()!.page + 1)">Next</button>
+          </nav>
+        }
+      }
+    </div>
+  

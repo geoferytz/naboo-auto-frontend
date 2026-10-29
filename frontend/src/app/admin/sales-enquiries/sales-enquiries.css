@@ -1,0 +1,25 @@
+
+    mat-button-toggle-group { margin-bottom: var(--space-4); flex-wrap: wrap; }
+    .list { display: flex; flex-direction: column; gap: var(--space-3); }
+    .enquiry { overflow: hidden; }
+    .summary { display: flex; align-items: center; gap: var(--space-4); width: 100%; padding: var(--space-3) var(--space-4);
+      background: none; border: 0; cursor: pointer; text-align: left; font: inherit; flex-wrap: wrap; }
+    .ref { font-family: ui-monospace, monospace; font-size: .85rem; color: var(--naboo-text-muted); }
+    .who { flex: 1; min-width: 160px; }
+    .meta { display: block; font-size: .82rem; color: var(--naboo-text-muted); }
+    .badge { padding: 2px 10px; border-radius: 999px; font-size: .8rem; font-weight: 600; background: var(--naboo-grey); }
+    .badge[data-status='NEW'] { background: #fde8e9; color: #a3121c; }
+    .badge[data-status='CONTACTED'], .badge[data-status='VIEWING_SCHEDULED'] { background: #fff3d6; color: #8a5a00; }
+    .badge[data-status='CLOSED_WON'] { background: #e4f5e8; color: #146c2e; }
+    .badge[data-status='CLOSED_LOST'] { background: #eceef1; color: #5a616b; }
+    .detail { border-top: 1px solid var(--naboo-border); padding: var(--space-4); }
+    dl { display: grid; gap: var(--space-2) var(--space-5); margin: 0 0 var(--space-4); grid-template-columns: 1fr; }
+    dl div { display: grid; grid-template-columns: 120px 1fr; gap: var(--space-2); }
+    dl .full { grid-column: 1 / -1; }
+    dt { color: var(--naboo-text-muted); font-size: .85rem; }
+    dd { margin: 0; overflow-wrap: anywhere; }
+    .msg { white-space: pre-wrap; }
+    .edit { display: flex; gap: var(--space-3); align-items: start; flex-wrap: wrap; }
+    .pager { display: flex; align-items: center; justify-content: center; gap: var(--space-4); margin-top: var(--space-5); }
+    @media (min-width: 720px) { dl { grid-template-columns: 1fr 1fr; } }
+  

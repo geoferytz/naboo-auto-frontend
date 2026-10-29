@@ -1,0 +1,80 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container">
+        <span class="eyebrow">Staff</span>
+        <h1>Quotations</h1>
+      </div>
+    </header>
+
+    <div class="container section">
+      <mat-button-toggle-group [value]="statusFilter()" (change)="setFilter($event.value)" aria-label="Filter by status">
+        <mat-button-toggle value="">All</mat-button-toggle>
+        @for (s of statusKeys; track s) {
+          <mat-button-toggle [value]="s">{{ label(s) }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading quotations…" emptyText="No quotations in this state." (retry)="load()" />
+      } @else {
+        <div class="list">
+          @for (q of items(); track q.id) {
+            <article class="card quote">
+              <div class="top">
+                <div class="main">
+                  <div class="line">
+                    <span class="ref">{{ q.reference }}</span>
+                    <span class="badge" [attr.data-status]="q.status">{{ label(q.status) }}</span>
+                  </div>
+                  <strong>{{ workLabel(q.workType) }}{{ q.serviceName ? ' · ' + q.serviceName : '' }}</strong>
+                  <span class="meta">{{ q.vehicleDescription }} — {{ q.description }}</span>
+                  <span class="meta">{{ q.fullName }} · {{ q.phone }} · {{ q.email }}</span>
+                  @if (q.quotedAmount) {
+                    <span class="price">{{ formatMoney(q.quotedAmount) }}
+                      <span class="meta">valid until {{ q.validUntil | date: 'mediumDate' }}</span></span>
+                  }
+                </div>
+                @if (q.status === 'REQUESTED' || q.status === 'QUOTED') {
+                  <form [formGroup]="quoteForm" (ngSubmit)="price(q)" class="price-form" [attr.aria-label]="'Price quotation ' + q.reference">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Amount (TZS)</mat-label>
+                      <input matInput formControlName="quotedAmount" inputmode="decimal" />
+                      <mat-error>Enter the quoted amount.</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Valid until</mat-label>
+                      <input matInput formControlName="validUntil" type="date" [min]="tomorrow" />
+                      <mat-error>Choose a future date.</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Note to customer (optional)</mat-label>
+                      <input matInput formControlName="staffNotes" maxlength="500" />
+                    </mat-form-field>
+                    <div class="actions">
+                      <button mat-flat-button type="submit" [disabled]="busy()">
+                        {{ q.status === 'QUOTED' ? 'Update price' : 'Send price' }}
+                      </button>
+                      <button mat-stroked-button type="button" [disabled]="busy()" (click)="cancel(q)">Cancel quotation</button>
+                    </div>
+                  </form>
+                }
+                @if (q.staffNotes) {
+                  <span class="meta notes">Your note: “{{ q.staffNotes }}”</span>
+                }
+              </div>
+            </article>
+          }
+        </div>
+        @if (error()) {
+          <p class="alert alert--error" role="alert">{{ error() }}</p>
+        }
+        @if ((page()?.totalPages ?? 0) > 1) {
+          <nav class="pager" aria-label="Pages">
+            <button mat-stroked-button type="button" [disabled]="page()!.page === 0" (click)="load(page()!.page - 1)">Previous</button>
+            <span>Page {{ page()!.page + 1 }} of {{ page()!.totalPages }}</span>
+            <button mat-stroked-button type="button" [disabled]="page()!.page + 1 >= page()!.totalPages" (click)="load(page()!.page + 1)">Next</button>
+          </nav>
+        }
+      }
+    </div>
+  

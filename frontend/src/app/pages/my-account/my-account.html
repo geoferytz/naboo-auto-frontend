@@ -1,0 +1,202 @@
+
+    <header class="page-header">
+      <div class="container">
+        <span class="eyebrow">My account</span>
+        <h1>{{ auth.user() ? 'Welcome, ' + auth.user()!.fullName : 'My account' }}</h1>
+      </div>
+    </header>
+    <div class="container section">
+      @if (auth.user(); as u) {
+        @if (loadFailed()) {
+          <p class="load-error" role="alert">
+            One or more sections couldn't load.
+            <button mat-button type="button" (click)="loadAll()">Try again</button>
+          </p>
+        }
+        <div class="grid">
+          <section class="card panel" aria-labelledby="profile">
+            <h2 id="profile">Profile</h2>
+            <dl>
+              <dt>Name</dt><dd>{{ u.fullName }}</dd>
+              <dt>Email</dt><dd>{{ u.email }}</dd>
+              <dt>Phone</dt><dd>{{ u.phone ?? 'Not provided' }}</dd>
+            </dl>
+            <button mat-stroked-button type="button" (click)="auth.logout()">Sign out</button>
+          </section>
+
+          <section class="card panel" aria-labelledby="notifications">
+            <div class="panel-head">
+              <h2 id="notifications">Notifications</h2>
+              @if (unreadCount() > 0) {
+                <button mat-button type="button" [disabled]="busy()" (click)="markAllRead()">Mark all read</button>
+              }
+            </div>
+            @if (notifications(); as page) {
+              @if (!page.totalCount) {
+                <p class="empty">No notifications yet.</p>
+              }
+              <ul class="rows">
+                @for (n of page.items; track n.id) {
+                  <li [class.unread]="!n.read">
+                    <div class="row-main">
+                      <strong>{{ n.title }}</strong>
+                      <span class="meta">{{ n.body }}</span>
+                      <span class="meta">{{ n.createdAt | date: 'medium' }}</span>
+                    </div>
+                    @if (!n.read) {
+                      <button mat-button type="button" [disabled]="busy()" (click)="markRead(n)">Mark read</button>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <app-load-state state="loading" loadingText="Loading…" />
+            }
+          </section>
+
+          <section class="card panel" aria-labelledby="quotes">
+            <h2 id="quotes">Quotations</h2>
+            @if (quotations(); as page) {
+              @if (!page.totalCount) {
+                <p class="empty">No quotations yet. <a routerLink="/services">Browse services</a> to request one.</p>
+              }
+              <ul class="rows">
+                @for (q of page.items; track q.id) {
+                  <li>
+                    <div class="row-main">
+                      <strong>{{ workLabel(q.workType) }}{{ q.serviceName ? ' · ' + q.serviceName : '' }}</strong>
+                      <span class="meta">{{ q.reference }} · {{ q.createdAt | date: 'mediumDate' }}</span>
+                      @if (q.status === 'QUOTED' && q.quotedAmount) {
+                        <span class="price">{{ formatMoney(q.quotedAmount) }}
+                          <span class="meta"> — valid until {{ q.validUntil | date: 'mediumDate' }}</span></span>
+                      }
+                    </div>
+                    <span class="badge" [attr.data-status]="q.status">{{ quoteLabel(q.status) }}</span>
+                    @if (q.status === 'QUOTED') {
+                      <div class="row-actions">
+                        <button mat-flat-button type="button" [disabled]="busy()" (click)="decide(q, true)">Accept</button>
+                        <button mat-stroked-button type="button" [disabled]="busy()" (click)="decide(q, false)">Decline</button>
+                      </div>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <app-load-state state="loading" loadingText="Loading…" />
+            }
+          </section>
+
+          <section class="card panel" aria-labelledby="bookings">
+            <h2 id="bookings">Service bookings</h2>
+            @if (bookings(); as page) {
+              @if (!page.totalCount) {
+                <p class="empty">No bookings yet. <a routerLink="/services">Book a service</a>.</p>
+              }
+              <ul class="rows">
+                @for (b of page.items; track b.id) {
+                  <li>
+                    <div class="row-main">
+                      <strong>{{ b.service.name }}</strong>
+                      <span class="meta">{{ b.reference }} · {{ b.scheduledStart | date: 'medium' }}</span>
+                      <span class="meta">{{ b.vehicleDescription }}</span>
+                    </div>
+                    <span class="badge" [attr.data-status]="b.status">{{ bookingLabel(b.status) }}</span>
+                    @if (b.status === 'PENDING' || b.status === 'CONFIRMED') {
+                      <button mat-stroked-button type="button" [disabled]="busy()" (click)="cancelBooking(b)">Cancel</button>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <app-load-state state="loading" loadingText="Loading…" />
+            }
+          </section>
+
+          <section class="card panel" aria-labelledby="orders">
+            <h2 id="orders">Accessory orders</h2>
+            @if (orders(); as page) {
+              @if (!page.totalCount) {
+                <p class="empty">No orders yet. <a routerLink="/accessories">Browse the shop</a>.</p>
+              }
+              <ul class="rows">
+                @for (o of page.items; track o.id) {
+                  <li>
+                    <div class="row-main">
+                      <strong>{{ o.reference }}</strong>
+                      <span class="meta">{{ o.items.map((i) => i.quantity + ' × ' + i.description).join(', ') }}</span>
+                      <span class="price">{{ formatMoney(o.total) }}</span>
+                    </div>
+                    <span class="badge" [attr.data-status]="o.status">{{ orderLabel(o.status) }}</span>
+                    @if (o.status === 'PENDING') {
+                      <button mat-stroked-button type="button" [disabled]="busy()" (click)="cancelOrder(o)">Cancel</button>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <app-load-state state="loading" loadingText="Loading…" />
+            }
+          </section>
+
+          <section class="card panel" aria-labelledby="invoices">
+            <h2 id="invoices">Invoices</h2>
+            @if (invoices(); as page) {
+              @if (!page.totalCount) {
+                <p class="empty">No invoices yet.</p>
+              }
+              <ul class="rows">
+                @for (inv of page.items; track inv.id) {
+                  <li>
+                    <div class="row-main">
+                      <strong>{{ inv.reference }}</strong>
+                      <span class="meta">{{ inv.items.map((i) => i.quantity + ' × ' + i.description).join(', ') }}</span>
+                      <span class="price">{{ formatMoney(inv.total) }}
+                        @if (inv.status === 'ISSUED') {
+                          <span class="meta">— balance {{ formatMoney(inv.balance) }}{{ inv.dueDate ? ', due ' + (inv.dueDate | date: 'mediumDate') : '' }}</span>
+                        }
+                      </span>
+                    </div>
+                    <span class="badge" [attr.data-status]="inv.status">{{ invoiceLabel(inv.status) }}</span>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <app-load-state state="loading" loadingText="Loading…" />
+            }
+          </section>
+
+          <section class="card panel" aria-labelledby="rentals">
+            <h2 id="rentals">Rental reservations</h2>
+            @if (reservations(); as page) {
+              @if (!page.totalCount) {
+                <p class="empty">No reservations yet. <a routerLink="/rentals">Browse rental vehicles</a>.</p>
+              }
+              <ul class="rows">
+                @for (r of page.items; track r.id) {
+                  <li>
+                    <div class="row-main">
+                      <strong>{{ r.vehicle.title }}</strong>
+                      <span class="meta">{{ r.reference }} · {{ r.startDate | date: 'mediumDate' }} →
+                        {{ r.endDate | date: 'mediumDate' }} ({{ r.days }} days)</span>
+                      <span class="price">{{ formatMoney(r.total) }}</span>
+                    </div>
+                    <span class="badge" [attr.data-status]="r.status">{{ resLabel(r.status) }}</span>
+                    @if (r.status === 'PENDING' || r.status === 'CONFIRMED') {
+                      <button mat-stroked-button type="button" [disabled]="busy()" (click)="cancelReservation(r)">Cancel</button>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <app-load-state state="loading" loadingText="Loading…" />
+            }
+          </section>
+        </div>
+        @if (error()) {
+          <p class="alert alert--error" role="alert">{{ error() }}</p>
+        }
+      } @else {
+        <app-load-state state="loading" loadingText="Loading your account…" />
+      }
+    </div>
+  

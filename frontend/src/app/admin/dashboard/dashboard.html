@@ -1,0 +1,39 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container head">
+        <div>
+          <span class="eyebrow">Staff</span>
+          <h1>{{ greeting }}, {{ firstName }}</h1>
+          <p class="sub">Here's what's happening across the business today.</p>
+        </div>
+        <span class="date-chip"><mat-icon fontSet="material-symbols-outlined">calendar_month</mat-icon>{{ today | date:'EEEE, d MMMM y' }}</span>
+      </div>
+    </header>
+
+    <div class="container section">
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading dashboard…" (retry)="load()" />
+      } @else {
+        @for (group of groups(); track group.title) {
+          <h2 class="group"><mat-icon fontSet="material-symbols-outlined">{{ group.icon }}</mat-icon>{{ group.title }}</h2>
+          <div class="grid">
+            @for (s of group.stats; track s.label) {
+              @if (s.link) {
+                <a class="stat" [routerLink]="s.link">
+                  <span class="chip"><mat-icon fontSet="material-symbols-outlined">{{ s.icon }}</mat-icon></span>
+                  <span class="value">{{ typeof s.value === 'object' ? money(s.value) : format(s.value) }}</span>
+                  <span class="label">{{ s.label }}</span>
+                  <span class="go"><mat-icon fontSet="material-symbols-outlined">arrow_forward</mat-icon></span>
+                </a>
+              } @else {
+                <div class="stat">
+                  <span class="chip"><mat-icon fontSet="material-symbols-outlined">{{ s.icon }}</mat-icon></span>
+                  <span class="value">{{ typeof s.value === 'object' ? money(s.value) : format(s.value) }}</span>
+                  <span class="label">{{ s.label }}</span>
+                </div>
+              }
+            }
+          </div>
+        }
+      }
+    </div>

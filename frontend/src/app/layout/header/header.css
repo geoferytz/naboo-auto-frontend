@@ -1,0 +1,47 @@
+/* Let the main header stick within the page, independently of the contact strip. */
+:host { display: contents; }
+.header { position: sticky; top: 0; z-index: 100; background: var(--naboo-black); color: var(--naboo-white);
+  border-bottom: 1px solid #23262c; }
+.contact-strip { background: var(--naboo-white); color: var(--naboo-black); border-bottom: 1px solid #e6e9ed; }
+.contact-inner { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center;
+  gap: .25rem var(--space-5); padding-block: .375rem; padding-inline: var(--container-gutter); }
+.contact-item { display: inline-flex; align-items: center; gap: .375rem; min-height: 28px;
+  color: inherit; text-decoration: none; font-size: .78rem; line-height: 1.4; }
+.contact-item mat-icon { flex-shrink: 0; width: 16px; height: 16px; font-size: 16px; color: var(--naboo-red-dark); }
+a.contact-item:hover { color: var(--naboo-red-dark); text-decoration: underline; }
+.bar { display: flex; align-items: center; gap: var(--space-4); height: var(--header-height);
+  padding-inline: var(--container-gutter); }
+.brand { display: inline-flex; flex-shrink: 0; color: inherit; text-decoration: none; }
+.logo-img { max-height: 40px; width: auto; display: block; }
+.nav { display: none; gap: var(--space-5); margin-left: var(--space-5); }
+.nav a, .mobile a { color: #d9dce0; text-decoration: none; font-weight: 500; font-size: 0.95rem; }
+.nav a { padding-block: 22px; border-bottom: 2px solid transparent; white-space: nowrap; }
+.nav a:hover, .nav a.active { color: var(--naboo-white); border-bottom-color: var(--naboo-red); }
+.nav-trigger { display: inline-flex; align-items: center; gap: .25rem; padding: 22px 0;
+  border: 0; border-bottom: 2px solid transparent; background: transparent; color: #d9dce0;
+  font: inherit; font-size: .95rem; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.nav-trigger:hover, .nav-trigger.active, .nav-trigger.expanded {
+  color: var(--naboo-white); border-bottom-color: var(--naboo-red); }
+.submenu-active { color: var(--naboo-red-dark); font-weight: 700; }
+.mobile .nav-trigger { justify-content: space-between; width: 100%;
+  padding: var(--space-3) 0; border-bottom: 1px solid #23262c; font-size: 1.05rem; }
+.right { margin-left: auto; display: flex; align-items: center; gap: var(--space-1); }
+.account { color: var(--naboo-white) !important; }
+.account .label { display: none; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cta { display: none !important; margin-right: var(--space-2); }
+.menu-toggle { color: var(--naboo-white); }
+.bell { position: relative; }
+.dot { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; border-radius: 9px;
+  background: var(--naboo-red); color: var(--naboo-white); font-size: .68rem; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; line-height: 1; }
+.mobile { display: flex; flex-direction: column; padding: var(--space-2) var(--container-gutter) var(--space-4);
+  border-top: 1px solid #23262c; }
+.mobile a { padding: var(--space-3) 0; border-bottom: 1px solid #23262c; font-size: 1.05rem; }
+.mobile a.active { color: var(--naboo-white); font-weight: 700; }
+@media (min-width: 640px) { .account .label { display: inline; } .cta { display: inline-flex !important; } }
+@media (min-width: 1200px) {
+  .nav { display: flex; gap: var(--space-4); margin-left: auto; }
+  .right { margin-left: 0; }
+  .menu-toggle, .mobile { display: none; }
+  .account:not(.phone):not(.signin) .label { display: none; }
+}

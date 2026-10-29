@@ -1,0 +1,53 @@
+
+    @if (service.hasValue() && service.value(); as s) {
+      <header class="page-header">
+        <div class="container">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a routerLink="/services">Services</a> / <a [routerLink]="'/services'" [fragment]="s.category.slug">{{ s.category.name }}</a>
+          </nav>
+          <h1>{{ s.name }}</h1>
+          <p class="lead">{{ s.summary }}</p>
+        </div>
+      </header>
+      <div class="container section layout">
+        <div class="main">
+          @if (s.imageUrl) {
+            <img class="hero-img" [src]="s.imageUrl" [alt]="s.name" />
+          }
+          @if (s.description) {
+            <h2>What is included</h2>
+            <p class="description">{{ s.description }}</p>
+          }
+        </div>
+        <aside class="card price-card" aria-labelledby="pricing">
+          <h2 id="pricing">Pricing</h2>
+          <p class="price">{{ servicePrice(s) }}</p>
+          <p class="note">{{ servicePriceNote(s.priceType) }}</p>
+          @if (formatDuration(s.durationMinutes); as d) {
+            <p class="note">Typical duration: approx. {{ d }}.</p>
+          }
+          <p class="note small">We will confirm availability and the final scope with you before any work starts.</p>
+        </aside>
+
+        <section class="card action-card" aria-labelledby="action-h">
+          @if (s.priceType === 'QUOTE_REQUIRED') {
+            <h2 id="action-h">Request a quotation</h2>
+            <app-quotation-form [serviceId]="s.id" />
+          } @else {
+            <h2 id="action-h">Book an appointment</h2>
+            <app-booking-form [serviceId]="s.id" />
+          }
+        </section>
+      </div>
+    } @else if (service.hasValue() && !service.value()) {
+      <div class="container section">
+        <h1>Service not found</h1>
+        <p class="lead">This service may no longer be offered.</p>
+        <a mat-flat-button routerLink="/services">View all services</a>
+      </div>
+    } @else {
+      <div class="container section">
+        <app-load-state [state]="service.error() ? 'error' : 'loading'" (retry)="service.reload()" />
+      </div>
+    }
+  

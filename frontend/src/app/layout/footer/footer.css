@@ -1,0 +1,12 @@
+
+    .footer { background: var(--naboo-black); color: #c4c8ce; padding-top: var(--space-7); margin-top: auto; }
+    .cols { display: grid; gap: var(--space-6); grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .about { color: var(--naboo-white); }
+    .logo-img { height: auto; width: auto; max-height: 64px; max-width: 220px; object-fit: contain; display: block; }
+    .about p { color: #aab0b8; margin-top: var(--space-4); max-width: 34ch; }
+    h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--naboo-white); }
+    nav, div { display: flex; flex-direction: column; gap: var(--space-2); }
+    a { color: #c4c8ce; text-decoration: none; width: fit-content; }
+    a:hover { color: var(--naboo-white); text-decoration: underline; }
+    .legal { border-top: 1px solid #23262c; margin-top: var(--space-6); padding-block: var(--space-4); font-size: 0.85rem; }
+  

@@ -1,0 +1,180 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container head">
+        <div>
+          <span class="eyebrow">Staff · Rentals</span>
+          <h1>{{ isNew() ? 'Add rental vehicle' : (vehicle()?.title ?? 'Edit rental vehicle') }}</h1>
+        </div>
+        @if (vehicle(); as v) {
+          <a mat-stroked-button [routerLink]="['/rentals', v.slug]" target="_blank">View public page</a>
+        }
+      </div>
+    </header>
+
+    <div class="container section">
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading vehicle…" errorText="We could not load this vehicle." (retry)="load()" />
+      } @else {
+        <div class="layout">
+          <section class="card form-card" aria-labelledby="details-h">
+            <h2 id="details-h">Details</h2>
+            <form [formGroup]="form" (ngSubmit)="save()" class="form-grid" novalidate>
+              <mat-form-field appearance="outline">
+                <mat-label>Make</mat-label>
+                <input matInput formControlName="make" maxlength="60" />
+                <mat-error>{{ err('make', 'Make') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Model</mat-label>
+                <input matInput formControlName="model" maxlength="60" />
+                <mat-error>{{ err('model', 'Model') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Variant (optional)</mat-label>
+                <input matInput formControlName="variant" maxlength="80" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Year</mat-label>
+                <input matInput formControlName="year" type="number" min="1950" [max]="currentYear + 1" />
+                <mat-error>{{ err('year', 'Year') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Seats (optional)</mat-label>
+                <input matInput formControlName="seats" type="number" min="1" max="60" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Fuel</mat-label>
+                <mat-select formControlName="fuelType">
+                  @for (o of fuelOptions; track o.value) {
+                    <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Transmission</mat-label>
+                <mat-select formControlName="transmission">
+                  @for (o of transmissionOptions; track o.value) {
+                    <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Body type</mat-label>
+                <mat-select formControlName="bodyType">
+                  @for (o of bodyOptions; track o.value) {
+                    <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Colour (optional)</mat-label>
+                <input matInput formControlName="color" maxlength="40" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Pickup location / yard (optional)</mat-label>
+                <input matInput formControlName="location" maxlength="80" placeholder="e.g. Main yard, Dar es Salaam" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Daily rate (TZS)</mat-label>
+                <input matInput formControlName="dailyRateAmount" inputmode="decimal" placeholder="e.g. 150000" />
+                <mat-error>{{ err('dailyRateAmount', 'Daily rate') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Deposit (TZS, optional)</mat-label>
+                <input matInput formControlName="depositAmount" inputmode="decimal" />
+                <mat-error>{{ err('depositAmount', 'Deposit') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Registration no. (staff only)</mat-label>
+                <input matInput formControlName="registrationNumber" maxlength="20" />
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description" rows="4" maxlength="5000"
+                          placeholder="Condition, included equipment, mileage limits, hire terms…"></textarea>
+              </mat-form-field>
+              @if (error()) {
+                <p class="alert alert--error full" role="alert">{{ error() }}</p>
+              }
+              <div class="full actions">
+                <button mat-flat-button type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : isNew() ? 'Create vehicle' : 'Save changes' }}</button>
+                <a mat-button routerLink="/admin/rentals">Back to list</a>
+              </div>
+            </form>
+          </section>
+
+          @if (vehicle(); as v) {
+            <aside class="side-col">
+              <section class="card" aria-labelledby="state-h">
+                <h2 id="state-h">Status</h2>
+                <form [formGroup]="stateForm" (ngSubmit)="saveState()" class="state-form">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Fleet status</mat-label>
+                    <mat-select formControlName="status">
+                      <mat-option value="AVAILABLE">Available</mat-option>
+                      <mat-option value="UNAVAILABLE">Unavailable</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-checkbox formControlName="published" [disabled]="stateForm.controls.status.value === 'UNAVAILABLE'">
+                    Published on the website
+                  </mat-checkbox>
+                  @if (stateError()) {
+                    <p class="alert alert--error" role="alert">{{ stateError() }}</p>
+                  }
+                  <button mat-flat-button type="submit" [disabled]="saving()">Update status</button>
+                </form>
+              </section>
+
+              <section class="card" aria-labelledby="photos-h">
+                <h2 id="photos-h">Photos</h2>
+                @if (!v.images.length) {
+                  <div class="empty-photos"><app-vehicle-placeholder /></div>
+                }
+                <ul class="photos">
+                  @for (img of v.images; track img.id; let first = $first, last = $last) {
+                    <li>
+                      <img [src]="img.url" [alt]="img.altText" width="96" height="64" />
+                      <div class="photo-info">
+                        <span class="alt">{{ img.altText }}</span>
+                        <div class="photo-actions">
+                          <button mat-icon-button type="button" [disabled]="first || busy()" aria-label="Move photo earlier" (click)="move(img, -1)">
+                            <mat-icon fontSet="material-symbols-outlined">arrow_upward</mat-icon>
+                          </button>
+                          <button mat-icon-button type="button" [disabled]="last || busy()" aria-label="Move photo later" (click)="move(img, 1)">
+                            <mat-icon fontSet="material-symbols-outlined">arrow_downward</mat-icon>
+                          </button>
+                          <button mat-icon-button type="button" [disabled]="busy()" aria-label="Delete photo" (click)="removeImage(img)">
+                            <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  }
+                </ul>
+                <form [formGroup]="uploadForm" (ngSubmit)="upload()" class="upload">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Describe the photo</mat-label>
+                    <input matInput formControlName="altText" maxlength="200" />
+                    <mat-error>{{ uploadErr() }}</mat-error>
+                  </mat-form-field>
+                  <label class="file-btn">
+                    <input type="file" accept="image/jpeg,image/png,image/webp" (change)="pickFile($event)" [disabled]="busy()" />
+                    <span class="mat-mdc-outlined-button file-label">
+                      <mat-icon fontSet="material-symbols-outlined">upload</mat-icon>
+                      {{ file()?.name ?? 'Choose photo…' }}
+                    </span>
+                  </label>
+                  @if (uploadError()) {
+                    <p class="alert alert--error" role="alert">{{ uploadError() }}</p>
+                  }
+                  <button mat-flat-button type="submit" [disabled]="!file() || busy()">
+                    {{ busy() ? 'Working…' : 'Upload photo' }}
+                  </button>
+                </form>
+              </section>
+            </aside>
+          }
+        </div>
+      }
+    </div>
+  

@@ -1,0 +1,170 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container head">
+        <div>
+          <span class="eyebrow">Staff</span>
+          <h1>Accessories &amp; stock</h1>
+        </div>
+        <button mat-flat-button type="button" (click)="startNew()">
+          {{ editing() === 'new' ? 'Close form' : 'New accessory' }}
+        </button>
+      </div>
+    </header>
+
+    <div class="container section">
+      @if (editing(); as mode) {
+        <form [formGroup]="form" (ngSubmit)="save()" class="card edit-form" novalidate>
+          <h2>{{ mode === 'new' ? 'New accessory' : 'Edit ' + form.controls.name.value }}</h2>
+          <div class="fields">
+            <mat-form-field appearance="outline">
+              <mat-label>SKU (blank = auto)</mat-label>
+              <input matInput formControlName="sku" maxlength="30" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Name</mat-label>
+              <input matInput formControlName="name" maxlength="120" />
+              <mat-error>Name the item.</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Category</mat-label>
+              <input matInput formControlName="category" maxlength="60" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Price (TZS)</mat-label>
+              <input matInput formControlName="priceAmount" inputmode="decimal" />
+              <mat-error>Enter a valid price.</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Opening stock</mat-label>
+              <input matInput formControlName="stockQuantity" type="number" min="0" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Description</mat-label>
+              <textarea matInput formControlName="description" rows="2" maxlength="2000"></textarea>
+            </mat-form-field>
+            <div class="wide image-field">
+              <span class="image-label">Product image (optional)</span>
+              <div class="image-row">
+                @if (form.controls.imageUrl.value; as url) {
+                  <img class="image-preview" [src]="url" alt="Accessory image preview" />
+                } @else {
+                  <span class="image-empty" aria-hidden="true">
+                    <mat-icon fontSet="material-symbols-outlined">image</mat-icon>
+                  </span>
+                }
+                <div class="image-actions">
+                  <button mat-stroked-button type="button" [disabled]="uploadingImage()" (click)="fileInput.click()">
+                    {{ uploadingImage() ? 'Uploading…' : 'Upload image' }}
+                  </button>
+                  @if (form.controls.imageUrl.value) {
+                    <button mat-button type="button" (click)="form.controls.imageUrl.setValue(''); form.controls.imageUrl.markAsDirty()">
+                      Remove
+                    </button>
+                  }
+                  <p class="hint">Shown on the shop card. Leave empty to show a placeholder icon.</p>
+                </div>
+              </div>
+              <input #fileInput type="file" accept="image/jpeg,image/png" hidden (change)="uploadImage($event)" />
+            </div>
+            <mat-checkbox formControlName="active">Visible in the shop</mat-checkbox>
+          </div>
+          @if (editError()) {
+            <p class="alert alert--error" role="alert">{{ editError() }}</p>
+          }
+          <div class="actions">
+            <button mat-flat-button type="submit" [disabled]="busy()">{{ busy() ? 'Saving…' : 'Save' }}</button>
+            <button mat-button type="button" (click)="editing.set(null)">Cancel</button>
+          </div>
+        </form>
+      }
+
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading accessories…" emptyText="No accessories yet." (retry)="load()" />
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Item</th>
+                <th scope="col">Price</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Shop</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of items(); track a.id) {
+                <tr>
+                  <td>
+                    <div class="item-cell">
+                      @if (a.imageUrl) {
+                        <img class="item-thumb" [src]="a.imageUrl" [alt]="''" />
+                      }
+                      <div>
+                        <strong>{{ a.name }}</strong>
+                        <span class="meta">{{ a.sku }}{{ a.category ? ' · ' + a.category : '' }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ formatMoney(a.price) }}</td>
+                  <td [class.low]="a.stockQuantity < 5">{{ a.stockQuantity }}</td>
+                  <td>{{ a.active ? 'Listed' : 'Hidden' }}</td>
+                  <td class="row-actions">
+                    <button mat-button type="button" (click)="startEdit(a)">Edit</button>
+                    <button mat-button type="button" (click)="openAdjust(a)">Stock</button>
+                    <button mat-button type="button" (click)="toggleMovements(a)">Log</button>
+                  </td>
+                </tr>
+                @if (adjusting() === a.id) {
+                  <tr class="sub">
+                    <td colspan="5">
+                      <form [formGroup]="adjustForm" (ngSubmit)="adjust(a)" class="adjust">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Change (+/−)</mat-label>
+                          <input matInput formControlName="delta" type="number" />
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>Reason</mat-label>
+                          <mat-select formControlName="reason">
+                            <mat-option value="RESTOCK">Restock</mat-option>
+                            <mat-option value="ADJUSTMENT">Adjustment</mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>Note</mat-label>
+                          <input matInput formControlName="note" maxlength="200" />
+                        </mat-form-field>
+                        <button mat-flat-button type="submit" [disabled]="busy()">Apply</button>
+                        <button mat-button type="button" (click)="adjusting.set(null)">Cancel</button>
+                      </form>
+                    </td>
+                  </tr>
+                }
+                @if (movementsFor() === a.id) {
+                  <tr class="sub">
+                    <td colspan="5">
+                      @if (movements().length) {
+                        <ul class="moves">
+                          @for (m of movements(); track m.id) {
+                            <li>
+                              <strong>{{ m.delta > 0 ? '+' : '' }}{{ m.delta }}</strong> {{ m.reason }}
+                              <span class="meta">{{ m.createdAt | date: 'short' }}{{ m.note ? ' · ' + m.note : '' }}</span>
+                            </li>
+                          }
+                        </ul>
+                      } @else {
+                        <p class="meta">No stock movements yet.</p>
+                      }
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (error()) {
+          <p class="alert alert--error" role="alert">{{ error() }}</p>
+        }
+      }
+    </div>
+  

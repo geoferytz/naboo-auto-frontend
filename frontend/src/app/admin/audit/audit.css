@@ -1,0 +1,12 @@
+
+    .filter-bar { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: var(--naboo-white); }
+    th, td { text-align: left; padding: var(--space-3); border-bottom: 1px solid var(--naboo-border); vertical-align: top; }
+    th { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--naboo-text-muted); }
+    .when { white-space: nowrap; }
+    code { font-size: .82rem; }
+    .meta { display: block; font-size: .75rem; color: var(--naboo-text-muted); font-family: ui-monospace, monospace; }
+    .details { max-width: 320px; overflow-wrap: anywhere; font-size: .85rem; color: var(--naboo-text-muted); }
+    .pager { display: flex; align-items: center; justify-content: center; gap: var(--space-4); margin-top: var(--space-5); }
+  

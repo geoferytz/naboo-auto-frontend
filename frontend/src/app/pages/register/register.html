@@ -1,0 +1,38 @@
+
+    <div class="container section auth">
+      <section class="card panel" aria-labelledby="h">
+        <h1 id="h">Create an account</h1>
+        <p class="lead">Track your enquiries and, soon, your bookings and quotations.</p>
+        <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <mat-form-field appearance="outline">
+            <mat-label>Full name</mat-label>
+            <input matInput formControlName="fullName" autocomplete="name" maxlength="120" />
+            <mat-error>{{ err('fullName', 'Full name') }}</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" autocomplete="email" />
+            <mat-error>{{ err('email', 'Email') }}</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Phone (optional)</mat-label>
+            <input matInput formControlName="phone" type="tel" autocomplete="tel" placeholder="+255 7XX XXX XXX" />
+            <mat-error>{{ err('phone', 'Phone number') }}</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="password" type="password" autocomplete="new-password" />
+            <mat-hint>At least 10 characters.</mat-hint>
+            <mat-error>{{ err('password', 'Password') }}</mat-error>
+          </mat-form-field>
+          @if (error()) {
+            <p class="alert alert--error" role="alert">{{ error() }}</p>
+          }
+          <button mat-flat-button class="btn-lg" type="submit" [disabled]="sending()">{{ sending() ? 'Creating account…' : 'Create account' }}</button>
+          <p class="hint">By creating an account you agree to our <a routerLink="/terms">terms</a> and
+            <a routerLink="/privacy-policy">privacy policy</a>.</p>
+        </form>
+        <p class="alt">Already registered? <a routerLink="/login" [queryParams]="{ returnUrl: returnUrl() }">Sign in</a></p>
+      </section>
+    </div>
+  

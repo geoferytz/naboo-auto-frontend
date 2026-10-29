@@ -1,0 +1,144 @@
+
+    <header class="page-header">
+      <div class="container">
+        <span class="eyebrow">Cars for sale</span>
+        <h1>Find your next vehicle</h1>
+        <p class="lead">Every listing shows the current price in TZS and its live availability.</p>
+      </div>
+    </header>
+
+    <div class="container layout section">
+      <aside class="filters">
+        <details [open]="wide">
+          <summary>Search &amp; filters</summary>
+          <form [formGroup]="form" (ngSubmit)="apply()" class="filter-form" aria-label="Vehicle filters">
+            <mat-form-field appearance="outline">
+              <mat-label>Keyword</mat-label>
+              <input matInput formControlName="search" placeholder="e.g. Prado, Hilux" maxlength="100" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Make</mat-label>
+              <mat-select formControlName="make">
+                <mat-option [value]="''">Any make</mat-option>
+                @for (m of makes.value() ?? []; track m) {
+                  <mat-option [value]="m">{{ m }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Model</mat-label>
+              <input matInput formControlName="model" maxlength="60" placeholder="e.g. Land Cruiser" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Body type</mat-label>
+              <mat-select formControlName="bodyType">
+                <mat-option [value]="''">Any</mat-option>
+                @for (o of bodyOptions; track o.value) {
+                  <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Fuel</mat-label>
+              <mat-select formControlName="fuelType">
+                <mat-option [value]="''">Any</mat-option>
+                @for (o of fuelOptions; track o.value) {
+                  <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Transmission</mat-label>
+              <mat-select formControlName="transmission">
+                <mat-option [value]="''">Any</mat-option>
+                @for (o of transmissionOptions; track o.value) {
+                  <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Condition</mat-label>
+              <mat-select formControlName="condition">
+                <mat-option [value]="''">Any</mat-option>
+                @for (o of conditionOptions; track o.value) {
+                  <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <div class="pair">
+              <mat-form-field appearance="outline">
+                <mat-label>Year from</mat-label>
+                <input matInput type="number" inputmode="numeric" formControlName="minYear" min="1950" max="2100" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Year to</mat-label>
+                <input matInput type="number" inputmode="numeric" formControlName="maxYear" min="1950" max="2100" />
+              </mat-form-field>
+            </div>
+            <mat-form-field appearance="outline">
+              <mat-label>Minimum price (TZS)</mat-label>
+              <input matInput type="text" inputmode="decimal" formControlName="minPrice" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Maximum price (TZS)</mat-label>
+              <input matInput type="text" inputmode="decimal" formControlName="maxPrice" />
+            </mat-form-field>
+            <mat-checkbox formControlName="includeSold">Include sold vehicles</mat-checkbox>
+            <div class="actions">
+              <button mat-flat-button type="submit">Show results</button>
+              <button mat-button type="button" (click)="reset()">Clear</button>
+            </div>
+          </form>
+        </details>
+      </aside>
+
+      <section class="results" aria-labelledby="results-heading">
+        <div class="results-bar">
+          <h2 id="results-heading" aria-live="polite">
+            @if (results.hasValue()) {
+              {{ results.value().totalCount }} {{ results.value().totalCount === 1 ? 'vehicle' : 'vehicles' }}
+            } @else {
+              Vehicles
+            }
+          </h2>
+          <mat-form-field appearance="outline" class="sort" subscriptSizing="dynamic">
+            <mat-label>Sort by</mat-label>
+            <mat-select [value]="sort()" (selectionChange)="setSort($event.value)">
+              @for (s of sortOptions; track s.value) {
+                <mat-option [value]="s.value">{{ s.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        @if (results.hasValue() && results.value().items.length) {
+          @let r = results.value();
+          <div class="list">
+            @for (v of r.items; track v.id) {
+              <app-vehicle-card [vehicle]="v" [row]="true" />
+            }
+          </div>
+          @if (r.totalPages > 1) {
+            <nav class="pager" aria-label="Pagination">
+              <a mat-stroked-button [routerLink]="[]" [queryParams]="{ page: r.page }" queryParamsHandling="merge"
+                 [class.hidden]="r.page === 0" [attr.aria-disabled]="r.page === 0">Previous</a>
+              <span>Page {{ r.page + 1 }} of {{ r.totalPages }}</span>
+              <a mat-stroked-button [routerLink]="[]" [queryParams]="{ page: r.page + 2 }" queryParamsHandling="merge"
+                 [class.hidden]="r.page + 1 >= r.totalPages">Next</a>
+            </nav>
+          }
+        } @else {
+          <app-load-state
+            [state]="results.isLoading() ? 'loading' : results.error() ? 'error' : 'empty'"
+            emptyText="No vehicles match your search right now."
+            (retry)="results.reload()"
+          >
+            <div class="actions">
+              <button mat-stroked-button type="button" (click)="reset()">Clear filters</button>
+              <a mat-flat-button routerLink="/contact" [queryParams]="{ subject: 'Vehicle request' }">Ask us to find one</a>
+            </div>
+          </app-load-state>
+        }
+      </section>
+    </div>
+  

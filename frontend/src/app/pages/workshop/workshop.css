@@ -1,0 +1,44 @@
+.filters { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-6); }
+.chip { padding: var(--space-2) var(--space-4); border-radius: 999px; border: 1px solid var(--naboo-grey-dark);
+  background: var(--naboo-white); color: var(--naboo-text); font: inherit; font-weight: 600; font-size: .9rem;
+  cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
+.chip:hover { border-color: var(--naboo-red); color: var(--naboo-red); }
+.chip.on { background: var(--naboo-red); border-color: var(--naboo-red); color: var(--naboo-white); }
+
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+.work { overflow: hidden; padding: 0; display: flex; flex-direction: column; transition: box-shadow .2s, transform .2s; }
+.work:hover { box-shadow: var(--shadow-raised); transform: translateY(-3px); }
+
+.shots { position: relative; aspect-ratio: 16 / 10; background: var(--naboo-grey); overflow: hidden; }
+.shots > img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+.shots.pair { display: grid; grid-template-columns: 1fr 1fr; }
+.half { position: relative; margin: 0; overflow: hidden; }
+.half img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.half + .half { border-left: 2px solid var(--naboo-white); }
+.half figcaption { position: absolute; left: var(--space-2); bottom: var(--space-2);
+  background: rgba(0, 0, 0, .62); color: var(--naboo-white); font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em; padding: 4px 10px; border-radius: 999px; }
+.half figcaption.after { background: var(--naboo-red); }
+.work:hover .shots > img { transform: scale(1.05); }
+
+.badge { position: absolute; top: var(--space-3); right: var(--space-3); z-index: 1;
+  background: rgba(0, 0, 0, .62); color: var(--naboo-white); font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em; padding: 5px 12px; border-radius: 999px; }
+.badge--before-after { background: var(--naboo-red); }
+.badge--progress { background: #b45309; }
+.badge--completed { background: #15803d; }
+
+.body { padding: var(--space-4); }
+.body h2 { font-size: 1.05rem; margin: 0; }
+.body p { color: var(--naboo-text-muted); font-size: .9rem; margin: var(--space-1) 0 0; }
+
+.cta { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; justify-content: space-between; }
+.cta p { margin: var(--space-1) 0 0; opacity: .85; }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+@media (max-width: 1000px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 620px) {
+  .grid { grid-template-columns: 1fr; }
+}

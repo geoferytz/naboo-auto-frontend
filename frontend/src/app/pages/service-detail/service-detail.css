@@ -1,0 +1,14 @@
+
+    .layout { display: grid; gap: var(--space-6); }
+    .description { white-space: pre-line; max-width: 70ch; }
+    .hero-img { width: 100%; aspect-ratio: 16 / 8; object-fit: cover; border-radius: 12px; margin-bottom: var(--space-4);
+      display: block; box-shadow: var(--shadow-raised); }
+    .price-card, .action-card { padding: var(--space-5); }
+    .price-card h2, .action-card h2 { font-size: 1.1rem; }
+    .action-card { margin-top: var(--space-5); }
+    .price { font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-2); }
+    .note { color: var(--naboo-text-muted); }
+    .small { font-size: .85rem; margin: var(--space-3) 0 0; }
+    .full { width: 100%; }
+    @media (min-width: 900px) { .layout { grid-template-columns: 1fr 360px; align-items: start; } }
+  

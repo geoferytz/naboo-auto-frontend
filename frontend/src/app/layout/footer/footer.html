@@ -1,0 +1,52 @@
+
+    <footer class="footer">
+      <div class="container cols">
+        <div class="about">
+          @if (business.logoUrl) {
+            <img class="logo-img" [src]="business.logoUrl" alt="Naboo Automotive" />
+          } @else {
+            <app-logo />
+          }
+          <p>Vehicle sales, workshop repairs, painting, detailing and restoration in Tanzania.</p>
+        </div>
+        <nav aria-label="Footer">
+          <h2>Explore</h2>
+          <a routerLink="/cars-for-sale">Cars for sale</a>
+          <a routerLink="/rentals">Rentals</a>
+          <a routerLink="/services">Services</a>
+          <a routerLink="/accessories">Shop</a>
+          <a routerLink="/about">About</a>
+          <a routerLink="/contact">Contact</a>
+        </nav>
+        <div>
+          <h2>Contact</h2>
+          @if (business.phone) {
+            <a [href]="'tel:' + business.phone">{{ business.phone }}</a>
+          }
+          @if (business.email) {
+            <a [href]="'mailto:' + business.email">{{ business.email }}</a>
+          }
+          @if (business.address) {
+            <span>{{ business.address }}</span>
+          }
+          <a routerLink="/contact">Send us a message</a>
+        </div>
+        @if (hasSocials) {
+          <nav aria-label="Social media">
+            <h2>Follow Us</h2>
+            @for (s of socials; track s.label) {
+              <a [href]="s.url" target="_blank" rel="noopener">{{ s.label }}</a>
+            }
+          </nav>
+        }
+        <nav aria-label="Legal">
+          <h2>Legal</h2>
+          <a routerLink="/privacy-policy">Privacy policy</a>
+          <a routerLink="/terms">Terms and conditions</a>
+        </nav>
+      </div>
+      <div class="container legal">
+        <span>© {{ year }} Naboo Automotive. All prices in Tanzanian Shillings (TZS).</span>
+      </div>
+    </footer>
+  

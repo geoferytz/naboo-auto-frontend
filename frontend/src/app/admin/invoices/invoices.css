@@ -1,0 +1,30 @@
+
+    .head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+    .create { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-4); }
+    .two { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .item-row { display: flex; gap: var(--space-2); align-items: start; }
+    .item-row .desc { flex: 1; min-width: 160px; }
+    .item-row .qty { width: 90px; }
+    .item-row .unit { width: 160px; }
+    .create-actions { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
+    .due { width: 190px; }
+    mat-button-toggle-group { margin-bottom: var(--space-4); flex-wrap: wrap; }
+    .list { display: flex; flex-direction: column; gap: var(--space-3); }
+    .invoice { padding: var(--space-4); }
+    .line { display: flex; align-items: center; gap: var(--space-3); }
+    .ref { font-family: ui-monospace, monospace; font-size: .85rem; color: var(--naboo-text-muted); }
+    .meta { display: block; font-size: .85rem; color: var(--naboo-text-muted); }
+    .lines, .payments { margin: var(--space-2) 0; padding-left: var(--space-5); font-size: .92rem; }
+    .payments { color: var(--naboo-text-muted); font-size: .85rem; }
+    .totals { display: flex; gap: var(--space-5); margin: var(--space-2) 0; }
+    .badge { padding: 2px 10px; border-radius: 999px; font-size: .8rem; font-weight: 600; background: var(--naboo-grey); }
+    .badge[data-status='DRAFT'] { background: #eceef1; color: #5a616b; }
+    .badge[data-status='ISSUED'] { background: #fff3d6; color: #8a5a00; }
+    .badge[data-status='PAID'] { background: #e4f5e8; color: #146c2e; }
+    .badge[data-status='VOID'] { background: #f5e3e3; color: #8a1e1e; }
+    .actions { display: flex; gap: var(--space-2); }
+    .pay { display: flex; gap: var(--space-2); align-items: start; flex-wrap: wrap; margin-top: var(--space-3);
+      border-top: 1px solid var(--naboo-border); padding-top: var(--space-3); }
+    .pay mat-form-field { width: 170px; }
+    .pay-actions { display: flex; gap: var(--space-2); }
+  

@@ -1,0 +1,31 @@
+
+    .head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+    .edit-form { padding: var(--space-4); margin-bottom: var(--space-4); }
+    .edit-form h2 { font-size: 1.1rem; }
+    .fields { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .fields .wide { grid-column: 1 / -1; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: var(--naboo-white); }
+    th, td { text-align: left; padding: var(--space-3); border-bottom: 1px solid var(--naboo-border); vertical-align: middle; }
+    th { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--naboo-text-muted); }
+    .meta { display: block; font-size: .82rem; color: var(--naboo-text-muted); }
+    .low { color: #a3121c; font-weight: 700; }
+    .row-actions { white-space: nowrap; }
+    .sub td { background: #fafbfc; }
+    .adjust { display: flex; gap: var(--space-3); align-items: start; flex-wrap: wrap; padding: var(--space-2) 0; }
+    .adjust mat-form-field { width: 160px; }
+    .moves { margin: 0; padding: var(--space-2) 0 0 var(--space-5); }
+    .moves li { margin-bottom: var(--space-1); }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .item-cell { display: flex; align-items: center; gap: var(--space-3); }
+    .item-thumb { width: 56px; height: 38px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+    .image-field { margin-bottom: var(--space-2); }
+    .image-label { display: block; font-size: .82rem; font-weight: 600; color: var(--naboo-text-muted); margin-bottom: var(--space-2); }
+    .image-row { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
+    .image-preview { width: 160px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px;
+      border: 1px solid var(--naboo-border); display: block; }
+    .image-empty { width: 160px; aspect-ratio: 16 / 9; border-radius: 8px; border: 1px dashed var(--naboo-border);
+      display: flex; align-items: center; justify-content: center; color: var(--naboo-text-muted); background: var(--naboo-grey); }
+    .image-actions { display: flex; flex-direction: column; gap: var(--space-1); align-items: flex-start; }
+  

@@ -1,0 +1,145 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container head">
+        <div>
+          <span class="eyebrow">Staff</span>
+          <h1>Invoices</h1>
+        </div>
+        <button mat-flat-button type="button" (click)="showCreate.set(!showCreate())">
+          {{ showCreate() ? 'Close form' : 'New invoice' }}
+        </button>
+      </div>
+    </header>
+
+    <div class="container section">
+      @if (showCreate()) {
+        <form [formGroup]="createForm" (ngSubmit)="create()" class="card create" novalidate>
+          <div class="two">
+            <mat-form-field appearance="outline">
+              <mat-label>Recipient name</mat-label>
+              <input matInput formControlName="recipientName" maxlength="120" />
+              <mat-error>Who is this invoice for?</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Recipient email</mat-label>
+              <input matInput formControlName="recipientEmail" type="email" />
+              <mat-error>Enter a valid email.</mat-error>
+            </mat-form-field>
+          </div>
+          <div formArrayName="items" class="items">
+            @for (line of formLines.controls; track $index; let i = $index) {
+              <div [formGroupName]="i" class="item-row">
+                <mat-form-field appearance="outline" class="desc">
+                  <mat-label>Description</mat-label>
+                  <input matInput formControlName="description" maxlength="300" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="qty">
+                  <mat-label>Qty</mat-label>
+                  <input matInput formControlName="quantity" type="number" min="1" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="unit">
+                  <mat-label>Unit price (TZS)</mat-label>
+                  <input matInput formControlName="unitPrice" inputmode="decimal" />
+                </mat-form-field>
+                <button mat-icon-button type="button" [disabled]="formLines.length === 1" aria-label="Remove line" (click)="removeLine(i)">
+                  <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+                </button>
+              </div>
+            }
+          </div>
+          <div class="create-actions">
+            <button mat-stroked-button type="button" (click)="addLine()">+ Add line</button>
+            <mat-form-field appearance="outline" class="due">
+              <mat-label>Due date (optional)</mat-label>
+              <input matInput formControlName="dueDate" type="date" [min]="tomorrow" />
+            </mat-form-field>
+          </div>
+          @if (createError()) {
+            <p class="alert alert--error" role="alert">{{ createError() }}</p>
+          }
+          <button mat-flat-button type="submit" [disabled]="busy()">Create draft invoice</button>
+        </form>
+      }
+
+      <mat-button-toggle-group [value]="statusFilter()" (change)="setFilter($event.value)" aria-label="Filter by status">
+        <mat-button-toggle value="">All</mat-button-toggle>
+        @for (s of statusKeys; track s) {
+          <mat-button-toggle [value]="s">{{ label(s) }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading invoices…" emptyText="No invoices in this state." (retry)="load()" />
+      } @else {
+        <div class="list">
+          @for (inv of items(); track inv.id) {
+            <article class="card invoice">
+              <div class="top">
+                <div class="line">
+                  <span class="ref">{{ inv.reference }}</span>
+                  <span class="badge" [attr.data-status]="inv.status">{{ label(inv.status) }}</span>
+                </div>
+                <strong>{{ inv.recipientName }}</strong>
+                <span class="meta">{{ inv.recipientEmail }}{{ inv.dueDate ? ' · due ' + (inv.dueDate | date: 'mediumDate') : '' }}</span>
+              </div>
+              <ul class="lines">
+                @for (it of inv.items; track it.id) {
+                  <li>{{ it.quantity }} × {{ it.description }} — {{ formatMoney(it.lineTotal) }}</li>
+                }
+              </ul>
+              <div class="totals">
+                <span>Total <strong>{{ formatMoney(inv.total) }}</strong></span>
+                <span>Paid <strong>{{ formatMoney(inv.paid) }}</strong></span>
+                <span>Balance <strong>{{ formatMoney(inv.balance) }}</strong></span>
+              </div>
+              @if (inv.payments.length) {
+                <ul class="payments">
+                  @for (p of inv.payments; track p.id) {
+                    <li>{{ formatMoney(p.amount) }} · {{ methodLabel(p.method) }} · {{ p.paidAt | date: 'short' }}{{ p.reference ? ' · ' + p.reference : '' }}</li>
+                  }
+                </ul>
+              }
+              <div class="actions">
+                @if (inv.status === 'DRAFT') {
+                  <button mat-flat-button type="button" [disabled]="busy()" (click)="issue(inv)">Issue</button>
+                }
+                @if (inv.status === 'ISSUED') {
+                  <button mat-flat-button type="button" [disabled]="busy()" (click)="openPayment(inv)">Record payment</button>
+                }
+                @if (inv.status === 'DRAFT' || inv.status === 'ISSUED') {
+                  <button mat-stroked-button type="button" [disabled]="busy()" (click)="void(inv)">Void</button>
+                }
+              </div>
+              @if (payingFor() === inv.id) {
+                <form [formGroup]="payForm" (ngSubmit)="pay(inv)" class="pay" novalidate>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Amount (TZS, max {{ inv.balance.amount }})</mat-label>
+                    <input matInput formControlName="amount" inputmode="decimal" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Method</mat-label>
+                    <mat-select formControlName="method">
+                      @for (m of methods; track m.value) {
+                        <mat-option [value]="m.value">{{ m.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Reference (optional)</mat-label>
+                    <input matInput formControlName="reference" maxlength="60" />
+                  </mat-form-field>
+                  <div class="pay-actions">
+                    <button mat-flat-button type="submit" [disabled]="busy()">Record</button>
+                    <button mat-button type="button" (click)="payingFor.set(null)">Cancel</button>
+                  </div>
+                </form>
+              }
+            </article>
+          }
+        </div>
+        @if (error()) {
+          <p class="alert alert--error" role="alert">{{ error() }}</p>
+        }
+      }
+    </div>
+  

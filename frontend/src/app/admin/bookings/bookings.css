@@ -1,0 +1,21 @@
+
+    .head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+    .capacity { display: flex; gap: var(--space-2); align-items: start; }
+    .capacity mat-form-field { width: 130px; }
+    mat-button-toggle-group { margin-bottom: var(--space-4); flex-wrap: wrap; }
+    .list { display: flex; flex-direction: column; gap: var(--space-3); }
+    .row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding: var(--space-4);
+      flex-wrap: wrap; }
+    .line { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-1); }
+    .ref { font-family: ui-monospace, monospace; font-size: .85rem; color: var(--naboo-text-muted); }
+    .meta { display: block; font-size: .85rem; color: var(--naboo-text-muted); }
+    .notes { font-style: italic; }
+    .badge { padding: 2px 10px; border-radius: 999px; font-size: .8rem; font-weight: 600; background: var(--naboo-grey); }
+    .badge[data-status='PENDING'] { background: #fff3d6; color: #8a5a00; }
+    .badge[data-status='CONFIRMED'] { background: #e4f5e8; color: #146c2e; }
+    .badge[data-status='IN_PROGRESS'] { background: #e3e8f5; color: #1e3f8a; }
+    .badge[data-status='COMPLETED'] { background: #eceef1; color: #5a616b; }
+    .badge[data-status='CANCELLED'], .badge[data-status='NO_SHOW'] { background: #f5e3e3; color: #8a1e1e; }
+    .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .pager { display: flex; align-items: center; justify-content: center; gap: var(--space-4); margin-top: var(--space-5); }
+  

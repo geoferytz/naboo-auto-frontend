@@ -1,0 +1,32 @@
+
+    .grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
+    .panel { padding: var(--space-5); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+    .panel-head h2 { margin: 0; }
+    .rows li.unread { background: #fff8e6; margin-inline: calc(var(--space-3) * -1); padding-inline: var(--space-3);
+      border-radius: var(--radius-sm); }
+    .load-error { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-4);
+      padding: var(--space-3) var(--space-4); background: #fde8e9; color: #a3121c; border-radius: var(--radius-sm);
+      font-weight: 600; }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-5); }
+    dt { color: var(--naboo-text-muted); }
+    dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+    .rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+    .rows li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding: var(--space-3) 0;
+      border-top: 1px solid var(--naboo-border); }
+    .row-main { flex: 1; min-width: 180px; }
+    .meta { display: block; font-size: .82rem; color: var(--naboo-text-muted); }
+    .price { font-weight: 700; display: block; }
+    .badge { padding: 2px 10px; border-radius: 999px; font-size: .8rem; font-weight: 600; background: var(--naboo-grey);
+      white-space: nowrap; }
+    .badge[data-status='PENDING'], .badge[data-status='REQUESTED'], .badge[data-status='ISSUED'] { background: #fff3d6; color: #8a5a00; }
+    .badge[data-status='QUOTED'] { background: #fde8e9; color: #a3121c; }
+    .badge[data-status='CONFIRMED'], .badge[data-status='ACCEPTED'], .badge[data-status='COMPLETED'],
+    .badge[data-status='READY'], .badge[data-status='PAID'] { background: #e4f5e8; color: #146c2e; }
+    .badge[data-status='ACTIVE'], .badge[data-status='IN_PROGRESS'] { background: #e3e8f5; color: #1e3f8a; }
+    .badge[data-status='CANCELLED'], .badge[data-status='DECLINED'], .badge[data-status='EXPIRED'], .badge[data-status='NO_SHOW'],
+    .badge[data-status='DRAFT'], .badge[data-status='VOID'] {
+      background: #eceef1; color: #5a616b; }
+    .row-actions { display: flex; gap: var(--space-2); }
+    .empty { color: var(--naboo-text-muted); }
+  

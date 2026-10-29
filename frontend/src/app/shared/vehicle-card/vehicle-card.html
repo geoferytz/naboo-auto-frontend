@@ -1,0 +1,42 @@
+
+    @let v = vehicle();
+    <article class="card vehicle" [class.sold]="v.status === 'SOLD'" [class.compact]="compact()" [class.row]="row()">
+      <a [routerLink]="['/cars-for-sale', v.slug]" class="media" [attr.aria-label]="v.title">
+        @if (cover(); as img) {
+          <img [src]="img.url" [alt]="img.altText" loading="lazy" decoding="async" width="640" height="400" />
+        } @else {
+          <app-vehicle-placeholder [label]="v.make" />
+        }
+        @if (v.status !== 'AVAILABLE') {
+          <span [class]="'status badge status--' + v.status.toLowerCase()">{{ statusLabel[v.status] }}</span>
+        } @else if (compact()) {
+          <span class="badge sale-badge">For sale</span>
+        }
+      </a>
+      <div class="body">
+        <h3><a [routerLink]="['/cars-for-sale', v.slug]">{{ v.title }}</a></h3>
+        @if (compact()) {
+          <p class="summary">{{ v.year }} <span aria-hidden="true">·</span> {{ body[v.bodyType] }}</p>
+        }
+        <ul class="specs" aria-label="Key specifications">
+          @if (compact()) {
+            <li><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">calendar_month</mat-icon>{{ v.year }}</li>
+            <li><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">settings</mat-icon>{{ transmission[v.transmission] }}</li>
+            <li><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">local_gas_station</mat-icon>{{ fuel[v.fuelType] }}</li>
+          } @else {
+          <li><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">speed</mat-icon>{{ formatNumber(v.mileageKm) }} km</li>
+          <li><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">local_gas_station</mat-icon>{{ fuel[v.fuelType] }}</li>
+          <li><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">settings</mat-icon>{{ transmission[v.transmission] }}</li>
+          <li><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">verified</mat-icon>{{ condition[v.condition] }}</li>
+          @if (v.location) {
+            <li class="loc"><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">location_on</mat-icon>{{ v.location }}</li>
+          }
+          }
+        </ul>
+        <p class="price">{{ formatMoney(v.price) }}</p>
+        <a mat-flat-button class="details" [routerLink]="['/cars-for-sale', v.slug]">
+          View Details <mat-icon iconPositionEnd fontSet="material-symbols-outlined" aria-hidden="true">arrow_forward</mat-icon>
+        </a>
+      </div>
+    </article>
+  

@@ -1,0 +1,94 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container head">
+        <div>
+          <span class="eyebrow">Staff</span>
+          <h1>Vehicles</h1>
+        </div>
+        <a mat-flat-button routerLink="/admin/vehicles/new"><mat-icon fontSet="material-symbols-outlined">add</mat-icon> Add vehicle</a>
+      </div>
+    </header>
+
+    <div class="container section">
+      <form [formGroup]="filters" class="filter-bar" aria-label="Filter vehicles">
+        <mat-form-field appearance="outline" class="grow">
+          <mat-label>Search</mat-label>
+          <input matInput formControlName="search" placeholder="Make, model or title" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="status">
+            <mat-option value="">All</mat-option>
+            @for (o of statusOptions; track o.value) {
+              <mat-option [value]="o.value">{{ o.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Visibility</mat-label>
+          <mat-select formControlName="published">
+            <mat-option value="">All</mat-option>
+            <mat-option value="true">Published</mat-option>
+            <mat-option value="false">Hidden</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </form>
+
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading vehicles…" emptyText="No vehicles match this filter." (retry)="load()" />
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Vehicle</th>
+                <th scope="col">Price</th>
+                <th scope="col">Status</th>
+                <th scope="col">Visible</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (v of items(); track v.id) {
+                <tr>
+                  <td>
+                    <div class="vehicle">
+                      @if (v.images.length) {
+                        <img [src]="v.images[0].url" [alt]="v.images[0].altText" width="72" height="48" />
+                      } @else {
+                        <span class="thumb"><app-vehicle-placeholder /></span>
+                      }
+                      <div>
+                        <a [routerLink]="['/admin/vehicles', v.id]" class="title">{{ v.title }}</a>
+                        <span class="meta">{{ v.year }} · {{ v.make }} {{ v.model }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ formatMoney(v.price) }}</td>
+                  <td><span class="badge" [attr.data-status]="v.status">{{ statusLabel(v.status) }}</span></td>
+                  <td>
+                    <button mat-button type="button" (click)="togglePublished(v)" [disabled]="busy()">
+                      {{ v.published ? 'Published' : 'Hidden' }}
+                    </button>
+                  </td>
+                  <td>
+                    <a mat-stroked-button [routerLink]="['/admin/vehicles', v.id]">Edit</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (error()) {
+          <p class="alert alert--error" role="alert">{{ error() }}</p>
+        }
+        @if ((page()?.totalPages ?? 0) > 1) {
+          <nav class="pager" aria-label="Pages">
+            <button mat-stroked-button type="button" [disabled]="page()!.page === 0" (click)="go(page()!.page - 1)">Previous</button>
+            <span>Page {{ page()!.page + 1 }} of {{ page()!.totalPages }}</span>
+            <button mat-stroked-button type="button" [disabled]="page()!.page + 1 >= page()!.totalPages" (click)="go(page()!.page + 1)">Next</button>
+          </nav>
+        }
+      }
+    </div>
+  

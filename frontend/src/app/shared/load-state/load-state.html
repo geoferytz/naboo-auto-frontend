@@ -1,0 +1,22 @@
+
+    @switch (state()) {
+      @case ('loading') {
+        <div class="state" role="status" aria-live="polite">
+          <mat-progress-spinner mode="indeterminate" diameter="36" aria-label="Loading" />
+          <span>{{ loadingText() }}</span>
+        </div>
+      }
+      @case ('error') {
+        <div class="state alert alert--error" role="alert">
+          <p>{{ errorText() }}</p>
+          <button mat-stroked-button type="button" (click)="retry.emit()">Try again</button>
+        </div>
+      }
+      @case ('empty') {
+        <div class="state empty">
+          <p>{{ emptyText() }}</p>
+          <ng-content />
+        </div>
+      }
+    }
+  

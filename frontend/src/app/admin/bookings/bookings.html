@@ -1,0 +1,70 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container head">
+        <div>
+          <span class="eyebrow">Staff</span>
+          <h1>Workshop bookings</h1>
+        </div>
+        <form [formGroup]="capacityForm" (ngSubmit)="saveCapacity()" class="capacity" aria-label="Workshop capacity">
+          <mat-form-field appearance="outline">
+            <mat-label>Concurrent jobs</mat-label>
+            <input matInput formControlName="maxConcurrentJobs" type="number" min="1" max="20" />
+          </mat-form-field>
+          <button mat-stroked-button type="submit" [disabled]="busy()">Save</button>
+        </form>
+      </div>
+    </header>
+
+    <div class="container section">
+      <mat-button-toggle-group [value]="statusFilter()" (change)="setFilter($event.value)" aria-label="Filter by status">
+        <mat-button-toggle value="">All</mat-button-toggle>
+        @for (s of statusKeys; track s) {
+          <mat-button-toggle [value]="s">{{ label(s) }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading bookings…" emptyText="No bookings in this state." (retry)="load()" />
+      } @else {
+        <div class="list">
+          @for (b of items(); track b.id) {
+            <article class="card row">
+              <div class="main">
+                <div class="line">
+                  <span class="ref">{{ b.reference }}</span>
+                  <span class="badge" [attr.data-status]="b.status">{{ label(b.status) }}</span>
+                </div>
+                <strong>{{ b.service.name }}</strong>
+                <span class="meta">{{ b.service.category }} · {{ b.scheduledStart | date: 'medium' }} →
+                  {{ b.scheduledEnd | date: 'shortTime' }}</span>
+                <span class="meta">{{ b.vehicleDescription }}</span>
+                <span class="meta">{{ b.fullName }} · {{ b.phone }} · {{ b.email }}</span>
+                @if (b.notes) {
+                  <span class="meta notes">“{{ b.notes }}”</span>
+                }
+              </div>
+              <div class="actions">
+                @for (n of next(b.status); track n.status) {
+                  @if (n.status === 'CANCELLED' || n.status === 'NO_SHOW') {
+                    <button mat-stroked-button type="button" [disabled]="busy()" (click)="update(b, n.status)">{{ n.label }}</button>
+                  } @else {
+                    <button mat-flat-button type="button" [disabled]="busy()" (click)="update(b, n.status)">{{ n.label }}</button>
+                  }
+                }
+              </div>
+            </article>
+          }
+        </div>
+        @if (error()) {
+          <p class="alert alert--error" role="alert">{{ error() }}</p>
+        }
+        @if ((page()?.totalPages ?? 0) > 1) {
+          <nav class="pager" aria-label="Pages">
+            <button mat-stroked-button type="button" [disabled]="page()!.page === 0" (click)="load(page()!.page - 1)">Previous</button>
+            <span>Page {{ page()!.page + 1 }} of {{ page()!.totalPages }}</span>
+            <button mat-stroked-button type="button" [disabled]="page()!.page + 1 >= page()!.totalPages" (click)="load(page()!.page + 1)">Next</button>
+          </nav>
+        }
+      }
+    </div>
+  

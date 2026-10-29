@@ -1,0 +1,57 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container">
+        <span class="eyebrow">Staff</span>
+        <h1>Activity log</h1>
+      </div>
+    </header>
+
+    <div class="container section">
+      <form [formGroup]="filters" class="filter-bar" aria-label="Filter activity">
+        <mat-form-field appearance="outline">
+          <mat-label>Entity type</mat-label>
+          <input matInput formControlName="entityType" placeholder="e.g. Vehicle" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Entity ID</mat-label>
+          <input matInput formControlName="entityId" />
+        </mat-form-field>
+      </form>
+
+      @if (state() !== 'ready') {
+        <app-load-state [state]="state()" loadingText="Loading activity…" emptyText="No activity recorded yet." (retry)="load()" />
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">When</th>
+                <th scope="col">Action</th>
+                <th scope="col">Entity</th>
+                <th scope="col">By</th>
+                <th scope="col">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of items(); track a.id) {
+                <tr>
+                  <td class="when">{{ a.createdAt | date: 'medium' }}</td>
+                  <td><code>{{ a.action }}</code></td>
+                  <td>{{ a.entityType }}<span class="meta">{{ a.entityId }}</span></td>
+                  <td>{{ a.actorName }}</td>
+                  <td class="details">{{ a.details }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if ((page()?.totalPages ?? 0) > 1) {
+          <nav class="pager" aria-label="Pages">
+            <button mat-stroked-button type="button" [disabled]="page()!.page === 0" (click)="load(page()!.page - 1)">Previous</button>
+            <span>Page {{ page()!.page + 1 }} of {{ page()!.totalPages }}</span>
+            <button mat-stroked-button type="button" [disabled]="page()!.page + 1 >= page()!.totalPages" (click)="load(page()!.page + 1)">Next</button>
+          </nav>
+        }
+      }
+    </div>
+  

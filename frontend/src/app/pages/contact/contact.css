@@ -1,0 +1,8 @@
+
+    .layout { display: grid; gap: var(--space-6); }
+    .form-card { padding: var(--space-5); }
+    .hint { color: var(--naboo-text-muted); font-size: .9rem; }
+    .ref { font-family: ui-monospace, monospace; font-size: 1.1rem; }
+    .details ul { padding-left: var(--space-5); }
+    @media (min-width: 960px) { .layout { grid-template-columns: 1fr 320px; align-items: start; } }
+  

@@ -1,0 +1,156 @@
+
+    @if (vehicle.hasValue() && vehicle.value(); as v) {
+      <header class="page-header">
+        <div class="container">
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a routerLink="/cars-for-sale">Cars for sale</a> / {{ v.make }}</nav>
+          <div class="title-row">
+            <h1>{{ v.title }}</h1>
+            <span [class]="'status status--' + v.status.toLowerCase()">{{ statusLabel[v.status] }}</span>
+          </div>
+          <p class="price">{{ formatMoney(v.price) }}</p>
+        </div>
+      </header>
+
+      <div class="container section layout">
+        <div class="main">
+          <div class="gallery">
+            <div class="hero-img">
+              @if (activeImage(); as img) {
+                <img [src]="img.url" [alt]="img.altText" width="1200" height="750" />
+              } @else {
+                <app-vehicle-placeholder [label]="v.title" />
+              }
+            </div>
+            @if (v.images.length > 1) {
+              <div class="thumbs" role="list" aria-label="Photos">
+                @for (img of v.images; track img.id; let i = $index) {
+                  <button type="button" role="listitem" [class.active]="i === imageIndex()" (click)="imageIndex.set(i)"
+                          [attr.aria-label]="'Show photo ' + (i + 1) + ': ' + img.altText" [attr.aria-current]="i === imageIndex()">
+                    <img [src]="img.url" alt="" loading="lazy" width="120" height="75" />
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <section aria-labelledby="specs">
+            <h2 id="specs">Specifications</h2>
+            <dl class="specs">
+              <div><dt>Year</dt><dd>{{ v.year }}</dd></div>
+              <div><dt>Make</dt><dd>{{ v.make }}</dd></div>
+              <div><dt>Model</dt><dd>{{ v.model }}{{ v.variant ? ' ' + v.variant : '' }}</dd></div>
+              <div><dt>Mileage</dt><dd>{{ formatNumber(v.mileageKm) }} km</dd></div>
+              <div><dt>Fuel</dt><dd>{{ fuel[v.fuelType] }}</dd></div>
+              <div><dt>Transmission</dt><dd>{{ transmission[v.transmission] }}</dd></div>
+              <div><dt>Body type</dt><dd>{{ body[v.bodyType] }}</dd></div>
+              <div><dt>Condition</dt><dd>{{ condition[v.condition] }}</dd></div>
+              @if (v.engineCapacityCc || v.engineCode) {
+                <div><dt>Engine</dt><dd>{{ v.engineCapacityCc ? formatNumber(v.engineCapacityCc) + ' cc' : '' }}{{ v.engineCapacityCc && v.engineCode ? ' · ' : '' }}{{ v.engineCode ?? '' }}</dd></div>
+              }
+              @if (v.location) {
+                <div><dt>Location</dt><dd>{{ v.location }}</dd></div>
+              }
+              @if (v.color) {
+                <div><dt>Colour</dt><dd>{{ v.color }}</dd></div>
+              }
+            </dl>
+          </section>
+
+          @if (v.features.length) {
+            <section aria-labelledby="features">
+              <h2 id="features">Features</h2>
+              <ul class="features">
+                @for (f of v.features; track f) {
+                  <li>{{ f }}</li>
+                }
+              </ul>
+            </section>
+          }
+
+          @if (v.description) {
+            <section aria-labelledby="desc">
+              <h2 id="desc">Description</h2>
+              <p class="description">{{ v.description }}</p>
+            </section>
+          }
+        </div>
+
+        <aside class="side" aria-labelledby="enquire">
+          <div class="card enquiry">
+            <h2 id="enquire">Interested in this vehicle?</h2>
+            @if (receipt(); as r) {
+              <div class="alert alert--success" role="status">
+                <p><strong>{{ r.message }}</strong></p>
+                <p>Your reference: <strong class="ref">{{ r.reference }}</strong></p>
+              </div>
+              <button mat-stroked-button type="button" (click)="receipt.set(null)">Send another enquiry</button>
+            } @else if (!v.enquiriesOpen) {
+              <p class="alert">
+                This vehicle is {{ statusLabel[v.status].toLowerCase() }} and no longer accepting enquiries.
+              </p>
+              <a mat-flat-button routerLink="/cars-for-sale">See available vehicles</a>
+            } @else {
+              @if (whatsappFor(v); as wa) {
+                <a mat-stroked-button class="wa" [href]="wa" target="_blank" rel="noopener">
+                  Chat on WhatsApp about this car
+                </a>
+              }
+              <form [formGroup]="form" (ngSubmit)="submit(v)" novalidate>
+                <mat-button-toggle-group formControlName="type" aria-label="Enquiry type" class="type">
+                  <mat-button-toggle value="GENERAL">Ask a question</mat-button-toggle>
+                  <mat-button-toggle value="VIEWING" [disabled]="!v.viewingsOpen">Book a viewing</mat-button-toggle>
+                </mat-button-toggle-group>
+                @if (!v.viewingsOpen) {
+                  <p class="hint">Viewings are paused while this vehicle is reserved.</p>
+                }
+                <mat-form-field appearance="outline">
+                  <mat-label>Full name</mat-label>
+                  <input matInput formControlName="fullName" autocomplete="name" maxlength="120" />
+                  <mat-error>{{ err('fullName', 'Full name') }}</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Phone</mat-label>
+                  <input matInput formControlName="phone" type="tel" autocomplete="tel" placeholder="+255 7XX XXX XXX" />
+                  <mat-error>{{ err('phone', 'Phone number') }}</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Email</mat-label>
+                  <input matInput formControlName="email" type="email" autocomplete="email" />
+                  <mat-error>{{ err('email', 'Email') }}</mat-error>
+                </mat-form-field>
+                @if (form.controls.type.value === 'VIEWING') {
+                  <mat-form-field appearance="outline">
+                    <mat-label>Preferred viewing date &amp; time</mat-label>
+                    <input matInput type="datetime-local" formControlName="preferredViewingAt" [min]="minViewing" />
+                    <mat-hint>At least 2 hours from now, within 90 days.</mat-hint>
+                    <mat-error>{{ err('preferredViewingAt', 'Viewing time') }}</mat-error>
+                  </mat-form-field>
+                }
+                <mat-form-field appearance="outline">
+                  <mat-label>Message (optional)</mat-label>
+                  <textarea matInput formControlName="message" rows="3" maxlength="2000"></textarea>
+                </mat-form-field>
+                @if (error()) {
+                  <p class="alert alert--error" role="alert">{{ error() }}</p>
+                }
+                <button mat-flat-button class="btn-lg submit" type="submit" [disabled]="sending()">
+                  {{ sending() ? 'Sending…' : form.controls.type.value === 'VIEWING' ? 'Request viewing' : 'Send enquiry' }}
+                </button>
+                <p class="hint">We use your details only to respond to this enquiry. See our <a routerLink="/privacy-policy">privacy policy</a>.</p>
+              </form>
+            }
+          </div>
+        </aside>
+      </div>
+    } @else if (vehicle.hasValue() && !vehicle.value()) {
+      <div class="container section">
+        <h1>Vehicle not found</h1>
+        <p class="lead">This listing may have been removed or is no longer available.</p>
+        <a mat-flat-button routerLink="/cars-for-sale">Browse cars for sale</a>
+      </div>
+    } @else {
+      <div class="container section">
+        <app-load-state [state]="vehicle.error() ? 'error' : 'loading'" (retry)="vehicle.reload()" />
+      </div>
+    }
+  

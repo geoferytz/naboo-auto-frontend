@@ -32,6 +32,7 @@ export const can = {
   billingManage: (roles: readonly Role[] | undefined | null) => hasRole(roles, BILLING_MANAGE),
   catalogueManage: (roles: readonly Role[] | undefined | null) => hasRole(roles, CATALOGUE_MANAGE),
   contactEnquiries: (roles: readonly Role[] | undefined | null) => hasRole(roles, CONTACT_ENQUIRIES),
+  siteManage: (roles: readonly Role[] | undefined | null) => hasRole(roles, CATALOGUE_MANAGE),
   userManage: (roles: readonly Role[] | undefined | null) => hasRole(roles, USER_MANAGE),
   auditView: (roles: readonly Role[] | undefined | null) => hasRole(roles, AUDIT_VIEW),
 };

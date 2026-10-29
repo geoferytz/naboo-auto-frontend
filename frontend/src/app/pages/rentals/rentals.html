@@ -1,0 +1,56 @@
+
+    <header class="page-header">
+      <div class="container">
+        <span class="eyebrow">Rentals</span>
+        <h1>Vehicles for hire</h1>
+        <p class="lead">Well-maintained cars for daily hire in Tanzania. Reserve your dates and our team will confirm.</p>
+      </div>
+    </header>
+
+    <div class="container section">
+      <app-vehicle-search initialKind="rental" />
+      @if (rentals.hasValue()) {
+        <p class="results-count" role="status">{{ rentals.value().totalCount }} rental vehicles found</p>
+        @if (rentals.value().items.length) {
+          <div class="grid">
+            @for (v of rentals.value().items; track v.id) {
+              <article class="card vehicle-card">
+                <a [routerLink]="['/rentals', v.slug]" class="photo" tabindex="-1" aria-hidden="true">
+                  @if (v.images.length) {
+                    <img [src]="v.images[0].url" [alt]="v.images[0].altText" loading="lazy" />
+                  } @else {
+                    <app-vehicle-placeholder [label]="v.title" />
+                  }
+                </a>
+                <div class="body">
+                  <h2><a [routerLink]="['/rentals', v.slug]">{{ v.title }}</a></h2>
+                  <p class="specs">
+                    {{ v.seats ? v.seats + ' seats · ' : '' }}{{ trans(v.transmission) }} · {{ fuel(v.fuelType) }} · {{ body(v.bodyType) }}
+                  </p>
+                  <p class="price">{{ formatMoney(v.dailyRate) }} <span class="per">/ day</span></p>
+                  <a mat-flat-button [routerLink]="['/rentals', v.slug]">Check dates &amp; book</a>
+                </div>
+              </article>
+            }
+          </div>
+          @if (rentals.value().totalPages > 1) {
+            <nav class="pager" aria-label="Rental results pages">
+              @if (rentals.value().page > 0) {
+                <a mat-stroked-button [routerLink]="[]" [queryParams]="{ page: rentals.value().page }" queryParamsHandling="merge">Previous</a>
+              }
+              <span>Page {{ rentals.value().page + 1 }} of {{ rentals.value().totalPages }}</span>
+              @if (rentals.value().page + 1 < rentals.value().totalPages) {
+                <a mat-stroked-button [routerLink]="[]" [queryParams]="{ page: rentals.value().page + 2 }" queryParamsHandling="merge">Next</a>
+              }
+            </nav>
+          }
+        } @else {
+          <app-load-state state="empty" emptyText="No rental vehicles match your search. Try different filters.">
+            <a mat-stroked-button routerLink="/rentals">Clear filters</a>
+          </app-load-state>
+        }
+      } @else {
+        <app-load-state [state]="rentals.error() ? 'error' : 'loading'" loadingText="Loading rental vehicles…" (retry)="rentals.reload()" />
+      }
+    </div>
+  

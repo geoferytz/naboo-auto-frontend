@@ -1,0 +1,509 @@
+    <header class="page-header page-header--tight">
+      <div class="container head">
+        <div>
+          <span class="eyebrow">Staff</span>
+          <h1>Site settings</h1>
+        </div>
+        <button mat-flat-button type="button" (click)="save()" [disabled]="saving() || uploading() > 0 || !doc">
+          {{ saving() ? 'Saving…' : 'Save changes' }}
+        </button>
+      </div>
+    </header>
+
+    <div class="container section">
+      @if (loading()) {
+        <app-load-state state="loading" loadingText="Loading site content…" />
+      } @else if (!doc) {
+        <app-load-state state="error" (retry)="reload()" />
+      } @else {
+        @if (saved()) {
+          <p class="notice ok">Saved — the public site now uses these details.</p>
+        }
+        @if (error(); as e) {
+          <p class="notice err">{{ e }}</p>
+        }
+
+        <section class="card panel" aria-labelledby="sec-branding">
+          <h2 id="sec-branding">Branding &amp; contact</h2>
+          <div class="fields">
+            <div class="img-field">
+              <mat-form-field appearance="outline">
+                <mat-label>Logo image URL</mat-label>
+                <input matInput [(ngModel)]="doc.logoUrl" placeholder="/uploads/public/site/… or leave empty" />
+              </mat-form-field>
+              <label class="up">
+                <input type="file" accept="image/*" hidden (change)="upload($event, doc, 'logoUrl')" />
+                <span class="up-btn"><mat-icon fontSet="material-symbols-outlined">upload</mat-icon> Upload</span>
+              </label>
+              @if (doc.logoUrl) {
+                <img class="preview logo" [src]="doc.logoUrl" alt="Logo preview" />
+              }
+            </div>
+            <mat-form-field appearance="outline">
+              <mat-label>Location / address</mat-label>
+              <input matInput [(ngModel)]="doc.location" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Phone number</mat-label>
+              <input matInput [(ngModel)]="doc.phone" placeholder="+255 …" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" [(ngModel)]="doc.email" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>WhatsApp number (digits only, e.g. 255…)</mat-label>
+              <input matInput [(ngModel)]="doc.whatsapp" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Opening hours — one per line (optional)</mat-label>
+              <textarea matInput rows="3" [(ngModel)]="doc.openingHoursText"
+                        placeholder="Mon–Fri 08:00–18:00&#10;Sat 09:00–14:00"></textarea>
+            </mat-form-field>
+          </div>
+          <h3 class="subhead">Contact page header</h3>
+          <div class="fields">
+            <mat-form-field appearance="outline">
+              <mat-label>Page eyebrow</mat-label>
+              <input matInput [(ngModel)]="doc.contactPage.eyebrow" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Page heading</mat-label>
+              <input matInput [(ngModel)]="doc.contactPage.heading" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Page intro text</mat-label>
+              <textarea matInput rows="2" [(ngModel)]="doc.contactPage.lead"></textarea>
+            </mat-form-field>
+          </div>
+        </section>
+
+        <section class="card panel" aria-labelledby="sec-theme">
+          <h2 id="sec-theme">Theme colour</h2>
+          <p class="hint">Accent colour used across the site — buttons, links, badges and highlights.</p>
+          <div class="theme-row">
+            <input class="color-input" type="color" [(ngModel)]="doc.themeColor" aria-label="Pick theme colour" />
+            <mat-form-field appearance="outline" class="hex">
+              <mat-label>Hex colour</mat-label>
+              <input matInput [(ngModel)]="doc.themeColor" placeholder="#e52b36" />
+            </mat-form-field>
+            <div class="swatches">
+              @for (t of themePresets; track t.color) {
+                <button type="button" class="swatch" [class.on]="doc.themeColor === t.color"
+                        [style.background]="t.color" [attr.aria-label]="'Use ' + t.name" [title]="t.name"
+                        (click)="doc.themeColor = t.color"></button>
+              }
+            </div>
+          </div>
+        </section>
+
+        <section class="card panel" aria-labelledby="sec-hero">
+          <div class="panel-head">
+            <h2 id="sec-hero">Hero slider</h2>
+            <button mat-stroked-button type="button" (click)="addSlide()">Add slide</button>
+          </div>
+          @for (s of doc.heroSlides; track $index; let i = $index) {
+            <details class="item" [open]="i === 0">
+              <summary>Slide {{ i + 1 }} — {{ s.label || 'Untitled' }}
+                <button mat-icon-button type="button" class="del" (click)="remove(doc.heroSlides, i); $event.preventDefault(); $event.stopPropagation()"
+                        aria-label="Remove slide"><mat-icon fontSet="material-symbols-outlined">delete</mat-icon></button>
+              </summary>
+              <div class="fields">
+                <div class="img-field">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Image URL</mat-label>
+                    <input matInput [(ngModel)]="s.image" />
+                  </mat-form-field>
+                  <label class="up">
+                    <input type="file" accept="image/*" hidden (change)="upload($event, s, 'image')" />
+                    <span class="up-btn"><mat-icon fontSet="material-symbols-outlined">upload</mat-icon> Upload</span>
+                  </label>
+                  @if (s.image) {
+                    <img class="preview" [src]="s.image" alt="Slide image preview" />
+                  }
+                </div>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Image alt text</mat-label>
+                  <input matInput [(ngModel)]="s.alt" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Label (eyebrow)</mat-label>
+                  <input matInput [(ngModel)]="s.label" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Headline</mat-label>
+                  <input matInput [(ngModel)]="s.headline" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Red accent part</mat-label>
+                  <input matInput [(ngModel)]="s.accent" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Suffix after accent</mat-label>
+                  <input matInput [(ngModel)]="s.suffix" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Description</mat-label>
+                  <textarea matInput rows="2" [(ngModel)]="s.description"></textarea>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Layout</mat-label>
+                  <mat-select [(ngModel)]="s.layout">
+                    <mat-option value="split">Split (image right)</mat-option>
+                    <mat-option value="full">Full width</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <div class="pair">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Primary button label</mat-label>
+                    <input matInput [(ngModel)]="s.primary.label" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Primary button link</mat-label>
+                    <input matInput [(ngModel)]="s.primary.link" />
+                  </mat-form-field>
+                </div>
+                <div class="pair">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Secondary button label</mat-label>
+                    <input matInput [(ngModel)]="s.secondary.label" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Secondary button link</mat-label>
+                    <input matInput [(ngModel)]="s.secondary.link" />
+                  </mat-form-field>
+                </div>
+                <mat-form-field appearance="outline">
+                  <mat-label>Caption title (bottom-right card)</mat-label>
+                  <input matInput [(ngModel)]="s.caption.title" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Caption specs (comma separated)</mat-label>
+                  <input matInput [(ngModel)]="s.specText" placeholder="2020, Diesel, Automatic" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Trust badges — one per line, icon|text</mat-label>
+                  <textarea matInput rows="3" [(ngModel)]="s.badgeText"
+                            placeholder="verified|Quality Vehicles"></textarea>
+                </mat-form-field>
+              </div>
+            </details>
+          }
+        </section>
+
+        <section class="card panel" aria-labelledby="sec-pillars">
+          <div class="panel-head">
+            <h2 id="sec-pillars">What we do cards</h2>
+            <button mat-stroked-button type="button" (click)="addPillar()">Add card</button>
+          </div>
+          @for (p of doc.pillars; track $index; let i = $index) {
+            <details class="item">
+              <summary>Card {{ i + 1 }} — {{ p.title || 'Untitled' }}
+                <button mat-icon-button type="button" class="del" (click)="remove(doc.pillars, i); $event.preventDefault(); $event.stopPropagation()"
+                        aria-label="Remove card"><mat-icon fontSet="material-symbols-outlined">delete</mat-icon></button>
+              </summary>
+              <div class="fields">
+                <div class="img-field">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Image URL</mat-label>
+                    <input matInput [(ngModel)]="p.image" />
+                  </mat-form-field>
+                  <label class="up">
+                    <input type="file" accept="image/*" hidden (change)="upload($event, p, 'image')" />
+                    <span class="up-btn"><mat-icon fontSet="material-symbols-outlined">upload</mat-icon> Upload</span>
+                  </label>
+                  @if (p.image) {
+                    <img class="preview" [src]="p.image" alt="Card image preview" />
+                  }
+                </div>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Image alt text</mat-label>
+                  <input matInput [(ngModel)]="p.imageAlt" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Icon (Material Symbols name)</mat-label>
+                  <input matInput [(ngModel)]="p.icon" placeholder="directions_car" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Title</mat-label>
+                  <input matInput [(ngModel)]="p.title" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Text</mat-label>
+                  <textarea matInput rows="2" [(ngModel)]="p.text"></textarea>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Link (internal route, e.g. /services)</mat-label>
+                  <input matInput [(ngModel)]="p.link" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Contact subject (for /contact links)</mat-label>
+                  <input matInput [(ngModel)]="p.subject" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>WhatsApp message (when set, card opens WhatsApp)</mat-label>
+                  <input matInput [(ngModel)]="p.waMessage" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Button text</mat-label>
+                  <input matInput [(ngModel)]="p.cta" />
+                </mat-form-field>
+              </div>
+            </details>
+          }
+        </section>
+
+        <section class="card panel" aria-labelledby="sec-advantage">
+          <h2 id="sec-advantage">Why choose Naboo</h2>
+          <div class="fields">
+            <div class="img-field">
+              <mat-form-field appearance="outline">
+                <mat-label>Image URL</mat-label>
+                <input matInput [(ngModel)]="doc.advantage.image" />
+              </mat-form-field>
+              <label class="up">
+                <input type="file" accept="image/*" hidden (change)="upload($event, doc.advantage, 'image')" />
+                <span class="up-btn"><mat-icon fontSet="material-symbols-outlined">upload</mat-icon> Upload</span>
+              </label>
+              @if (doc.advantage.image) {
+                <img class="preview" [src]="doc.advantage.image" alt="Advantage image preview" />
+              }
+            </div>
+            <div class="pair">
+              <mat-form-field appearance="outline">
+                <mat-label>Eyebrow</mat-label>
+                <input matInput [(ngModel)]="doc.advantage.eyebrow" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Heading</mat-label>
+                <input matInput [(ngModel)]="doc.advantage.heading" />
+              </mat-form-field>
+            </div>
+            <div class="pair">
+              <mat-form-field appearance="outline">
+                <mat-label>Red accent in heading</mat-label>
+                <input matInput [(ngModel)]="doc.advantage.headingAccent" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Tagline</mat-label>
+                <input matInput [(ngModel)]="doc.advantage.tagline" />
+              </mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Intro text</mat-label>
+              <textarea matInput rows="3" [(ngModel)]="doc.advantage.text"></textarea>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Red tagline part</mat-label>
+              <input matInput [(ngModel)]="doc.advantage.taglineAccent" />
+            </mat-form-field>
+          </div>
+
+          @for (a of doc.advantage.items; track $index; let i = $index) {
+            <details class="item">
+              <summary>Item {{ i + 1 }} — {{ a.title || 'Untitled' }}
+                <button mat-icon-button type="button" class="del" (click)="remove(doc.advantage.items, i); $event.preventDefault(); $event.stopPropagation()"
+                        aria-label="Remove item"><mat-icon fontSet="material-symbols-outlined">delete</mat-icon></button>
+              </summary>
+              <div class="fields">
+                <mat-form-field appearance="outline">
+                  <mat-label>Icon (Material Symbols name)</mat-label>
+                  <input matInput [(ngModel)]="a.icon" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Title</mat-label>
+                  <input matInput [(ngModel)]="a.title" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Text</mat-label>
+                  <textarea matInput rows="2" [(ngModel)]="a.text"></textarea>
+                </mat-form-field>
+              </div>
+            </details>
+          }
+          <button mat-stroked-button type="button" (click)="addAdvantage()">Add item</button>
+        </section>
+
+        <section class="card panel" aria-labelledby="sec-steps">
+          <div class="panel-head">
+            <h2 id="sec-steps">How we work</h2>
+            <button mat-stroked-button type="button" (click)="addStep()">Add step</button>
+          </div>
+          @for (st of doc.workSteps; track $index; let i = $index) {
+            <details class="item">
+              <summary>Step {{ i + 1 }} — {{ st.title || 'Untitled' }}
+                <button mat-icon-button type="button" class="del" (click)="remove(doc.workSteps, i); $event.preventDefault(); $event.stopPropagation()"
+                        aria-label="Remove step"><mat-icon fontSet="material-symbols-outlined">delete</mat-icon></button>
+              </summary>
+              <div class="fields">
+                <mat-form-field appearance="outline">
+                  <mat-label>Title</mat-label>
+                  <input matInput [(ngModel)]="st.title" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Text</mat-label>
+                  <textarea matInput rows="2" [(ngModel)]="st.text"></textarea>
+                </mat-form-field>
+              </div>
+            </details>
+          }
+        </section>
+
+        <section class="card panel" aria-labelledby="sec-team">
+          <div class="panel-head">
+            <h2 id="sec-team">Our team (About → Our Team page)</h2>
+            <button mat-stroked-button type="button" (click)="addMember()">Add member</button>
+          </div>
+          <div class="fields">
+            <mat-form-field appearance="outline">
+              <mat-label>Page eyebrow</mat-label>
+              <input matInput [(ngModel)]="doc.teamPage.eyebrow" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Page heading</mat-label>
+              <input matInput [(ngModel)]="doc.teamPage.heading" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Page intro text</mat-label>
+              <textarea matInput rows="2" [(ngModel)]="doc.teamPage.lead"></textarea>
+            </mat-form-field>
+          </div>
+          @for (m of doc.teamMembers; track $index; let i = $index) {
+            <details class="item">
+              <summary>{{ i + 1 }} — {{ m.name || 'Untitled' }}
+                <button mat-icon-button type="button" class="del" (click)="remove(doc.teamMembers, i); $event.preventDefault(); $event.stopPropagation()"
+                        aria-label="Remove member"><mat-icon fontSet="material-symbols-outlined">delete</mat-icon></button>
+              </summary>
+              <div class="fields">
+                <div class="img-field">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Photo URL</mat-label>
+                    <input matInput [(ngModel)]="m.photo" placeholder="Leave empty for initials avatar" />
+                  </mat-form-field>
+                  <label class="up">
+                    <input type="file" accept="image/*" hidden (change)="upload($event, m, 'photo')" />
+                    <span class="up-btn"><mat-icon fontSet="material-symbols-outlined">upload</mat-icon> Upload</span>
+                  </label>
+                  @if (m.photo) {
+                    <img class="preview" [src]="m.photo" alt="Member photo preview" />
+                  }
+                </div>
+                <mat-form-field appearance="outline">
+                  <mat-label>Name</mat-label>
+                  <input matInput [(ngModel)]="m.name" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Role / title</mat-label>
+                  <input matInput [(ngModel)]="m.role" placeholder="Workshop Manager" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Bio</mat-label>
+                  <textarea matInput rows="2" [(ngModel)]="m.bio"></textarea>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Phone (optional — defaults to business number)</mat-label>
+                  <input matInput [(ngModel)]="m.phone" placeholder="+255 …" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>WhatsApp (optional, digits only)</mat-label>
+                  <input matInput [(ngModel)]="m.whatsapp" placeholder="255…" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Email (optional)</mat-label>
+                  <input matInput type="email" [(ngModel)]="m.email" />
+                </mat-form-field>
+              </div>
+            </details>
+          }
+        </section>
+
+        <section class="card panel" aria-labelledby="sec-workshop">
+          <div class="panel-head">
+            <h2 id="sec-workshop">Our workshop (About → Our Workshop page)</h2>
+            <button mat-stroked-button type="button" (click)="addWorkshopItem()">Add item</button>
+          </div>
+          <div class="fields">
+            <mat-form-field appearance="outline">
+              <mat-label>Page eyebrow</mat-label>
+              <input matInput [(ngModel)]="doc.workshopPage.eyebrow" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Page heading</mat-label>
+              <input matInput [(ngModel)]="doc.workshopPage.heading" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Page intro text</mat-label>
+              <textarea matInput rows="2" [(ngModel)]="doc.workshopPage.lead"></textarea>
+            </mat-form-field>
+          </div>
+          @for (w of doc.workshopItems; track $index; let i = $index) {
+            <details class="item">
+              <summary>{{ i + 1 }} — {{ w.title || 'Untitled' }}
+                <button mat-icon-button type="button" class="del" (click)="remove(doc.workshopItems, i); $event.preventDefault(); $event.stopPropagation()"
+                        aria-label="Remove item"><mat-icon fontSet="material-symbols-outlined">delete</mat-icon></button>
+              </summary>
+              <div class="fields">
+                <mat-form-field appearance="outline">
+                  <mat-label>Type</mat-label>
+                  <mat-select [(ngModel)]="w.kind">
+                    <mat-option value="before-after">Before &amp; after</mat-option>
+                    <mat-option value="progress">Work in progress</mat-option>
+                    <mat-option value="completed">Completed</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Title</mat-label>
+                  <input matInput [(ngModel)]="w.title" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Caption</mat-label>
+                  <textarea matInput rows="2" [(ngModel)]="w.caption"></textarea>
+                </mat-form-field>
+                @if (w.kind === 'before-after') {
+                  <div class="img-field">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Before image URL</mat-label>
+                      <input matInput [(ngModel)]="w.before" />
+                    </mat-form-field>
+                    <label class="up">
+                      <input type="file" accept="image/*" hidden (change)="upload($event, w, 'before')" />
+                      <span class="up-btn"><mat-icon fontSet="material-symbols-outlined">upload</mat-icon> Upload</span>
+                    </label>
+                    @if (w.before) {
+                      <img class="preview" [src]="w.before" alt="Before image preview" />
+                    }
+                  </div>
+                  <div class="img-field">
+                    <mat-form-field appearance="outline">
+                      <mat-label>After image URL</mat-label>
+                      <input matInput [(ngModel)]="w.after" />
+                    </mat-form-field>
+                    <label class="up">
+                      <input type="file" accept="image/*" hidden (change)="upload($event, w, 'after')" />
+                      <span class="up-btn"><mat-icon fontSet="material-symbols-outlined">upload</mat-icon> Upload</span>
+                    </label>
+                    @if (w.after) {
+                      <img class="preview" [src]="w.after" alt="After image preview" />
+                    }
+                  </div>
+                } @else {
+                  <div class="img-field">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Image URL</mat-label>
+                      <input matInput [(ngModel)]="w.image" />
+                    </mat-form-field>
+                    <label class="up">
+                      <input type="file" accept="image/*" hidden (change)="upload($event, w, 'image')" />
+                      <span class="up-btn"><mat-icon fontSet="material-symbols-outlined">upload</mat-icon> Upload</span>
+                    </label>
+                    @if (w.image) {
+                      <img class="preview" [src]="w.image" alt="Workshop image preview" />
+                    }
+                  </div>
+                }
+              </div>
+            </details>
+          }
+        </section>
+      }
+    </div>

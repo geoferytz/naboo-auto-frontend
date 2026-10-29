@@ -1,0 +1,59 @@
+<header class="page-header">
+  <div class="container">
+    <span class="eyebrow">{{ page()?.eyebrow }}</span>
+    <h1>{{ page()?.heading }}</h1>
+    <p class="lead">{{ page()?.lead }}</p>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <div class="filters" role="group" aria-label="Filter gallery">
+      @for (f of filters; track f.key) {
+        <button type="button" class="chip" [class.on]="filter() === f.key"
+                [attr.aria-pressed]="filter() === f.key" (click)="filter.set(f.key)">
+          {{ f.label }}
+        </button>
+      }
+    </div>
+
+    <div class="grid">
+      @for (item of visible(); track item.title) {
+        <article class="card work">
+          <div class="shots" [class.pair]="item.kind === 'before-after'">
+            @if (item.kind === 'before-after') {
+              <figure class="half">
+                <img [src]="item.before" [alt]="item.title + ' — before work'" loading="lazy" />
+                <figcaption>Before</figcaption>
+              </figure>
+              <figure class="half">
+                <img [src]="item.after" [alt]="item.title + ' — after work'" loading="lazy" />
+                <figcaption class="after">After</figcaption>
+              </figure>
+            } @else {
+              <img [src]="item.image" [alt]="item.title" loading="lazy" />
+            }
+            <span class="badge" [class]="'badge badge--' + item.kind">{{ kindLabel[item.kind] }}</span>
+          </div>
+          <div class="body">
+            <h2>{{ item.title }}</h2>
+            <p>{{ item.caption }}</p>
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section section--dark">
+  <div class="container cta">
+    <div>
+      <h2>Want this done on your vehicle?</h2>
+      <p>Send us photos and a description — we will assess and quote the work.</p>
+    </div>
+    <div class="actions">
+      <a mat-flat-button class="btn-lg" routerLink="/contact" [queryParams]="{ subject: 'Workshop enquiry' }">Request a quote</a>
+      <a mat-stroked-button class="btn-lg" routerLink="/services">View services</a>
+    </div>
+  </div>
+</section>

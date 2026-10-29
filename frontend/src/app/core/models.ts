@@ -62,15 +62,14 @@ export interface VehicleCard {
   price: Money;
   status: VehicleStatus;
   location: string | null;
-  engineCapacityCc?: number | null;
-  engineCode?: string | null;
-  publishedAt?: string | null;
   images: VehicleImage[];
 }
 
 export interface VehicleDetail extends VehicleCard {
   variant: string | null;
   color: string | null;
+  engineCapacityCc: number | null;
+  engineCode: string | null;
   description: string | null;
   features: string[];
   enquiriesOpen: boolean;
@@ -88,6 +87,7 @@ export interface Page<T> {
 export interface VehicleFilter {
   search?: string | null;
   make?: string | null;
+  model?: string | null;
   minYear?: number | null;
   maxYear?: number | null;
   minPrice?: string | null;
@@ -97,10 +97,16 @@ export interface VehicleFilter {
   transmission?: Transmission | null;
   bodyType?: BodyType | null;
   condition?: VehicleCondition | null;
-  location?: string | null;
-  color?: string | null;
   includeSold?: boolean | null;
 }
+
+export interface VehicleSearchOption {
+  make: string;
+  model: string;
+  year: number;
+}
+
+export type RentalFilter = Pick<VehicleFilter, 'make' | 'model' | 'minYear' | 'maxYear' | 'minPrice' | 'maxPrice'>;
 
 export type PriceType = 'FIXED' | 'STARTING_FROM' | 'HOURLY' | 'INSPECTION_REQUIRED' | 'QUOTE_REQUIRED';
 
@@ -117,6 +123,7 @@ export interface ServiceItem {
   name: string;
   summary: string;
   description: string | null;
+  imageUrl: string | null;
   category: ServiceCategory;
   priceType: PriceType;
   price: Money | null;
@@ -355,6 +362,7 @@ export interface Accessory {
   name: string;
   category: string | null;
   description: string | null;
+  imageUrl: string | null;
   price: Money;
   stockQuantity: number;
   active: boolean;

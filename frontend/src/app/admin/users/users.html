@@ -1,0 +1,156 @@
+
+    <header class="page-header page-header--tight">
+      <div class="container head">
+        <div>
+          <span class="eyebrow">Staff</span>
+          <h1>Users</h1>
+        </div>
+        <button mat-flat-button type="button" (click)="creating.set(!creating())">
+          {{ creating() ? 'Close' : 'Add staff user' }}
+        </button>
+      </div>
+    </header>
+
+    <div class="container section">
+      @if (creating()) {
+        <section class="card editor" aria-labelledby="new-staff-h">
+          <h2 id="new-staff-h">New staff account</h2>
+          <form [formGroup]="createForm" (ngSubmit)="create()" class="form-grid" novalidate>
+            <mat-form-field appearance="outline">
+              <mat-label>Full name</mat-label>
+              <input matInput formControlName="fullName" maxlength="120" />
+              <mat-error>{{ err('fullName', 'Full name') }}</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email" maxlength="254" />
+              <mat-error>{{ err('email', 'Email') }}</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Phone (optional)</mat-label>
+              <input matInput formControlName="phone" type="tel" />
+              <mat-error>{{ err('phone', 'Phone number') }}</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Temporary password</mat-label>
+              <input matInput formControlName="password" type="text" autocomplete="off" />
+              <mat-error>{{ err('password', 'Password') }}</mat-error>
+              <mat-hint>At least 12 characters. The user should change it after signing in.</mat-hint>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Roles</mat-label>
+              <mat-select formControlName="roles" multiple>
+                @for (r of staffRoles; track r.value) {
+                  <mat-option [value]="r.value">{{ r.label }}</mat-option>
+                }
+              </mat-select>
+              <mat-error>{{ err('roles', 'Roles') }}</mat-error>
+            </mat-form-field>
+            @if (createError()) {
+              <p class="alert alert--error full" role="alert">{{ createError() }}</p>
+            }
+            <div class="full actions">
+              <button mat-flat-button type="submit" [disabled]="busy()">Create account</button>
+            </div>
+          </form>
+        </section>
+      }
+
+      <h2 class="sub">Staff</h2>
+      <label class="check">
+        <input type="checkbox" [checked]="includeDisabled()" (change)="setIncludeDisabled($event)" />
+        Show disabled accounts
+      </label>
+      @if (staffState() !== 'ready') {
+        <app-load-state [state]="staffState()" loadingText="Loading staff…" (retry)="loadStaff()" />
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Roles</th>
+                <th scope="col">Status</th>
+                <th scope="col">Last sign-in</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of staff(); track u.id) {
+                <tr>
+                  <td>{{ u.fullName }}</td>
+                  <td>{{ u.email }}</td>
+                  <td>
+                    <mat-form-field appearance="outline" class="roles-field">
+                      <mat-select [value]="u.roles" (selectionChange)="setRoles(u, $event.value)" multiple [disabled]="u.id === meId()">
+                        @for (r of staffRoles; track r.value) {
+                          <mat-option [value]="r.value">{{ r.label }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  </td>
+                  <td>{{ u.enabled === false ? 'Disabled' : 'Active' }}</td>
+                  <td>{{ u.lastLoginAt ? (u.lastLoginAt | date: 'short') : 'Never' }}</td>
+                  <td>
+                    @if (u.id !== meId()) {
+                      <button mat-stroked-button type="button" [disabled]="busy()" (click)="toggleEnabled(u)">
+                        {{ u.enabled === false ? 'Enable' : 'Disable' }}
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <h2 class="sub">All users</h2>
+      <form [formGroup]="searchForm" (ngSubmit)="search()" class="search" role="search">
+        <mat-form-field appearance="outline">
+          <mat-label>Search by name or email</mat-label>
+          <input matInput formControlName="q" />
+        </mat-form-field>
+        <button mat-stroked-button type="submit">Search</button>
+      </form>
+      @if (usersState() !== 'ready') {
+        <app-load-state [state]="usersState()" loadingText="Loading users…" emptyText="No users found." (retry)="search()" />
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Roles</th>
+                <th scope="col">Status</th>
+                <th scope="col">Joined</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of users(); track u.id) {
+                <tr>
+                  <td>{{ u.fullName }}</td>
+                  <td>{{ u.email }}</td>
+                  <td>{{ roleList(u) }}</td>
+                  <td>{{ u.enabled === false ? 'Disabled' : 'Active' }}</td>
+                  <td>{{ u.createdAt | date: 'mediumDate' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if ((usersPage()?.totalPages ?? 0) > 1) {
+          <nav class="pager" aria-label="Pages">
+            <button mat-stroked-button type="button" [disabled]="usersPage()!.page === 0" (click)="search(usersPage()!.page - 1)">Previous</button>
+            <span>Page {{ usersPage()!.page + 1 }} of {{ usersPage()!.totalPages }}</span>
+            <button mat-stroked-button type="button" [disabled]="usersPage()!.page + 1 >= usersPage()!.totalPages" (click)="search(usersPage()!.page + 1)">Next</button>
+          </nav>
+        }
+      }
+      @if (error()) {
+        <p class="alert alert--error" role="alert">{{ error() }}</p>
+      }
+    </div>
+  

@@ -1,0 +1,50 @@
+<header class="page-header">
+  <div class="container">
+    <span class="eyebrow">{{ page().eyebrow }}</span>
+    <h1>{{ page().heading }}</h1>
+    <p class="lead">{{ page().lead }}</p>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <div class="grid">
+      @for (m of members(); track m.name) {
+        <article class="card member">
+          <div class="photo">
+            @if (m.photo) {
+              <img [src]="m.photo" [alt]="'Portrait of ' + m.name + ', ' + m.role" loading="lazy" />
+            } @else {
+              <span class="avatar" aria-hidden="true">{{ initials(m.name) }}</span>
+            }
+            <span class="role">{{ m.role }}</span>
+          </div>
+          <h2>{{ m.name }}</h2>
+          <p>{{ m.bio }}</p>
+          <div class="contact">
+            <a [href]="waHref(m)" target="_blank" rel="noopener" class="ch wa"
+               [attr.aria-label]="'Chat with ' + m.name + ' on WhatsApp'">
+              <mat-icon fontSet="material-symbols-outlined">chat</mat-icon>
+            </a>
+            <a [href]="telHref(m)" class="ch" [attr.aria-label]="'Call ' + m.name">
+              <mat-icon fontSet="material-symbols-outlined">call</mat-icon>
+            </a>
+            <a [href]="mailHref(m)" class="ch" [attr.aria-label]="'Email ' + m.name">
+              <mat-icon fontSet="material-symbols-outlined">mail</mat-icon>
+            </a>
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section section--dark">
+  <div class="container cta">
+    <h2>Talk to the team</h2>
+    <div class="actions">
+      <a mat-flat-button class="btn-lg" routerLink="/contact">Contact us</a>
+      <a mat-stroked-button class="btn-lg" routerLink="/about">About Naboo</a>
+    </div>
+  </div>
+</section>
